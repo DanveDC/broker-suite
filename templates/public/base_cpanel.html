@@ -9,6 +9,12 @@
   <head>
     {% include 'public/includes/head.html' %}
     <!---->
+    <style>
+      #layout-menu { background-color: #0f172a !important; }
+      .menu-inner > .menu-item > .menu-link { color: #94a3b8 !important; }
+      .menu-inner > .menu-item.active > .menu-link,
+      .menu-inner > .menu-item > .menu-link:hover { color: #ffffff !important; background-color: rgba(26,86,219,0.15) !important; }
+    </style>
     {% block customCSS %} {% endblock %}
   </head>
   <body>

@@ -7,7 +7,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
   <title>{% block crud %}Crud con Python 🐍 {% endblock %}</title>
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename ='assets/img/cabal.ico') }}" />
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -64,18 +64,16 @@
 <style>
   /* Estilos existentes para body y root */
   body {
-    background-image: url('/static/assets/img/PANTALLA INTERFAZ Ingresar.jpg');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1a56db 100%);
+    min-height: 100vh;
     color: #333;
   }
 
   :root {
-    --bg: #110921;
-    --purple: #696cff;
-    --green: #5ff8c2;
-    --font: 'Roboto Mono', sans-serif;
+    --bg: #0f172a;
+    --primary: #1a56db;
+    --green: #10b981;
+    --font: 'Inter', 'Open Sans', sans-serif;
   }
 
   .wrap-toggle {
@@ -100,7 +98,7 @@
   .drawer-trigger {
     width: 30px;
     height: 60px;
-    background: #696cff;
+    background: #1a56db;
     /* Púrpura que combina con el botón primario */
     color: white;
     border-radius: 0 10px 10px 0;
@@ -146,7 +144,7 @@
   }
 
   .drawer-trigger:hover {
-    background: #5f61e6;
+    background: #1648c0;
     /* Tono morado para el hover */
     width: 35px;
   }
@@ -174,7 +172,7 @@
   }
 
   .switch-label.active-nacional {
-    color: var(--purple);
+    color: var(--primary);
   }
 
   .switch-label.active-internacional {
