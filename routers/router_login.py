@@ -1,6 +1,4 @@
 import os
-import psycopg2
-import psycopg2.extras
 
 from app import app
 from flask import render_template, request, flash, redirect, url_for, session
@@ -214,7 +212,7 @@ def loginCliente():
 
                         # Comprobando si existe una cuenta
                         conexion_MySQLdb = connectionBD()
-                        cursor = conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                        cursor = conexion_MySQLdb.cursor()
                         cursor.execute(
                             "SELECT * FROM users WHERE email_user = %s", [email_user])
                         account = cursor.fetchone()

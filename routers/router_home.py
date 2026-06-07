@@ -3,8 +3,6 @@ import json
 import uuid
 import os
 from flask import render_template, request, flash, redirect, url_for, session,  jsonify, make_response, send_file
-import psycopg2
-import psycopg2.extras
 from datetime import datetime, timedelta,date
 from dateutil.relativedelta import relativedelta
 import openpyxl
@@ -718,7 +716,7 @@ def actualizar_pago():
 
         try:
             with connectionBD() as conexion_MySQLdb:
-                with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conexion_MySQLdb.cursor() as cursor:
                     # 1. Actualizar el pago actual a 'PAGADO'
                     sql_update_pago = """
                         UPDATE pago
@@ -850,7 +848,7 @@ def anular_pago_individual():
 
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "UPDATE pago SET estado = 'ANULADO' WHERE Cod_pago = %s"
                 cursor.execute(querySQL, (pago_id,))
                 conexion_MySQLdb.commit()
@@ -887,7 +885,7 @@ def verificar_pagos_renovacion(id):
     if 'conectado' in session:
         try:
             with connectionBD() as conexion_MySQLdb:
-                with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conexion_MySQLdb.cursor() as cursor:
                     # Logic similar to what we have in actualizar_pago to ensure all cuotas exist
                     cursor.execute("SELECT Frecuencia, Prima FROM renovacion WHERE Cod_renovacion = %s", (id,))
                     renov_data = cursor.fetchone()
@@ -1139,7 +1137,7 @@ def viewPagosPoliza(id,boton=0,a=0):
         poliza_info = {}
         try:
             with connectionBD() as conexion_MySQLdb:
-                with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conexion_MySQLdb.cursor() as cursor:
                     if a==0:
                         sql = """
                             SELECT 
@@ -1225,7 +1223,7 @@ def view_form_pagos(id):
         siguiente_cuota = 1
         try:
             with connectionBD() as conexion_MySQLdb:
-                with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conexion_MySQLdb.cursor() as cursor:
                     cursor.execute("SELECT nro_cuota FROM pago WHERE Cod_renovacion = %s ORDER BY CAST(nro_cuota AS INTEGER) ASC", (id,))
                     existentes = [int(p['nro_cuota']) for p in cursor.fetchall() if p['nro_cuota'] is not None]
                     while siguiente_cuota in existentes:
@@ -1697,7 +1695,7 @@ def obtener_pagos_globales(lista_polizas):
     data = []
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Generar placeholders para la consulta IN
                 placeholders = ','.join(['%s'] * len(polizas_unicas))
                 
@@ -1755,7 +1753,7 @@ def verificar_poliza_beta():
     # y si no tiene pagos, al menos ver si existe la pÃ³liza
     try:
         with connectionBD() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conn.cursor() as cursor:
                 # Primero buscamos si existe la pÃ³liza
                 sql_p = """
                     SELECT p.cod_poliza, e.cod_ejecutivo, r.comision, a.Nombre, a.Apellido
@@ -2001,7 +1999,7 @@ def upload_comisiones_star():
             # FALLBACK: Validar por existencia de pÃ³liza si no hay pago
             if not found_match and poliza_key:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         sql_fb = """
                             SELECT p.cod_poliza, e.cod_ejecutivo, r.comision
                             FROM poliza p
@@ -2354,7 +2352,7 @@ def upload_comisiones_caracas():
             # Fallback: policy exists in DB but no pending payment found
             if not found_match and excel_policy:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         cur_fb.execute(
                             "SELECT p.cod_poliza, e.cod_ejecutivo, r.comision "
                             "FROM poliza p JOIN asegurado a ON p.CI_asegurado = a.CI "
@@ -2621,7 +2619,7 @@ def upload_comisiones_piramide():
         piramide_policies_map = {}
         try:
             with connectionBD() as conn_map:
-                with conn_map.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_map:
+                with conn_map.cursor() as cur_map:
                     cur_map.execute(
                         "SELECT p.cod_poliza FROM poliza p "
                         "JOIN compania c ON p.Cod_compania = c.Cod_compania "
@@ -2664,7 +2662,7 @@ def upload_comisiones_piramide():
             # Fallback: verify policy existence in DB
             if not found_match and excel_policy:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         cur_fb.execute(
                             "SELECT p.cod_poliza, e.cod_ejecutivo, r.comision "
                             "FROM poliza p JOIN asegurado a ON p.CI_asegurado = a.CI "
@@ -2928,7 +2926,7 @@ def upload_comisiones_universitas():
 
             if not found_match and excel_policy:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         cur_fb.execute(
                             "SELECT p.cod_poliza, e.cod_ejecutivo, r.comision "
                             "FROM poliza p JOIN asegurado a ON p.CI_asegurado = a.CI "
@@ -3219,7 +3217,7 @@ def upload_comisiones_banesco():
 
             if not found_match and excel_policy:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         cur_fb.execute(
                             "SELECT p.cod_poliza, e.cod_ejecutivo, r.comision "
                             "FROM poliza p JOIN asegurado a ON p.CI_asegurado = a.CI "
@@ -3521,7 +3519,7 @@ def upload_comisiones_venezuela():
             # Fallback: verify policy exists in DB
             if not found_match and excel_policy:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         cur_fb.execute(
                             "SELECT p.cod_poliza, e.cod_ejecutivo, r.comision "
                             "FROM poliza p JOIN asegurado a ON p.CI_asegurado = a.CI "
@@ -3894,7 +3892,7 @@ def upload_comisiones_internacional():
             # Para la compaÃ±Ã­a Internacional, la pÃ³liza en la BD estÃ¡ compuesta por el Producto + 4 Ãºltimos dÃ­gitos de la pÃ³liza en el PDF.
             # Por lo tanto, traemos todos los pagos de LA INTERNACIONAL para buscar en memoria.
             with connectionBD() as conn:
-                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conn.cursor() as cursor:
                     sql_todas = """
                         SELECT 
                             p.cod_poliza AS 'NRO. POLIZA',
@@ -3982,7 +3980,7 @@ def upload_comisiones_internacional():
                 if not found_match and pol_nro:
                     # BÃºsqueda fallback: Â¿Existe la pÃ³liza en la BD aunque no tenga pagos?
                     with connectionBD() as conn_fb:
-                        with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                        with conn_fb.cursor() as cur_fb:
                             if prod_pdf and stripped_nro:
                                 sql_fb = """
                                     SELECT p.cod_poliza, e.cod_ejecutivo, r.comision
@@ -4566,7 +4564,7 @@ def upload_comisiones_mercantil():
                 # FALLBACK: Validar por existencia de pÃ³liza
                 if not found_match and poliza_limpia:
                     with connectionBD() as conn_fb:
-                        with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                        with conn_fb.cursor() as cur_fb:
                             sql_fb = """
                                 SELECT p.cod_poliza, e.cod_ejecutivo, r.comision
                                 FROM poliza p
@@ -4702,7 +4700,7 @@ def upload_comisiones_oceanica():
         
         # 3. PreparaciÃ³n de Matching con diccionarios (Alta velocidad)
         with connectionBD() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conn.cursor() as cursor:
                 sql_todas = """
                     SELECT 
                         p.cod_poliza AS 'NRO. POLIZA',
@@ -4786,7 +4784,7 @@ def upload_comisiones_oceanica():
             # FALLBACK: Validar por existencia de pÃ³liza
             if not found_match and poliza_key:
                 with connectionBD() as conn_fb:
-                    with conn_fb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_fb:
+                    with conn_fb.cursor() as cur_fb:
                         if prod_pdf and stripped_nro:
                             sql_fb = """
                                 SELECT p.cod_poliza, e.cod_ejecutivo, r.comision
@@ -4990,7 +4988,7 @@ def procesar_comisiones_beta():
         # VALIDACIÃƒâ€œN DE DUPLICADOS: Evitar cargar el mismo bloque dos veces
         try:
             with connectionBD() as conn_dup:
-                with conn_dup.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur_dup:
+                with conn_dup.cursor() as cur_dup:
                     sql_dup = """
                         SELECT id_bloque 
                         FROM bloque_pago_comision 
@@ -5403,7 +5401,7 @@ def formRenovacion():
             flash(resultado.get('message'), 'success')
             try:
                 with connectionBD() as conexion_MySQLdb:
-                    with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                    with conexion_MySQLdb.cursor() as cursor:
                         # Obtener id_asegurado de la pÃ³liza
                         cursor.execute("SELECT CI_asegurado FROM poliza WHERE cod_poliza = %s", (cod_poliza,))
                         poliza_data = cursor.fetchone()
@@ -5456,7 +5454,7 @@ def completar_datos_asegurado(id_asegurado):
     asegurado = None
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("SELECT CI, Nombre, profesion, localidad, canal FROM asegurado WHERE CI = %s", (id_asegurado,))
                 asegurado = cursor.fetchone()
     except Exception as e:
@@ -5814,7 +5812,7 @@ def guardar_pago():
 
         try:
             with connectionBD() as conexion_MySQLdb:
-                with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                with conexion_MySQLdb.cursor() as cursor:
                     querySQL = "UPDATE pago SET estado = %s WHERE Cod_pago=%s;"
                     cursor.execute(querySQL,(estado, cod_pago))
                     conexion_MySQLdb.commit()
@@ -6366,7 +6364,7 @@ def EditarEjecutivo(id):
     try:
         # Conectar a la base de datos para obtener los datos del ejecutivo y sus productos.
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # 1. Obtener los datos del ejecutivo
                 query_ejecutivo = "SELECT * FROM ejecutivo WHERE cod_ejecutivo = %s"
                 cursor.execute(query_ejecutivo, (id,))
@@ -6430,7 +6428,7 @@ def submit_selection():
 
         # Conectar a la base de datos para realizar las operaciones de eliminaciÃ³n e inserciÃ³n.
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # 1. Eliminar todas las selecciones existentes para este 'cod_ejecutivo'.
                 query_delete = "DELETE FROM comisiones_ejecutivos WHERE cod_ejecutivo = %s"
                 cursor.execute(query_delete, (cod_ejecutivo_a_actualizar,))
@@ -6769,7 +6767,7 @@ def verificar_pendiente(id_pendiente):
         
         # Verificar si la pÃ³liza ya existe en la BD
         with connectionBD() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor() as cur:
                 cur.execute("SELECT cod_poliza FROM poliza WHERE cod_poliza = %s", (detalle['nro_poliza'],))
                 existe = cur.fetchone()
                 
@@ -6789,7 +6787,7 @@ def gestionar_pendiente(id_pendiente):
         # Obtener datos para el formulario (compaÃ±Ã­as, ejecutivos, ramos)
         # Reusamos lÃ³gica existente en ruta de crear poliza si es posible o cargamos lo mÃ­nimo
         with connectionBD() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            with conn.cursor() as cur:
                 cur.execute("SELECT * FROM compania ORDER BY Nombre")
                 companias = cur.fetchall()
                 cur.execute("SELECT * FROM ejecutivo ORDER BY Nombre")

@@ -9,8 +9,6 @@ from werkzeug.security import check_password_hash
 import os
 import re
 from werkzeug.security import generate_password_hash
-import psycopg2
-import psycopg2.extras
 
 import datetime
 import uuid
@@ -29,7 +27,7 @@ def solicitar_recuperacion(email_user):
             return None
 
         with conexion:
-            with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion.cursor() as cursor:
                 cursor.execute("SELECT id FROM users WHERE email_user = %s", (email_user,))
                 user = cursor.fetchone()
 
@@ -64,7 +62,7 @@ def validar_token(token):
             return None
 
         with conexion:
-            with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion.cursor() as cursor:
                 cursor.execute(
                     "SELECT email_user, created_at FROM password_resets WHERE token = %s",
                     (token,)
@@ -102,7 +100,7 @@ def procesar_reset_password(token, new_pass, repetir_pass):
             return {"success": False, "message": "No se pudo conectar a la base de datos."}
 
         with conexion:
-            with conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion.cursor() as cursor:
                 nueva_password_app = generate_password_hash(new_pass)
                 cursor.execute(
                     "UPDATE users SET pass_user = %s WHERE email_user = %s",
@@ -131,7 +129,7 @@ def recibeInsertRegisterUser(name_surname, email_user, pass_user, permisos):
 
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 # 1. Verificar si el usuario ya existe en la tabla 'users'
                 mycursor.execute(
                     "SELECT COUNT(*) AS count FROM users WHERE email_user = %s",
@@ -157,7 +155,7 @@ def recibeInsertRegisterUser(name_surname, email_user, pass_user, permisos):
 def validarDataRegisterLogin(name_surname, email_user, pass_user):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT * FROM users WHERE email_user = %s"
                 cursor.execute(querySQL, (email_user,))
                 userBD = cursor.fetchone()  # Obtener la primera fila de resultados
@@ -182,7 +180,7 @@ def validarDataRegisterLogin(name_surname, email_user, pass_user):
 def info_perfil_session():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT name_surname, email_user, permisos FROM users WHERE id = %s"
                 cursor.execute(querySQL, (session['id'],))
                 info_perfil = cursor.fetchone()
@@ -206,7 +204,7 @@ def procesar_update_perfil(data_form):
 
     try:
         with connectionBD() as conexion_MySQLdb: # Primera y ÚNICA conexión
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # 1. Obtener la cuenta para verificar la contraseña actual
                 querySQL = """SELECT * FROM users WHERE id = %s LIMIT 1""" # Mejor buscar por ID si ya lo tienes en session
                 cursor.execute(querySQL, (id_user,))
@@ -247,7 +245,6 @@ def procesar_update_perfil(data_form):
                                     conexion_MySQLdb.commit()
                                     return 1 # Devuelve el número de filas afectadas (1 si fue exitoso)
 
-                                except psycopg2.Error as e: # Captura errores específicos de psycopg2
                                     print(f"Error en el UPDATE de procesar_update_perfil: {e}")
                                     conexion_MySQLdb.rollback() # Deshacer si hay un error en la DB
                                     return {"success": False, "message": f"Error al actualizar la base de datos: {e}"}
@@ -259,7 +256,7 @@ def procesar_update_perfil(data_form):
                         return 4 # Código de error: contraseña actual incorrecta
                 else:
                     return 0 # Código de error: usuario no encontrado (debería ser raro si se usa session['id'])
-    except psycopg2.Error as e:
+    except Exception as e:
         print(f"Error de conexión en procesar_update_perfil: {e}")
         return {"success": False, "message": f"Error de conexión a la base de datos: {e}"}
     except Exception as e:
@@ -272,7 +269,7 @@ def procesar_update_perfil(data_form):
 def updatePefilSinPass(id_user, name_surname):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     UPDATE users
                     SET

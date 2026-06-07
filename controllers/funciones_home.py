@@ -36,8 +36,6 @@ from werkzeug.security import check_password_hash
 import re
 # Para encriptar contraseña generate_password_hash
 from werkzeug.security import generate_password_hash
-import psycopg2
-import psycopg2.extras
 
 from pyDolarVenezuela.pages import AlCambio, BCV, CriptoDolar, DolarToday, ExchangeMonitor, EnParaleloVzla, Italcambio
 import pandas as pd
@@ -243,7 +241,7 @@ def procesar_form_empleado(dataForm, foto_perfil):
     result_foto_perfil = procesar_imagen_perfil(foto_perfil)
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
 
                 sql = "INSERT INTO tbl_empleados (nombre_empleado, apellido_empleado, sexo_empleado, telefono_empleado, email_empleado, profesion_empleado, foto_empleado, salario_empleado) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
@@ -274,7 +272,7 @@ def procesar_form_asegurado(dataForm):
             return {'success': False, 'message': 'La cédula debe ser un número válido.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Comprobar si ya existe
                 sql = "SELECT CI FROM asegurado WHERE CI = %s"
                 cursor.execute(sql, (cedula,))
@@ -307,7 +305,7 @@ def procesar_form_asegurado(dataForm):
                 
                 return {'success': True, 'message': 'Asegurado registrado exitosamente.', 'data': cedula}
 
-    except psycopg2.Error as e:
+    except Exception as e:
         return {'success': False, 'message': f'Error de base de datos: {str(e)}'}
     except Exception as e:
         return {'success': False, 'message': f'Error inesperado: {str(e)}'}
@@ -318,7 +316,7 @@ def procesar_form_company(dataForm):
             return {'success': False, 'message': 'El nombre de la compañía es obligatorio.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:           
+            with conexion_MySQLdb.cursor() as cursor:           
                 sql = "INSERT INTO compania (rif, nombre) VALUES (%s, %s)"
                 valores = (dataForm.get('Rif'), dataForm['nombre_company'])
                 cursor.execute(sql, valores)
@@ -336,7 +334,7 @@ def procesar_form_ejecutivo(dataForm):
         telefono_completo = f"{dataForm.get('area_code', '')}{dataForm.get('Telefono', '')}"
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:           
+            with conexion_MySQLdb.cursor() as cursor:           
                 sql = "INSERT INTO ejecutivo (CI, Nombre, Nombre2, Apellido, Apellido2, Correo, Telefono, Tipo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING cod_ejecutivo"
                 valores = (
                     dataForm['CI'],
@@ -388,7 +386,7 @@ def procesar_form_renovacion(dataForm):
             return {'success': False, 'message': f'Error al procesar las fechas: {str(e)}'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:           
+            with conexion_MySQLdb.cursor() as cursor:           
                 sql = "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, cobertura, Fecha_vencimiento) VALUES (%s, %s, %s, %s, %s, %s)"
                 valores = (dataForm['poliza'], prima_float, dataForm['Frecuencia'], fecha_contrato, dataForm.get('Cobertura'), fecha_vencimiento)
                 cursor.execute(sql, valores)
@@ -414,7 +412,7 @@ def procesar_form_CartaAval(dataForm):
                 processed_data[key] = value
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql = """
                     INSERT INTO carta_aval (
                         Cod_poliza, Diagnostico, Procedimiento, Estado, Moneda, Monto_solicitado,
@@ -484,7 +482,7 @@ def eliminar_siniestro_db(id_siniestro, tipo_siniestro):
             return {'success': False, 'message': f'Tipo de siniestro "{tipo_siniestro}" no reconocido para eliminación.'}
             
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Ensure notes are deleted first to avoid FK constraints
                 cursor.execute(f"DELETE FROM {note_table} WHERE {note_id_column} = %s", (id_siniestro,))
                 
@@ -515,7 +513,7 @@ def procesar_form_reembolso(dataForm):
                 processed_data[key] = value
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql = """
                     INSERT INTO Reembolso (
                         Cod_poliza, Diagnostico, Estado, Fecha_ocurrencia, Fecha_noti,
@@ -560,7 +558,7 @@ def procesar_form_SiniestroAuto(dataForm):
             return {'success': False, 'message': 'El código de póliza es obligatorio.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:           
+            with conexion_MySQLdb.cursor() as cursor:           
                 sql = """
                     INSERT INTO AutomovilSiniestro 
                     (Cod_poliza, Fecha_ocurrencia, Fecha_noti, Fecha_inspec, Estado, Monto_orden, Correo, Descripcion) 
@@ -586,7 +584,7 @@ def procesar_form_SiniestroAuto(dataForm):
 def procesar_form_beneficiario(dataForm):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:           
+            with conexion_MySQLdb.cursor() as cursor:           
                     sql = "INSERT INTO beneficiario (Cod_poliza,Nombre,Apellido,Cedula,Parentesco) VALUES (%s, %s, %s, %s, %s)"
                     #Creando una tupla con los valores del INSERT
                     valores = ( dataForm['cod'],dataForm['nombre_beneficiario'],dataForm['Apellido'],dataForm['Cedula'],dataForm['Parentesco'])
@@ -609,7 +607,7 @@ def procesar_form_pago(dataForm):
                 return {'success': False, 'message': f'El campo {field} es obligatorio.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cod_renovacion = dataForm['renovacion']
                 moneda = dataForm['moneda']
                 fecha_pago_inicial_str = dataForm['fecha']
@@ -711,7 +709,7 @@ def procesar_form_pago(dataForm):
 def asignar_comision(cod_renovacion):
     try:
         with connectionBD() as conexion_MySQLdb: # Asegúrate de que connectionBD() maneja la conexión y el cierre correctamente
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                     print(f"DEBUG: Intentando asignar comisión para Cod_renovacion: {cod_renovacion}")
                     sql = """SELECT
                                 p.Ramo,
@@ -939,7 +937,7 @@ def asignar_comision(cod_renovacion):
 def revertir_pago_individual(pago_id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Verificar el estado actual del pago
                 cursor.execute("SELECT estado, Cod_renovacion, nro_cuota FROM pago WHERE Cod_pago = %s", (pago_id,))
                 pago = cursor.fetchone()
@@ -979,7 +977,7 @@ def revertir_pago_individual(pago_id):
 def procesar_comision(dataForm):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                                
                     sql= "UPDATE renovacion SET comision = %s WHERE Cod_renovacion =%s"
                     
@@ -1002,7 +1000,7 @@ def procesar_comision(dataForm):
 def procesar_comision2(cod_pago, referidor, cod_poliza=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columna cod_poliza
                 try:
                     cursor.execute("ALTER TABLE comision ADD COLUMN cod_poliza VARCHAR(100) DEFAULT NULL")
@@ -1054,7 +1052,7 @@ def procesar_form_poliza(dataForm):
             return {'success': False, 'message': 'El valor de la prima no es válido.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Comprobar si ya existe la póliza
                 sql = "SELECT cod_poliza FROM poliza WHERE cod_poliza = %s"
                 cursor.execute(sql, (dataForm['numero_poliza'],))
@@ -1128,7 +1126,7 @@ def procesar_form_poliza(dataForm):
                 conexion_MySQLdb.commit()
                 return {'success': True, 'message': 'Póliza registrada exitosamente.', 'data': dataForm['numero_poliza']}
 
-    except psycopg2.Error as e:
+    except Exception as e:
         return {'success': False, 'message': f'Error de base de datos: {str(e)}'}
     except Exception as e:
         return {'success': False, 'message': f'Error inesperado: {str(e)}'}
@@ -1188,7 +1186,7 @@ def procesar_excel_preview(file):
         preview_data = []
         
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 # OPTIMIZATION: Pre-fetch DB keys for O(1) rapid lookup to eliminate N-queries issue
                 cursor.execute("SELECT CI FROM asegurado")
                 asegurados_db = {str(r['CI']) for r in cursor.fetchall()}
@@ -1427,7 +1425,7 @@ def procesar_excel_stream(file):
         ejec_id_to_name = {ej['cod_ejecutivo']: f"{ej['Nombre']} {ej['Apellido']}".strip() for ej in ejecutivos}
 
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 cursor.execute("SELECT CI FROM asegurado")
                 asegurados_db = {str(r['CI']) for r in cursor.fetchall()}
                 cursor.execute("SELECT cod_poliza FROM poliza")
@@ -1580,7 +1578,7 @@ def insertar_registros_excel(data_to_insert):
     
     try:
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 for item in data_to_insert:
                     try:
                         raw = item['raw_data']
@@ -1715,7 +1713,7 @@ def insertar_unico_registro_generico(item):
 
     try:
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
 
                 # ── Extraer campos del item ─────────────────────────────────
                 raw              = item.get('raw_data') or {}
@@ -2017,7 +2015,7 @@ def procesar_mercantil_preview(file):
 
         # Obtener compañías para validación
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 cursor.execute("SELECT Cod_compania, Nombre FROM compania")
                 cias_db_list = cursor.fetchall()
                 # Mapa normalizado para búsqueda y mapa de ID a Nombre
@@ -2117,7 +2115,7 @@ def procesar_mercantil_preview(file):
             # Consultar pagos existentes para esta póliza en la BD
             existentes_db = []
             with connectionBD() as conn:
-                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                with conn.cursor() as cur:
                     cur.execute("""
                         SELECT p.Cod_pago, p.monto, p.nro_cuota, p.estado, r.Fecha_contrato 
                         FROM pago p 
@@ -2269,7 +2267,7 @@ def insertar_mercantil_data(data_to_insert):
     
     try:
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 # Mapeo de compañías (simulado, debería ser dinámico)
                 cursor.execute("SELECT Cod_compania, Nombre FROM compania")
                 cias_db = {r['Nombre'].upper(): r['Cod_compania'] for r in cursor.fetchall()}
@@ -2450,7 +2448,7 @@ def insertar_unico_registro_mercantil(item):
     from dateutil.relativedelta import relativedelta
     try:
         with connectionBD() as connection:
-            with connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with connection.cursor() as cursor:
                 cursor.execute("SELECT Cod_compania, Nombre FROM compania")
                 cias_db = {r['Nombre'].upper(): r['Cod_compania'] for r in cursor.fetchall()}
                 frec_map = {'ANUAL': 1, 'MENSUAL': 2, 'TRIMESTRAL': 3, 'SEMESTRAL': 4, 'UNICA': 5, 'CUATRIMESTRAL': 6}
@@ -2608,7 +2606,7 @@ def procesar_imagen_perfil(foto):
 def sql_lista_empleadosBD():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT 
                         e.id_empleado,
@@ -2635,7 +2633,7 @@ def sql_lista_empleadosBD():
 def sql_datos_poliza(cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                         a.Nombre AS nombre_asegurado,
@@ -2665,7 +2663,7 @@ def sql_datos_poliza(cod_poliza):
 def sql_lista_aseguradosBD():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT 
                         a.CI,
@@ -2695,7 +2693,7 @@ def sql_lista_aseguradosBD():
 def sql_lista_polizas():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT
                         p.cod_poliza,
@@ -2787,7 +2785,7 @@ def sql_lista_polizas():
 def sql_lista_siniestros():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                         SELECT
                             p.Cod_poliza,
@@ -2872,7 +2870,7 @@ def sql_lista_siniestros():
 def sql_lista_siniestros_unico(cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                         SELECT
                             p.Cod_poliza,
@@ -2922,7 +2920,7 @@ def sql_lista_siniestros_unico(cod_poliza):
 def sql_detalles_empleadosBD(idEmpleado):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                         e.id_empleado,
@@ -2953,7 +2951,7 @@ def sql_detalles_empleadosBD(idEmpleado):
 def sql_detalles_aseguradoBD(CI):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                         a.CI,
@@ -2984,7 +2982,7 @@ def sql_detalles_aseguradoBD(CI):
 def sql_lista_polizas_asegurado(CI):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT p.cod_poliza as Cod_poliza, p.Ramo, TO_CHAR(p.Fecha_emision, 'DD-MM-YYYY') as Fecha_emision, c.Nombre as nombre_compania
                     FROM poliza p
@@ -3000,7 +2998,7 @@ def sql_lista_polizas_asegurado(CI):
 def sql_detalles_reembolsoBD(cod_reembolso):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM Reembolso
@@ -3017,7 +3015,7 @@ def sql_detalles_reembolsoBD(cod_reembolso):
 def sql_detalles_CartaAvalBD(cod_carta):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM Carta_aval
@@ -3034,7 +3032,7 @@ def sql_detalles_CartaAvalBD(cod_carta):
 def sql_Notas_cartaAval(cod_carta):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM nota_cartaAval
@@ -3051,7 +3049,7 @@ def sql_Notas_cartaAval(cod_carta):
 def sql_Notas_reembolso(cod_reembolso):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM nota_Reembolso
@@ -3068,7 +3066,7 @@ def sql_Notas_reembolso(cod_reembolso):
 def sql_Notas_auto(cod_auto):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM nota_Auto
@@ -3085,7 +3083,7 @@ def sql_Notas_auto(cod_auto):
 def sql_detalles_SiniestroA(cod_auto):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
                     FROM AutomovilSiniestro
@@ -3102,7 +3100,7 @@ def sql_detalles_SiniestroA(cod_auto):
 def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql= 'SELECT Ramo from poliza WHERE cod_poliza=%s'
                 cursor.execute(sql,(cod_poliza,)) 
                 R = cursor.fetchone()
@@ -3318,7 +3316,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
 def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, anio, tipo_siniestro=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 
                 base_query_parts = {
                     'carta_aval': """
@@ -3437,7 +3435,7 @@ def obtener_registros_por_mes_poliza(ano, mes):
 def obtener_polizas_filtradas(ano=None, mes=None, rango_inicio=None, rango_fin=None, estados=None, compania_id=None, ejecutivo_id=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 querySQL = """
                     SELECT
                         p.cod_poliza,
@@ -3582,7 +3580,7 @@ def obtener_polizas_filtradas(ano=None, mes=None, rango_inicio=None, rango_fin=N
 def obtener_comisiones_filtradas(start, end, ejecutivo):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 if not start and not ejecutivo:
                     querySQL = ("""
                         SELECT
@@ -3734,7 +3732,7 @@ def obtener_comisiones_filtradas(start, end, ejecutivo):
 def empleadosReporte():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                         e.id_empleado,
@@ -3764,7 +3762,7 @@ def empleadosReporte():
 def sql_lista_antiguos_contratos(cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT
                         p.cod_poliza,
@@ -3853,7 +3851,7 @@ def generarReporteExcel():
 def buscarEmpleadoBD(search):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 querySQL = ("""
                         SELECT 
                             e.id_empleado,
@@ -3880,7 +3878,7 @@ def buscarEmpleadoBD(search):
 def buscarPolizaBD(search,filtro):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 if filtro == 'Cod':
                     querySQL = ("""
                             SELECT
@@ -3967,7 +3965,7 @@ def buscarPolizaBD(search,filtro):
 def buscarAseguradoBD(search,filtro):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 querySQL = ("""
                     SELECT 
                         a.CI,
@@ -3997,7 +3995,7 @@ def buscarAseguradoBD(search,filtro):
 def buscarEmpleadoUnico(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 querySQL = ("""
                         SELECT 
                             e.id_empleado,
@@ -4024,7 +4022,7 @@ def buscarEmpleadoUnico(id):
 def procesar_actualizacion_form(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 nombre_empleado = data.form['nombre_empleado']
                 apellido_empleado = data.form['apellido_empleado']
                 sexo_empleado = data.form['sexo_empleado']
@@ -4086,7 +4084,7 @@ def procesar_actualizacion_form(data):
 def procesar_actualizacion_form_asegurado(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 nombre_empleado = data.form['nombre_asegurado']
                 apellido_empleado = data.form['apellido_asegurado']
                 nombre2 = data.form['nombre2_asegurado']
@@ -4138,7 +4136,7 @@ def procesar_actualizacion_form_asegurado(data):
 def actualizar_riesgo_asegurado(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 ci = data.get('ci')
                 profesion = data.get('profesion')
                 localidad = data.get('localidad')
@@ -4173,7 +4171,7 @@ def actualizar_riesgo_asegurado(data):
 def procesar_actualizacion_form_company(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 nombre = data.form['nombre_Company']
                 rif = data.form['Rif']
                 cod = data.form['cod']
@@ -4203,7 +4201,7 @@ def procesar_actualizacion_form_company(data):
 def procesar_actualizacion_form_reembolso(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:  
+            with conexion_MySQLdb.cursor() as cursor:  
                 cod_reembolso = data.form['cod_reembolso']
                 cod_reembolso = int(cod_reembolso)  
 
@@ -4277,7 +4275,7 @@ def procesar_actualizacion_form_reembolso(data):
 def procesar_actualizacion_form_CartaAval(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor: 
+            with conexion_MySQLdb.cursor() as cursor: 
                 print("inicio")
                 cod_carta_aval = data.form['Cod_CartaAval']
                 cod_carta_aval = int(cod_carta_aval) 
@@ -4364,7 +4362,7 @@ def procesar_actualizacion_form_CartaAval(data):
 def procesar_actualizacion_form_SiniestroAuto(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor: 
+            with conexion_MySQLdb.cursor() as cursor: 
                 print(data.form)
                 cod_siniestro = data.form['Cod_siniestroA']
                 print("Cod_siniestro:", cod_siniestro)
@@ -4425,7 +4423,7 @@ def procesar_actualizacion_form_SiniestroAuto(data):
 def procesar_actualizacion_form_ejecutivo(data):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 nombre = data.form['nombre_ejecutivo']
                 nombre2 = data.form['nombre2_ejecutivo']
                 apellido = data.form['apellido_ejecutivo']
@@ -4493,7 +4491,7 @@ def procesar_actualizacion_poliza_persona(dataForm, cod_poliza):
 
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Capturar datos del formulario
                 nuevo_cod_poliza = dataForm.get('cod_poliza')
                 frecuencia_form = dataForm.get('frecuencia')
@@ -4587,7 +4585,7 @@ def procesar_actualizacion_poliza_persona(dataForm, cod_poliza):
 def procesar_actualizacion_poliza_auto(form_data, cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Capturar datos del formulario
                 nuevo_cod_poliza = form_data.get('cod_poliza')
                 frecuencia_form = form_data.get('frecuencia')
@@ -4676,7 +4674,7 @@ def procesar_actualizacion_poliza_auto(form_data, cod_poliza):
 def procesar_actualizacion_poliza_patrimonial(dataForm, cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Capturar datos del formulario
                 nuevo_cod_poliza = dataForm.get('cod_poliza')
                 tomador_form = dataForm.get('tomador_poliza')
@@ -4751,7 +4749,7 @@ def procesar_actualizacion_poliza_patrimonial(dataForm, cod_poliza):
 def procesar_actualizacion_poliza_viaje(dataForm, cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Capturar datos del formulario
                 nuevo_cod_poliza = dataForm.get('cod_poliza')
                 frecuencia_form = dataForm.get('frecuencia')
@@ -4834,7 +4832,7 @@ def procesar_actualizacion_poliza_viaje(dataForm, cod_poliza):
 def procesar_actualizacion_poliza_fianza(dataForm, cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Capturar datos del formulario
                 nuevo_cod_poliza = dataForm.get('cod_poliza')
                 frecuencia_form = dataForm.get('frecuencia')
@@ -4919,7 +4917,7 @@ def procesar_actualizacion_poliza_fianza(dataForm, cod_poliza):
 def lista_usuariosBD():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT id, name_surname, email_user, created_user,permisos FROM users"
                 cursor.execute(querySQL,)
                 usuariosBD = cursor.fetchall()
@@ -4948,7 +4946,7 @@ def get_grace_days(company_name):
 def lista_Pagos(cod):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columnas nuevas en comision antes de referenciarlas
                 for col_name, col_type in [("monto_pago", "FLOAT"), ("bono", "FLOAT")]:
                     try:
@@ -4984,7 +4982,7 @@ def lista_Pagos(cod):
 def cobranza():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columnas nuevas en comision antes de referenciarlas
                 for col_name, col_type in [("monto_pago", "FLOAT"), ("bono", "FLOAT")]:
                     try:
@@ -5034,7 +5032,7 @@ def cobranza():
 def pago_prima(cod):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT r.Frecuencia, r.Prima , r.comision, r.Cod_poliza,p.ramo,c.Nombre as compania FROM renovacion r join poliza p on r.cod_poliza=p.cod_poliza join compania c on p.Cod_compania=c.Cod_compania where r.Cod_renovacion = %s limit 1 "
                 cursor.execute(querySQL, (cod,))
 
@@ -5055,7 +5053,7 @@ def pago_prima(cod):
 def cod_poliza_F(cod):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT p.cod_poliza, r.comision,a.Ejecutivo from renovacion r join poliza p on p.Cod_poliza = r.cod_poliza join asegurado a on p.CI_asegurado=a.CI where Cod_renovacion=%s limit 1"
                 cursor.execute(querySQL, (cod,))
                 cod_poliza = cursor.fetchone()
@@ -5067,7 +5065,7 @@ def cod_poliza_F(cod):
 def cod_poliza_P(cod):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT p.Cod_pago , e.cod_poliza FROM pago p INNER JOIN renovacion e ON p.Cod_renovacion = e.Cod_renovacion WHERE p.Cod_pago=%s"
                 cursor.execute(querySQL, (cod,))
                 cod_poliza = cursor.fetchall()
@@ -5079,7 +5077,7 @@ def cod_poliza_P(cod):
 def lista_contrato(cod,a):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 if a==0:
                     querySQL = "SELECT r.Cod_renovacion, r.cod_poliza, r.Frecuencia,r.Fecha_vencimiento, c.Nombre as compania from renovacion r inner join poliza p on p.cod_poliza = r.Cod_poliza left join compania c on p.Cod_compania = c.Cod_compania where r.cod_poliza=%s order by r.Fecha_contrato desc, r.Cod_renovacion desc"
                     cursor.execute(querySQL, (cod,))
@@ -5099,7 +5097,7 @@ def lista_contrato(cod,a):
 def eliminarEmpleado(id_empleado, foto_empleado):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM tbl_empleados WHERE id_empleado=%s"
                 cursor.execute(querySQL, (id_empleado,))
                 conexion_MySQLdb.commit()
@@ -5124,7 +5122,7 @@ def eliminarEmpleado(id_empleado, foto_empleado):
 def eliminarUsuario(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("SELECT email_user FROM users WHERE id = %s", (id,))
                 user_data = cursor.fetchone()
 
@@ -5148,7 +5146,7 @@ def eliminarUsuario(id):
 def eliminarCompania(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM compania WHERE Cod_compania=%s"
                 cursor.execute(querySQL, (id,))
                 conexion_MySQLdb.commit()
@@ -5162,7 +5160,7 @@ def eliminarCompania(id):
 def eliminarAsegurado(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM asegurado WHERE CI=%s"
                 cursor.execute(querySQL, (id,))
                 conexion_MySQLdb.commit()
@@ -5176,7 +5174,7 @@ def eliminarAsegurado(id):
 def editarAsegurado(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM asegurado WHERE CI=%s"
                 cursor.execute(querySQL, (id,))
                 conexion_MySQLdb.commit()
@@ -5190,7 +5188,7 @@ def editarAsegurado(id):
 def eliminarEjecutivo(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM ejecutivo WHERE cod_ejecutivo=%s"
                 cursor.execute(querySQL, (id,))
                 conexion_MySQLdb.commit()
@@ -5205,7 +5203,7 @@ def eliminarEjecutivo(id):
 def eliminarPago(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "DELETE FROM pago WHERE Cod_pago=%s"
                 cursor.execute(querySQL, (id,))
                 conexion_MySQLdb.commit()
@@ -5220,7 +5218,7 @@ def eliminarPago(id):
 def revertirPago(id_pago):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     UPDATE pago 
                     SET estado = 'EN PROCESO', 
@@ -5241,8 +5239,8 @@ def revertirPago(id_pago):
 def eliminarPoliza(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-                cursor2 = conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            with conexion_MySQLdb.cursor() as cursor:
+                cursor2 = conexion_MySQLdb.cursor()
                 querySQL = "DELETE FROM poliza WHERE cod_poliza=%s"
                 sql = "SELECT Ramo FROM poliza WHERE cod_poliza=%s"
                 cursor2.execute(sql, (id,))
@@ -5273,7 +5271,7 @@ def eliminarPoliza(id):
 def eliminarBeneficiario(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 print("holi")
                 querySQL = "DELETE FROM beneficiario WHERE cod_poliza=%s"
                 cursor.execute(querySQL, (id,))
@@ -5288,7 +5286,7 @@ def eliminarBeneficiario(id):
 def sql_lista_company():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT
                          e.Cod_compania,
@@ -5308,7 +5306,7 @@ def sql_lista_company():
 def sql_lista_companyU(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT
                          e.Cod_compania,
@@ -5329,7 +5327,7 @@ def sql_lista_companyU(id):
 def sql_lista_asegurado(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                         a.CI,
@@ -5360,7 +5358,7 @@ def sql_lista_asegurado(id):
 def sql_lista_ejecutivo():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT 
                          e.Nombre,
@@ -5379,7 +5377,7 @@ def sql_lista_ejecutivo():
 def sql_lista_ejecutivoU(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT 
                          *
@@ -5398,7 +5396,7 @@ def sql_lista_ejecutivoU(id):
 def lista_ejecutivosBD():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                     SELECT 
                          *
@@ -5416,7 +5414,7 @@ def lista_ejecutivosBD():
 def sql_lista_comisiones():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
                      SELECT
                         p.Ramo,
@@ -5510,7 +5508,7 @@ def sql_lista_comisiones():
 def obtener_pagos_filtrados(pago, comision, mes=None, asegurado_id=None, ano=None, ejecutivo_id=None, fecha_inicio=None, fecha_fin=None, estado_filtro=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 sub_query_proximo = """
                     NOT EXISTS (
                         SELECT 1 FROM pago p2 
@@ -5588,7 +5586,7 @@ def obtener_pagos_filtrados(pago, comision, mes=None, asegurado_id=None, ano=Non
 def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None, estado_filtro=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 # Asegurar columnas nuevas en comision antes de referenciarlas
                 for col_name, col_type in [("monto_pago", "FLOAT"), ("bono", "FLOAT")]:
                     try:
@@ -5710,7 +5708,7 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
 def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None, anio=None, fecha_inicio=None, fecha_fin=None, estados=None, compania_id=None, ejecutivo_id=None, search_value=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 # Subconsulta para Tiene_pago
                 tiene_pago_sql = "(SELECT COUNT(*) FROM pago pay2 WHERE pay2.Cod_renovacion = r.Cod_renovacion) > 0"
                 
@@ -5853,7 +5851,7 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
 def obtener_comisiones_datatable(start, length, minDateStr=None, maxDateStr=None, ejecutivo_id=None):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 base_joins = """
                     FROM pago pag
                     JOIN renovacion cr ON pag.Cod_renovacion = cr.cod_renovacion
@@ -6006,7 +6004,7 @@ def obtener_comisiones_datatable(start, length, minDateStr=None, maxDateStr=None
 def sql_lista_asegurados_para_filtro():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT CI, Nombre, Apellido FROM asegurado ORDER BY Nombre, Apellido"
                 cursor.execute(querySQL)
                 asegurados = cursor.fetchall()
@@ -6019,7 +6017,7 @@ def sql_lista_asegurados_para_filtro():
 def obtener_proyeccion_cobranza(year):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     SELECT MONTH(fecha) as mes, SUM(monto) as total
                     FROM pago
@@ -6053,7 +6051,7 @@ def obtener_proyeccion_cobranza(year):
 def NotaCartaAval(titulo, observaciones, id,cod,tipo,fecha):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 if tipo == 1:
                     querySQL = "insert into nota_cartaAval (Cod_CartaAval,Observaciones,titulo,fecha) values (%s,%s,%s,%s) RETURNING idnota_cartaAval"
                 elif tipo == 2:
@@ -6075,7 +6073,7 @@ def NotaCartaAval(titulo, observaciones, id,cod,tipo,fecha):
 def validarDataRegisterLogin1(name_surname, email_user, pass_user):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = "SELECT * FROM users WHERE email_user = %s"
                 cursor.execute(querySQL, (email_user,))
                 userBD = cursor.fetchone()  # Obtener la primera fila de resultados
@@ -6116,7 +6114,7 @@ def recibeInsertRegisterUser1(name_surname, email_user, pass_user, permisos):
     nueva_password = generate_password_hash(pass_user, method='scrypt')
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as mycursor:
+            with conexion_MySQLdb.cursor() as mycursor:
                 # 1. Verificar si el usuario ya existe en la tabla 'users'
                 print("prueba1")
                 sql_check_app_user = "SELECT COUNT(*) AS count FROM users WHERE email_user = %s"
@@ -6192,7 +6190,7 @@ def cargar_riesgo(cod_renovacion):
         print(f"--> [DEBUG] Iniciando carga_riesgo_logica para póliza: {cod_renovacion}")
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
 
                 sql = """
                     SELECT
@@ -6844,7 +6842,7 @@ def generar_recibo_pdf_ejecutivo(comisiones, rangoFechas=None, ejecutivo_nombre=
 def obtener_filtros_dashboard():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Obtener Compañías
                 cursor.execute("SELECT Cod_compania, Nombre FROM compania ORDER BY Nombre")
                 companias = cursor.fetchall()
@@ -6886,7 +6884,7 @@ def obtener_datos_dashboard(filtros):
     """
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
 
                 # ── Construcción dinámica de filtros ────────────────────────────
                 ano_actual_f = int(filtros.get('ano') or datetime.datetime.now().year)
@@ -7480,7 +7478,7 @@ def generar_excel_comisiones(comisiones, rangoFechas=None, ejecutivo=None):
 def sql_lista_riesgos():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT
                         r.Cod_renovacion,
@@ -7518,7 +7516,7 @@ def sql_lista_riesgos():
 def anular_poliza_db(cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     UPDATE renovacion
                     SET estado = 'anulada'
@@ -7543,7 +7541,7 @@ def anular_poliza_db(cod_poliza):
 def traspasar_poliza_db(cod_poliza):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     UPDATE renovacion
                     SET estado = 'traspasada'
@@ -7568,7 +7566,7 @@ def traspasar_poliza_db(cod_poliza):
 def obtener_pagos_para_comisiones():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     SELECT 
                         TO_CHAR(p.fecha_pagada, 'YYYY-MM-DD') AS "FECHA COBRO RECIBO",
@@ -7604,7 +7602,7 @@ def obtener_comisiones_pagadas():
     """
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     SELECT 
                         TO_CHAR(p.fecha_pagada, 'YYYY-MM-DD') AS "FECHA COBRO RECIBO",
@@ -7650,7 +7648,7 @@ def asignar_comisiones_faltantes():
     failed_renovations = [] # Lista para almacenar los cod_renovacion que fallaron
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Obtener todas las renovaciones donde la comisión es NULL o 0
                 sql_get_missing = "SELECT Cod_renovacion FROM renovacion WHERE comision IS NULL OR comision = 0"
                 cursor.execute(sql_get_missing)
@@ -7722,7 +7720,7 @@ def crear_bloque_comision(data):
             return {'success': False, 'message': 'Faltan datos para crear el bloque.'}
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columna codigo_banco
                 try:
                     cursor.execute("ALTER TABLE bloque_pago_comision ADD COLUMN codigo_banco VARCHAR(50) DEFAULT NULL")
@@ -7748,7 +7746,7 @@ def obtener_bloques_comision():
     """
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Obtenemos los bloques y calculamos un total aproximado sumando las comisiones asociadas
                 sql = """
                     SELECT 
@@ -7784,7 +7782,7 @@ def insertar_poliza_pendiente(data):
             return default
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Normalizing keys early to check existence
                 nro_poliza = get_val(data, ['NRO. POLIZA', 'nro_poliza', 'poliza', 'Póliza'])
                 
@@ -7860,7 +7858,7 @@ def insertar_poliza_pendiente(data):
 def obtener_polizas_pendientes():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("SELECT * FROM polizas_pendientes WHERE estado = 'PENDIENTE' ORDER BY fecha_registro DESC")
                 return cursor.fetchall()
     except Exception as e:
@@ -7870,7 +7868,7 @@ def obtener_polizas_pendientes():
 def obtener_conteo_polizas_pendientes():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("SELECT COUNT(*) as total FROM polizas_pendientes WHERE estado = 'PENDIENTE'")
                 resultado = cursor.fetchone()
                 return resultado['total'] if resultado else 0
@@ -7881,7 +7879,7 @@ def obtener_conteo_polizas_pendientes():
 def eliminar_poliza_pendiente(id_pendiente):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("DELETE FROM polizas_pendientes WHERE id = %s", (id_pendiente,))
                 conexion_MySQLdb.commit()
                 return True
@@ -7892,7 +7890,7 @@ def eliminar_poliza_pendiente(id_pendiente):
 def obtener_detalle_poliza_pendiente(id_pendiente):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 cursor.execute("SELECT * FROM polizas_pendientes WHERE id = %s", (id_pendiente,))
                 return cursor.fetchone()
     except Exception as e:
@@ -7902,7 +7900,7 @@ def obtener_detalle_poliza_pendiente(id_pendiente):
 def sql_reporte_sudaseg(mes, ano):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     SELECT 
                         'COMISIÓN' AS descripcion,
@@ -7964,7 +7962,7 @@ def procesar_comision_cobrada(data):
 
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columnas (Auto-healing avanzado)
                 columnas = [
                     ("moneda", "VARCHAR(10)"),
@@ -8069,7 +8067,7 @@ def actualizar_comision_cobrada(data):
             tasa = None
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Obtener Cod_renovacion desde Cod_pago
                 sql_get_renovacion = "SELECT Cod_renovacion FROM pago WHERE Cod_pago = %s"
                 cursor.execute(sql_get_renovacion, (cod_pago,))
@@ -8107,7 +8105,7 @@ def actualizar_comision_cobrada(data):
 def sql_get_all_comisiones_config():
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
                     SELECT 
                         c.*, 
@@ -8142,7 +8140,7 @@ def sql_add_comision_config(data):
             return None # Or raise a more specific error
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql = """
                     INSERT INTO comisiones_config 
                     (compania, ramo, subramo, producto, tipo_ejecutivo, porcentajes, cod_ejecutivo) 
@@ -8171,7 +8169,7 @@ def sql_update_comision_config(id, data):
             return None # Or raise a more specific error
 
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql = """
                     UPDATE comisiones_config 
                     SET compania=%s, ramo=%s, subramo=%s, producto=%s, tipo_ejecutivo=%s, porcentajes=%s, cod_ejecutivo=%s 
@@ -8194,7 +8192,7 @@ def sql_update_comision_config(id, data):
 def sql_delete_comision_config(id):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 sql = "DELETE FROM comisiones_config WHERE id=%s"
                 cursor.execute(sql, (id,))
                 conexion_MySQLdb.commit()
@@ -8248,7 +8246,7 @@ def generar_plantilla_excel(tipo):
 def obtener_detalles_bloque(id_bloque):
     try:
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 # Recuperar detalles de la tabla comision + joins para data extra
                 # NOTA: Usamos COALESCE para intentar sacar la póliza y asegurado tanto 
                 # por el vínculo directo (cod_poliza de la tabla comision) como por el vínculo histórico (vía Cod_pago)
@@ -8299,7 +8297,7 @@ def procesar_registro_desde_pendiente(dataForm):
     try:
         id_pendiente = dataForm.get('id_pendiente')
         with connectionBD() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conn.cursor() as cursor:
                 # 0. Recuperar detalle pendiente
                 cursor.execute("SELECT * FROM polizas_pendientes WHERE id = %s", (id_pendiente,))
                 detalle = cursor.fetchone()
@@ -8462,7 +8460,7 @@ def procesar_siniestros_excel(file):
         data = {}
         
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 for sheet_name in sheets:
                     # check case-insensitive match using "in" to allow variations like "Reembolsos"
                     is_match = any(target.lower() in sheet_name.lower() for target in target_sheets)
@@ -8724,7 +8722,7 @@ def guardar_siniestros_batch(siniestros_data):
         errors = []
         
         with connectionBD() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            with conexion_MySQLdb.cursor() as cursor:
                 print(f"DEBUG: siniestros_data keys: {list(siniestros_data.keys())}")
                 for sheet_name, rows in siniestros_data.items():
                     target_table = None

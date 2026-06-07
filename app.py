@@ -11,7 +11,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 
 @app.route('/init-db')
 def init_db():
-    import psycopg2
+    import pg8000.dbapi
     from urllib.parse import urlparse
 
     SCHEMA = """
@@ -205,11 +205,25 @@ def init_db():
     """
 
     try:
+        import pg8000.dbapi, ssl
+        from urllib.parse import urlparse
+
         database_url = os.environ.get('DATABASE_URL', '')
         if database_url.startswith('postgres://'):
             database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        parsed = urlparse(database_url)
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
 
-        conn = psycopg2.connect(database_url)
+        conn = pg8000.dbapi.connect(
+            host=parsed.hostname,
+            user=parsed.username,
+            password=parsed.password,
+            database=parsed.path.lstrip('/'),
+            port=parsed.port or 5432,
+            ssl_context=ssl_ctx
+        )
         conn.autocommit = True
         cursor = conn.cursor()
 
