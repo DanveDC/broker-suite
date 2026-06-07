@@ -1,0 +1,66 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Crud - Python 🐍 | Lista de compañias{% endblock %}
+<!---->
+{% block body %}
+
+{% if (companys) %}
+
+<div class="card content_consignaciones" style="border-radius: 0px !important">
+  <section id="respuestaFiltroMes">
+    <h2 class="text-center mt-5 mb-5">
+      Lista de compañias
+    </h2>
+    <div class="row justify-content-center mb-2">
+      <div class="table-responsive text-nowrap table-hover">
+        <table table-hover id="companys" class="table table-striped table-bordered" cellspacing="0" width="100%">
+          <thead>
+            <tr>
+              <th>Cod</th>
+              <th>Nombre</th>
+              <th>Rif</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for company in companys %}
+            <tr id="company{{ company.Cod_compania }}">
+              <td>{{ company.Cod_compania }}</td>
+              <td>{{ company.Nombre }}</td>
+              <td>{{ company.rif }}</td>
+              <td width="10px">
+                <a href="{{ url_for('EditarCompany', id = company.Cod_compania) }}" class="btn btn-success btn-sm"
+                  tooltip="Actualizar Registro">
+                  <i class="bi bi-arrow-clockwise"></i>
+                  editar
+                </a>
+                <a href="#" onclick="eliminarCompania('{{ company.Cod_compania }}');" class="btn btn-danger btn-sm"
+                  data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
+                  title="<span>Eliminar poliza </span>">
+                  <i class="bi bi-trash3"></i>
+                  Eliminar
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+  </section>
+</div>
+{% else %}
+<div class="container mt-3">
+  <div class="card">
+    <div class="card-header border-bottom">
+      <h3 class="card-title text-center fw-bold mb-0">LISTA DE COMPAÑIAS</h3>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!--Fin del Block-->
+{% endblock %}
+
+<!--Script Custom-->
+{% block customJS %}
+
+{% endblock %}

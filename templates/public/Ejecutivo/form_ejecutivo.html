@@ -1,0 +1,124 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %} Registrar company {% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+
+
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-12">
+            <h3 class="text-center mt-5 mb-3">REGISTRAR EJECUTIVO</h3>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-10">
+            <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-ejecutivo"
+                autocomplete="off" enctype="multipart/form-data">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="CI" class="form-label">CI</label>
+                            <input type="number" name="CI" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Nombre" class="form-label">Nombre</label>
+                            <input type="text" name="Nombre" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Nombre2" class="form-label">Segundo Nombre</label>
+                            <input type="text" name="Nombre2" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Apellido" class="form-label">Apellido</label>
+                            <input type="text" name="Apellido" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Apellido2" class="form-label">Segundo Apellido</label>
+                            <input type="text" name="Apellido2" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Correo" class="form-label">Correo</label>
+                            <input type="email" name="Correo" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Telefono" class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <select class="form-select select2-search select2-small" name="area_code"
+                                    data-placeholder="---">
+                                    <option value="424">424</option>
+                                    <option value="414">414</option>
+                                    <option value="212">212</option>
+                                    <option value="416">416</option>
+                                    <option value="426">426</option>
+                                    <option value="412">412</option>
+                                </select>
+                                <input type="text" name="Telefono" class="form-control" placeholder="Solo 7 digitos"
+                                    required pattern="\d{7}" title="Debe ingresar 7 dígitos numéricos."
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Tipo" class="form-label">Tipo</label>
+                            <select id="TipoS" class="form-select select2-search" name="Tipo"
+                                data-placeholder="Seleccione">
+                                <option value=""></option>
+                                <option value="Agente">Agente</option>
+                                <option value="Intermedio">Intermedio</option>
+                                <option value="Referidor">Referidor</option>
+                                <option value="Personalizado">Personalizado</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+
+                    <div class="mb-3 mt-4 text-center">
+                        <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+                            Guardar registro ahora
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <div id="spinner" style="display: none;">Cargando...</div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+
+<script>
+    const boton1 = document.getElementById('miBoton');
+    const formulario = document.getElementById('formulario'); // Reemplaza 'tuFormulario' con el ID real de tu formulario
+
+
+    formulario.addEventListener('submit', function () {
+        boton1.disabled = true;
+        boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+
+    });
+
+</script>
+
+
+
+
+
+
+
+{% endblock %}

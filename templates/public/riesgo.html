@@ -1,0 +1,595 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Gestión de Riesgos {% endblock %}
+
+{% block customCSS %}
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ url_for('inicio1') }}" class="text-secondary me-2">
+                    <i class="bi bi-arrow-left-circle"></i>
+                </a>
+                GESTIÓN DE RIESGOS
+            </div>
+            <button class="btn btn-outline-info btn-sm rounded-pill fw-bold" data-bs-toggle="modal"
+                data-bs-target="#riskMatrixModal">
+                <i class="bi bi-info-circle me-1"></i> Matriz de Riesgo
+            </button>
+        </h3>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="table-responsive text-nowrap table-hover">
+            <table id="riesgosTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Asegurado</th>
+                        <th>Ramo</th>
+                        <th>Prima</th>
+                        <th>Método de Pago</th>
+                        <th>Profesión</th>
+                        <th>Localidad</th>
+                        <th>Canal</th>
+                        <th>Tipo CI</th>
+                        <th>Nivel de Riesgo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for riesgo_item in riesgos %}
+                    <tr>
+                        <td>{{ riesgo_item.Nombre }} {{ riesgo_item.Apellido }}</td>
+                        <td>
+                            {{ riesgo_item.Ramo or 'N/A' }}
+                            {% if riesgo_item.Ramo %}
+                            {% if riesgo_item.Ramo|lower == 'patrimonio' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.4</span>
+                            {% elif riesgo_item.Ramo|lower == 'fianza' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.6</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.2</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ "%.2f"|format(riesgo_item.Prima|float) if riesgo_item.Prima is not none else 'N/A' }}
+                            {% if riesgo_item.Prima is not none %}
+                            {% set prima_val = riesgo_item.Prima|float %}
+                            {% if prima_val < 5000 %} <span class="badge rounded-pill bg-light text-dark ms-1">
+                                +0.15</span>
+                                {% elif prima_val < 12000 %} <span class="badge rounded-pill bg-light text-dark ms-1">
+                                    +0.30</span>
+                                    {% else %}
+                                    <span class="badge rounded-pill bg-light text-dark ms-1">+0.45</span>
+                                    {% endif %}
+                                    {% endif %}
+                        </td>
+                        <td>
+                            {{ riesgo_item.Metodo_pago or 'N/A' }}
+                            {% if riesgo_item.Metodo_pago %}
+                            {% set metodo = riesgo_item.Metodo_pago|lower %}
+                            {% if metodo == 'transferencia' or metodo == 'pago movil' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.1</span>
+                            {% elif metodo == 'efectivo' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.2</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.3</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ riesgo_item.profesion or 'N/A' }}
+                            {% if riesgo_item.profesion %}
+                            {% if riesgo_item.profesion == 'BR' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.25</span>
+                            {% elif riesgo_item.profesion == 'MR' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.5</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.75</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ riesgo_item.localidad or 'N/A' }}
+                            {% if riesgo_item.localidad %}
+                            {% set localidad = riesgo_item.localidad|lower %}
+                            {% set estados_alto_riesgo = ["amazonas", "apure", "barinas", "bolívar", "delta amacuro",
+                            "falcón", "mérida", "táchira", "zulia"] %}
+                            {% set estados_bajo_riesgo = ["distrito capital", "carabobo", "aragua", "la guaira",
+                            "miranda"] %}
+                            {% if localidad in estados_bajo_riesgo %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.1</span>
+                            {% elif localidad in estados_alto_riesgo %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.3</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.2</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ riesgo_item.canal or 'N/A' }}
+                            {% if riesgo_item.canal %}
+                            {% set canal = riesgo_item.canal|lower %}
+                            {% if canal == 'cara a cara' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.1</span>
+                            {% elif canal == 'internet' or canal == 'correos con dominios privados' %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.2</span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-light text-dark ms-1">+0.3</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ riesgo_item.Tipo_CI or 'N/A' }}
+                            {% if riesgo_item.Tipo_CI == 'V' %}<span
+                                class="badge rounded-pill bg-light text-dark ms-1">+0.1</span>
+                            {% elif riesgo_item.Tipo_CI == 'J' %}<span
+                                class="badge rounded-pill bg-light text-dark ms-1">+0.2</span>
+                            {% elif riesgo_item.Tipo_CI %}<span
+                                class="badge rounded-pill bg-light text-dark ms-1">+0.3</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if riesgo_item.riesgo is not none %}
+                            {% set riesgo_val = riesgo_item.riesgo|float %}
+                            {% if riesgo_val >= 1.00 and riesgo_val <= 1.60 %} <span class="badge bg-success">Bajo ({{
+                                riesgo_val }})</span>
+                                {% elif riesgo_val >= 1.61 and riesgo_val <= 2.20 %} <span
+                                    class="badge bg-warning text-dark">Medio ({{ riesgo_val }})</span>
+                                    {% elif riesgo_val >= 2.21 and riesgo_val <= 3.00 %} <span class="badge bg-danger">
+                                        Alto ({{ riesgo_val }})</span>
+                                        {% else %}
+                                        <span class="badge bg-info text-dark">Fuera de Rango ({{ riesgo_val }})</span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-secondary">No Calculado</span>
+                                        {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary edit-riesgo-btn"
+                                data-bs-toggle="modal" data-bs-target="#editRiesgoModal" data-ci="{{ riesgo_item.CI }}"
+                                data-asegurado="{{ riesgo_item.Nombre }} {{ riesgo_item.Apellido }}"
+                                data-ramo="{{ riesgo_item.Ramo or 'N/A' }}" data-prima="{{ "
+                                %.2f"|format(riesgo_item.Prima|float) if riesgo_item.Prima is not none else 'N/A' }}"
+                                data-metodo-pago="{{ riesgo_item.Metodo_pago or 'N/A' }}"
+                                data-profesion="{{ riesgo_item.profesion or '' }}"
+                                data-localidad="{{ riesgo_item.localidad or '' }}"
+                                data-canal="{{ riesgo_item.canal or '' }}"
+                                data-tipo-ci="{{ riesgo_item.Tipo_CI or 'N/A' }}" title="Editar Asegurado">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Recalcular Riesgo"
+                                onclick="recalcularRiesgoPoliza('{{ riesgo_item.Cod_renovacion }}', this)">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Matrix Modal -->
+<div class="modal fade" id="riskMatrixModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
+            <div class="modal-header bg-gradient-primary text-white border-bottom-0"
+                style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                <h5 class="modal-title fw-bold text-white"><i class="bi bi-calculator me-2"></i>Matriz de Cálculo de
+                    Riesgo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 bg-light">
+                <div class="row g-0">
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" style="font-size: 0.9rem;">
+                                <thead class="bg-white text-uppercase" style="letter-spacing: 0.5px;">
+                                    <tr>
+                                        <th class="ps-4 text-secondary">Factor</th>
+                                        <th class="text-secondary">Condición</th>
+                                        <th class="text-center text-secondary">Incremento</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                    <!-- Tipo CI -->
+                                    <tr>
+                                        <td class="ps-4 fw-bold align-middle text-primary">Tipo Persona</td>
+                                        <td>
+                                            <div class="mb-1">Venezolano (V)</div>
+                                            <div class="mb-1">Jurídico (J)</div>
+                                            <div>Otros (E, G, P)</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.10</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.20</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.30</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Profesion -->
+                                    <tr class="bg-light">
+                                        <td class="ps-4 fw-bold align-middle text-primary">Profesión</td>
+                                        <td>
+                                            <div class="mb-1">Bajo Riesgo (BR)</div>
+                                            <div class="mb-1">Medio Riesgo (MR)</div>
+                                            <div>Alto Riesgo / Otros</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.25</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.50</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.75</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Prima -->
+                                    <tr>
+                                        <td class="ps-4 fw-bold align-middle text-primary">Prima Anual</td>
+                                        <td>
+                                            <div class="mb-1">Menor a $5,000</div>
+                                            <div class="mb-1">$5,000 - $12,000</div>
+                                            <div>Mayor a $12,000</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.15</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.30</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.45</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Canal -->
+                                    <tr class="bg-light">
+                                        <td class="ps-4 fw-bold align-middle text-primary">Canal de Venta</td>
+                                        <td>
+                                            <div class="mb-1">Cara a cara</div>
+                                            <div class="mb-1">Internet / Dominios Privados</div>
+                                            <div>Otros</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.10</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.20</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.30</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Metodo -->
+                                    <tr>
+                                        <td class="ps-4 fw-bold align-middle text-primary">Método de Pago</td>
+                                        <td>
+                                            <div class="mb-1">Transferencia / Pago Móvil</div>
+                                            <div class="mb-1">Efectivo</div>
+                                            <div>Otros</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.10</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.20</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.30</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Localidad -->
+                                    <tr class="bg-light">
+                                        <td class="ps-4 fw-bold align-middle text-primary">Ubicación</td>
+                                        <td>
+                                            <div class="mb-1">Capital y Central (CCS, Carabobo, etc)</div>
+                                            <div class="mb-1">Resto del País</div>
+                                            <div>Alto Riesgo (Fronteras, Zulia, etc)</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.10</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.20</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.30</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Ramo -->
+                                    <tr>
+                                        <td class="ps-4 fw-bold align-middle text-primary">Ramo</td>
+                                        <td>
+                                            <div class="mb-1">General (Auto, Salud, etc)</div>
+                                            <div class="mb-1">Patrimonio</div>
+                                            <div>Fianza</div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="mb-1"><span
+                                                    class="badge bg-success-subtle text-success border border-success px-2">+0.20</span>
+                                            </div>
+                                            <div class="mb-1"><span
+                                                    class="badge bg-warning-subtle text-warning border border-warning px-2">+0.40</span>
+                                            </div>
+                                            <div><span
+                                                    class="badge bg-danger-subtle text-danger border border-danger px-2">+0.60</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top-0 py-2">
+                <small class="text-muted me-auto fst-italic"><i class="bi bi-info-circle me-1"></i>Los valores se suman
+                    al riesgo base de 0.</small>
+                <button type="button" class="btn btn-primary rounded-pill px-4"
+                    data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editRiesgoModal" tabindex="-1" aria-labelledby="editRiesgoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRiesgoModalLabel">Editar Datos del Asegurado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editRiesgoForm">
+                    <input type="hidden" id="edit-ci" name="ci">
+                    <div class="mb-3">
+                        <label for="edit-asegurado" class="form-label">Asegurado</label>
+                        <input type="text" class="form-control" id="edit-asegurado" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-ramo" class="form-label">Ramo</label>
+                        <input type="text" class="form-control" id="edit-ramo" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-prima" class="form-label">Prima</label>
+                        <input type="text" class="form-control" id="edit-prima" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-metodo-pago" class="form-label">Método de Pago</label>
+                        <input type="text" class="form-control" id="edit-metodo-pago" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-tipo-ci" class="form-label">Tipo CI</label>
+                        <input type="text" class="form-control" id="edit-tipo-ci" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-profesion" class="form-label">Profesión</label>
+                        <select class="form-select" id="edit-profesion" name="profesion">
+                            <option value="BR">Bajo Riesgo</option>
+                            <option value="MR">Medio Riesgo</option>
+                            <option value="AR">Alto Riesgo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-localidad" class="form-label">Localidad</label>
+                        <select class="form-select" id="edit-localidad" name="localidad">
+                            <option value="Amazonas">Amazonas</option>
+                            <option value="Anzoátegui">Anzoátegui</option>
+                            <option value="Apure">Apure</option>
+                            <option value="Aragua">Aragua</option>
+                            <option value="Barinas">Barinas</option>
+                            <option value="Bolívar">Bolívar</option>
+                            <option value="Carabobo">Carabobo</option>
+                            <option value="Cojedes">Cojedes</option>
+                            <option value="Delta Amacuro">Delta Amacuro</option>
+                            <option value="Dependencias Federales">Dependencias Federales</option>
+                            <option value="Distrito Capital">Distrito Capital</option>
+                            <option value="Falcón">Falcón</option>
+                            <option value="Guárico">Guárico</option>
+                            <option value="La Guaira">La Guaira</option>
+                            <option value="Lara">Lara</option>
+                            <option value="Mérida">Mérida</option>
+                            <option value="Miranda">Miranda</option>
+                            <option value="Monagas">Monagas</option>
+                            <option value="Nueva Esparta">Nueva Esparta</option>
+                            <option value="Portuguesa">Portuguesa</option>
+                            <option value="Sucre">Sucre</option>
+                            <option value="Táchira">Táchira</option>
+                            <option value="Trujillo">Trujillo</option>
+                            <option value="Yaracuy">Yaracuy</option>
+                            <option value="Zulia">Zulia</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-canal" class="form-label">Canal</label>
+                        <select class="form-select" id="edit-canal" name="canal">
+                            <option value="Cara a cara">Cara a Cara/convencional</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Correos con dominios privados">Correos con dominios privados</option>
+                            <option value="Correos con dominios publicos">Correos con dominios publicos</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary" form="editRiesgoForm">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+
+<script>
+    // Inicializar DataTables para la tabla de riesgos
+    $(document).ready(function () {
+        new DataTable('#riesgosTable', {
+            language: {
+                "url": "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+            }
+        });
+    });
+
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    var editRiesgoModal = document.getElementById('editRiesgoModal')
+    editRiesgoModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        var button = event.relatedTarget
+        // Extract info from data-* attributes
+        var ci = button.getAttribute('data-ci')
+        var asegurado = button.getAttribute('data-asegurado')
+        var ramo = button.getAttribute('data-ramo')
+        var prima = button.getAttribute('data-prima')
+        var metodoPago = button.getAttribute('data-metodo-pago')
+        var profesion = button.getAttribute('data-profesion')
+        var localidad = button.getAttribute('data-localidad')
+        var canal = button.getAttribute('data-canal')
+        var tipoCi = button.getAttribute('data-tipo-ci')
+
+        // Update the modal's content.
+        var modalTitle = editRiesgoModal.querySelector('.modal-title')
+        var ciInput = editRiesgoModal.querySelector('#edit-ci')
+        var aseguradoInput = editRiesgoModal.querySelector('#edit-asegurado')
+        var ramoInput = editRiesgoModal.querySelector('#edit-ramo')
+        var primaInput = editRiesgoModal.querySelector('#edit-prima')
+        var metodoPagoInput = editRiesgoModal.querySelector('#edit-metodo-pago')
+        var profesionSelect = editRiesgoModal.querySelector('#edit-profesion')
+        var localidadSelect = editRiesgoModal.querySelector('#edit-localidad')
+        var canalSelect = editRiesgoModal.querySelector('#edit-canal')
+        var tipoCiInput = editRiesgoModal.querySelector('#edit-tipo-ci')
+
+
+        modalTitle.textContent = 'Editar Datos de: ' + asegurado
+        ciInput.value = ci
+        aseguradoInput.value = asegurado
+        ramoInput.value = ramo
+        primaInput.value = prima
+        metodoPagoInput.value = metodoPago
+        profesionSelect.value = profesion
+        localidadSelect.value = localidad
+        canalSelect.value = canal
+        tipoCiInput.value = tipoCi
+    })
+
+    document.getElementById('editRiesgoForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const ci = form.querySelector('#edit-ci').value;
+        const profesion = form.querySelector('#edit-profesion').value;
+        const localidad = form.querySelector('#edit-localidad').value;
+        const canal = form.querySelector('#edit-canal').value;
+
+        const formData = {
+            ci: ci,
+            profesion: profesion,
+            localidad: localidad,
+            canal: canal
+        };
+
+        fetch('/actualizar-riesgo-asegurado', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Datos actualizados correctamente.');
+                    location.reload();
+                } else {
+                    alert('Error al actualizar los datos: ' + (data.message || 'Error desconocido.'));
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al enviar el formulario.');
+            });
+    });
+
+
+    // Función para recalcular el riesgo
+    function recalcularRiesgoPoliza(codRenovacion, buttonElement) {
+        console.log('Iniciando recálculo de riesgo para renovación:', codRenovacion);
+
+        // Deshabilitar botón y mostrar spinner
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        fetch(`/recargar_riesgo/${codRenovacion}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => {
+                // Siempre intentar parsear como JSON, incluso en errores
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        // Si la respuesta no es 2xx, crear un error con el mensaje del JSON
+                        throw new Error(data.message || `Error HTTP: ${response.status}`);
+                    }
+                    return data; // Si es 2xx, devolver los datos
+                });
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Riesgo recalculado con éxito para la renovación ' + codRenovacion + '. Nuevo riesgo: ' + data.nuevo_riesgo);
+                    location.reload();
+                } else {
+                    // Este caso es por si el backend devuelve success: false con un código 200 OK
+                    alert('Error al recalcular riesgo: ' + (data.message || 'Error desconocido del servidor.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error durante el recálculo:', error);
+                // Muestra el mensaje de error del backend al usuario
+                alert('Hubo un error al recalcular el riesgo: ' + error.message);
+            })
+            .finally(() => {
+                // Volver a habilitar el botón y restaurar el ícono
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+            });
+    }
+</script>
+{% endblock %}

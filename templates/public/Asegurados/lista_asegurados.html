@@ -1,0 +1,111 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Lista de Asegurados{% endblock %}
+
+{% block customCSS %}
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0">LISTA DE ASEGURADOS</h3>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-11">
+            <div class="table-responsive text-nowrap">
+                <table id="tabla-asegurados" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Nombre Completo</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Fecha Nacimiento</th>
+                            <th>Ejecutivo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asegurado in asegurados %}
+                        <tr>
+                            <td>{{ asegurado.Tipo_CI }}-{{ asegurado.CI }}</td>
+                            <td>{{ (asegurado.Nombre or '') ~ ' ' ~ (asegurado.Nombre2 or '') ~ ' ' ~
+                                (asegurado.Apellido or '') ~ ' ' ~ (asegurado.Apellido2 or '') }}</td>
+                            <td>{{ asegurado.Correo }}</td>
+                            <td>{{ asegurado.Telefono }}</td>
+                            <td>{{ asegurado.Fecha_nacimiento.strftime('%d-%m-%Y') if asegurado.Fecha_nacimiento else ''
+                                }}</td>
+                            <td>{{ asegurado.Nombre_ejecutivo or '' }} {{ asegurado.Apellido_ejecutivo or '' }}</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('detalleAsegurado', CI=asegurado.CI) }}" class="btn btn-info btn-sm"
+                                    data-bs-toggle="tooltip" title="Ver Detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('EditarAsegurado', id=asegurado.CI) }}"
+                                    class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar Asegurado">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="#" onclick="borrarAsegurado('{{ asegurado.CI }}')"
+                                    class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Eliminar Asegurado">
+                                    <i class="bi bi-trash3"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+
+<script>
+    // Inicialización de DataTables
+    $(document).ready(function () {
+        new DataTable('#tabla-asegurados', {
+            language: {
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                    "sFirst": "Primero",
+                    "sLast": "Último",
+                    "sNext": "Siguiente",
+                    "sPrevious": "Anterior"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
+            }
+        });
+    });
+
+    // Función para confirmar eliminación
+    function borrarAsegurado(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar este asegurado?')) {
+            window.location.href = `/borrar-asegurado/${id}`;
+        }
+    }
+</script>
+{% endblock %}

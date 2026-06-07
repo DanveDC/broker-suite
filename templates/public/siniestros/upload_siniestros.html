@@ -1,0 +1,556 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Carga Masiva Siniestros | App Seguros{% endblock %}
+
+{% block customCSS %}
+<style>
+    .upload-area {
+        border: 2px dashed #696cff;
+        /* primary-light fallback */
+        border-radius: 0.5rem;
+        background: rgba(105, 108, 255, 0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .upload-area:hover {
+        background: rgba(105, 108, 255, 0.1);
+        border-color: #696cff;
+        /* primary color fallback */
+        transform: translateY(-2px);
+    }
+
+    .file-icon {
+        font-size: 3rem;
+        color: #696cff;
+    }
+
+    #file-name {
+        font-weight: 500;
+        color: #696cff;
+    }
+
+    /* Mejora de desplazamiento horizontal */
+    .table-responsive {
+        cursor: grab;
+        max-height: 70vh;
+        overflow-y: auto;
+        position: relative;
+        border-radius: 0 0 0.5rem 0.5rem;
+    }
+
+    .table-responsive:active {
+        cursor: grabbing;
+    }
+
+    /* Scrollbar premium */
+    .table-responsive::-webkit-scrollbar {
+        height: 10px;
+        width: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbcaff;
+        border-radius: 10px;
+        border: 2px solid #f1f1f1;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #696cff;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <a href="{{ url_for('inicio1') }}" class="text-secondary me-3">
+                        <i class="bi bi-arrow-left-circle fs-4"></i>
+                    </a>
+                    <h5 class="card-title mb-0 fw-bold">Carga Masiva de Siniestros</h5>
+                </div>
+            </div>
+            <div class="card-body p-4 p-lg-5">
+                {% if not siniestros_data %}
+                <div class="text-center mb-5">
+                    <div class="display-6 fw-bold mb-2">Importar Registros de Siniestros</div>
+                    <p class="text-muted">Sube tu archivo Excel para previsualizar los registros de siniestros antes de
+                        guardarlos.</p>
+                    <div class="mt-3">
+                        <a href="{{ url_for('descargar_plantilla', tipo='siniestros') }}"
+                            class="btn btn-outline-success btn-sm rounded-pill">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Descargar Plantilla de Siniestros
+                        </a>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+                    role="alert">
+                    {{ message|safe }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('upload_siniestros_csv') }}" method="POST" enctype="multipart/form-data"
+                    id="upload-form">
+                    <div class="upload-area p-5 text-center mb-4"
+                        onclick="document.getElementById('file-input').click()">
+                        <input type="file" name="file" id="file-input" class="d-none" accept=".xlsx"
+                            onchange="updateFileName(this)">
+                        <div class="file-icon mb-3">
+                            <i class="bi bi-file-earmark-medical-fill"></i>
+                        </div>
+                        <h4 class="fw-bold" id="file-label">Seleccionar archivo Excel</h4>
+                        <p class="text-muted small mb-0" id="file-name">Solo se permite formato .xlsx</p>
+                    </div>
+
+                    <div class="notes-container p-3 rounded mb-4" style="background: #f5f5f9;">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i> Instrucciones de Carga</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>Use la plantilla oficial para asegurar que los datos se procesen correctamente.</li>
+                            <li>El sistema validará el número de póliza antes de la importación.</li>
+                            <li>Podrá revisar los datos cargados antes de confirmar el guardado final.</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"
+                                aria-hidden="true"></span>
+                            <span class="btn-text">Subir y Previsualizar</span>
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+
+                {% if siniestros_data %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Vista Previa de Datos Extraídos: <span class="text-primary">{{ filename
+                            }}</span></h5>
+                    <div>
+                        <a href="{{ url_for('upload_siniestros') }}" class="btn btn-outline-secondary shadow-sm">
+                            <i class="bi bi-arrow-left"></i> Cargar Otro Archivo
+                        </a>
+                        <div class="d-inline" id="confirm-wrapper">
+                            <button type="button" class="btn btn-success shadow-sm px-4 fw-bold ms-2" id="confirm-btn"
+                                onclick="startSiniestrosImport()">
+                                <i class="bi bi-check-circle me-1"></i> Confirmar e Importar Ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="progressContainer" class="px-4 py-3 bg-light border rounded mb-4 d-none">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small fw-bold" id="progressText">Preparando importación...</span>
+                        <span class="small fw-bold" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress" style="height: 12px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                            role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="importSummary" class="mt-2 small text-muted d-none">
+                        <span id="successCount">0</span> exitosos, <span id="errorCount">0</span> con errores.
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <ul class="nav nav-tabs" id="siniestrosTabs" role="tablist">
+                        {% for sheet_name, rows in siniestros_data.items() %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if loop.first %}active{% endif %} tab-siniestro"
+                                id="tab-{{ loop.index }}" data-bs-toggle="tab" data-bs-target="#pane-{{ loop.index }}"
+                                type="button" role="tab"
+                                data-is-reembolso="{% if 'reembolso' in sheet_name.lower() or 'carta aval' in sheet_name.lower() %}true{% else %}false{% endif %}"
+                                aria-controls="pane-{{ loop.index }}"
+                                aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                                {{ sheet_name }} <span class="badge bg-secondary ms-2">{{ rows|length }}</span>
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="tab-content border border-top-0 p-3 rounded-bottom" id="siniestrosTabsContent">
+                        {% for sheet_name, rows in siniestros_data.items() %}
+                        <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="pane-{{ loop.index }}"
+                            role="tabpanel" aria-labelledby="tab-{{ loop.index }}">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm align-middle" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 40px;" class="text-center">
+                                                <input class="form-check-input select-all-sheet" type="checkbox"
+                                                    data-sheet-id="pane-{{ loop.index }}" checked>
+                                            </th>
+                                            <th style="width: 100px;">Estado BD</th>
+                                            <th style="width: 150px;">Estado Carga</th>
+                                            <th style="min-width: 200px;">Mensaje de Sistema</th>
+                                            {% if rows and rows|length > 0 %}
+                                            {% for key in rows[0].keys() %}
+                                            {% if key not in ['existe_poliza', 'ya_existe_siniestro',
+                                            'duplicate_in_file'] %}
+                                            <th>{{ key }}</th>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% else %}
+                                            <th>N/A</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in rows %}
+                                        <tr class="siniestro-row" data-sheet="{{ sheet_name }}"
+                                            data-index="{{ loop.index0 }}">
+                                            <td class="text-center">
+                                                <input class="form-check-input row-check" type="checkbox" {% if
+                                                    row.get('existe_poliza') and not row.get('ya_existe_siniestro') and
+                                                    not row.get('duplicate_in_file') and ("reembolso" in
+                                                    sheet_name.lower() or "carta aval" in sheet_name.lower()) %} checked {% else %} disabled {% endif %}>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    {% if row.get('existe_poliza') %}
+                                                    <i class="bi bi-check-circle-fill text-success fs-5"
+                                                        title="Póliza encontrada en BD"></i>
+                                                    {% else %}
+                                                    <i class="bi bi-x-circle-fill text-danger fs-5"
+                                                        title="Póliza NO encontrada en BD"></i>
+                                                    {% endif %}
+
+                                                    {% if row.get('ya_existe_siniestro') %}
+                                                    <i class="bi bi-exclamation-triangle-fill text-warning fs-5"
+                                                        title="Siniestro ya registrado para esta compañía"></i>
+                                                    {% endif %}
+
+                                                    {% if row.get('duplicate_in_file') %}
+                                                    <i class="bi bi-files text-warning fs-5"
+                                                        title="Código de siniestro duplicado en el mismo archivo"></i>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td class="text-center import-status">
+                                                {% if "reembolso" not in sheet_name.lower() and "carta aval" not in sheet_name.lower() %}
+                                                <span class="badge bg-warning text-dark">Bloqueado</span>
+                                                {% else %}
+                                                <span class="badge bg-light text-secondary border">Pendiente</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="import-message text-muted small">
+                                                {% if "reembolso" not in sheet_name.lower() and "carta aval" not in sheet_name.lower() %}
+                                                Inserción no habilitada para esta categoría.
+                                                {% elif row.get('ya_existe_siniestro') %}
+                                                El código de siniestro ya existe en el sistema.
+                                                {% elif row.get('duplicate_in_file') %}
+                                                Código duplicado dentro del archivo.
+                                                {% else %}
+                                                Esperando inicio...
+                                                {% endif %}
+                                            </td>
+                                            {% for key, value in row.items() %}
+                                            {% if key not in ['existe_poliza', 'ya_existe_siniestro',
+                                            'duplicate_in_file'] %}
+                                            <td>{{ value if value != None else '' }}</td>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="100%" class="text-center text-muted py-4">No hay datos en esta
+                                                hoja.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" id="allDataInput" value='{{ siniestros_data | tojson | safe }}'>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function updateFileName(input) {
+        const fileLabel = document.getElementById('file-label');
+        const fileName = document.getElementById('file-name');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (input.files.length > 0) {
+            fileLabel.innerText = "Archivo preparado";
+            fileName.innerText = input.files[0].name;
+            submitBtn.disabled = false;
+        } else {
+            fileLabel.innerText = "Seleccionar archivo Excel";
+            fileName.innerText = "Solo se permite formato .xlsx";
+            submitBtn.disabled = true;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Formulario de subida inicial
+        const uploadForm = document.getElementById('upload-form');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function () {
+                const btn = document.getElementById('submit-btn');
+                const spinner = btn.querySelector('.spinner-border');
+                const text = btn.querySelector('.btn-text');
+
+                btn.disabled = true;
+                if (spinner) spinner.classList.remove('d-none');
+                if (text) text.innerText = 'Cargando archivo...';
+            });
+        }
+
+        // --- LÓGICA DE SELECCIÓN ---
+        document.querySelectorAll('.select-all-sheet').forEach(headerCheck => {
+            headerCheck.addEventListener('change', function () {
+                const paneId = this.getAttribute('data-sheet-id');
+                const pane = document.getElementById(paneId);
+                if (pane) {
+                    pane.querySelectorAll('.row-check:not(:disabled)').forEach(cb => cb.checked = this.checked);
+                }
+            });
+        });
+
+        document.querySelectorAll('.row-check').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const pane = this.closest('.tab-pane');
+                if (pane) {
+                    const allChecked = pane.querySelectorAll('.row-check:not(:disabled)').length === pane.querySelectorAll('.row-check:checked').length;
+                    const headerCheck = document.querySelector(`.select-all-sheet[data-sheet-id="${pane.id}"]`);
+                    if (headerCheck) headerCheck.checked = allChecked;
+                }
+            });
+        });
+
+        // --- BLOQUEO DE BOTON POR PESTAÑA ---
+        const confirmBtn = document.getElementById('confirm-btn');
+        const tabButtons = document.querySelectorAll('.tab-siniestro');
+
+        function toggleConfirmButton(btn) {
+            const isReembolso = btn.getAttribute('data-is-reembolso') === 'true';
+            if (isReembolso) {
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('btn-secondary');
+                confirmBtn.classList.add('btn-success');
+                confirmBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirmar e Importar Ahora';
+            } else {
+                confirmBtn.disabled = true;
+                confirmBtn.classList.remove('btn-success');
+                confirmBtn.classList.add('btn-secondary');
+                confirmBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Categoría Bloqueada';
+            }
+        }
+
+        tabButtons.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                toggleConfirmButton(event.target);
+            });
+        });
+
+        // Check initial state
+        const activeTab = document.querySelector('.tab-siniestro.active');
+        if (activeTab) toggleConfirmButton(activeTab);
+    });
+
+    // --- NUEVA LÓGICA DE IMPORTACIÓN MASIVA ---
+    async function startSiniestrosImport() {
+        // Encontrar el panel de la pestaña activa
+        const activePane = document.querySelector('.tab-pane.active.show');
+        if (!activePane) {
+            console.error('No se detectó pestaña activa.');
+            return;
+        }
+
+        const rowsToImport = [];
+        activePane.querySelectorAll('.siniestro-row').forEach(tr => {
+            const checkbox = tr.querySelector('.row-check');
+            if (checkbox && checkbox.checked && !checkbox.disabled) {
+                rowsToImport.push(tr);
+            }
+        });
+
+        if (rowsToImport.length === 0) {
+            Swal.fire({
+                title: 'Atención',
+                text: 'Por favor, selecciona al menos un registro válido para importar.',
+                icon: 'warning',
+                confirmButtonColor: '#696cff'
+            });
+            return;
+        }
+
+        const confirmResult = await Swal.fire({
+            title: '¿Iniciar importación masiva?',
+            text: `Se intentarán registrar ${rowsToImport.length} siniestros. ¿Desea continuar?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#8592a3',
+            confirmButtonText: 'Sí, importar selección',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        // UI Reset
+        const btn = document.getElementById('confirm-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Importando...';
+
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressText = document.getElementById('progressText');
+        const summary = document.getElementById('importSummary');
+
+        progressContainer.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Ensure summary counters are reset
+        document.getElementById('successCount').innerText = '0';
+        document.getElementById('errorCount').innerText = '0';
+
+        let successCount = 0;
+        let errorCount = 0;
+        const total = rowsToImport.length;
+
+        // Obtener la data cruda completa del input hidden
+        const dataInput = document.getElementById('allDataInput');
+        if (!dataInput) {
+            console.error('No se encontró el elemento allDataInput');
+            return;
+        }
+        const allDataRaw = JSON.parse(dataInput.value);
+
+        for (let i = 0; i < total; i++) {
+            const tr = rowsToImport[i];
+            const sheet = tr.getAttribute('data-sheet');
+            const index = parseInt(tr.getAttribute('data-index'));
+            const rowData = allDataRaw[sheet][index];
+
+            const statusCell = tr.querySelector('.import-status');
+            const messageCell = tr.querySelector('.import-message');
+
+            statusCell.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+            messageCell.innerText = 'Enviando...';
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            try {
+                const response = await fetch('/procesar-siniestro-individual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sheet_name: sheet,
+                        row_data: rowData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successCount++;
+                    statusCell.innerHTML = '<span class="badge bg-success">Registrado</span>';
+                    messageCell.innerHTML = '<span class="text-success small"><i class="bi bi-check-circle-fill me-1"></i> ' + (result.message || 'Éxito') + '</span>';
+                    tr.querySelector('.row-check').disabled = true;
+                    tr.querySelector('.row-check').checked = false;
+                    tr.style.opacity = '0.7'; // Visual feedback
+                } else {
+                    errorCount++;
+                    statusCell.innerHTML = '<span class="badge bg-danger">Error</span>';
+                    messageCell.innerHTML = '<span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i> ' + (result.message || 'Error desconocido') + '</span>';
+                }
+            } catch (err) {
+                errorCount++;
+                statusCell.innerHTML = '<span class="badge bg-warning text-dark">Fallo</span>';
+                messageCell.innerHTML = '<span class="text-warning small"><i class="bi bi-wifi-off me-1"></i> Error de red o servidor</span>';
+            }
+
+            // Update Progress
+            const percent = Math.round(((i + 1) / total) * 100);
+            progressBar.style.width = percent + '%';
+            progressPercent.innerText = percent + '%';
+            progressText.innerText = `Procesando ${i + 1} de ${total}...`;
+            document.getElementById('successCount').innerText = successCount;
+            document.getElementById('errorCount').innerText = errorCount;
+        }
+
+        progressText.innerText = 'Importación Finalizada';
+        btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Reiniciar Proceso';
+        btn.disabled = false;
+        btn.className = 'btn btn-primary shadow-sm px-4 fw-bold ms-2';
+        btn.onclick = () => window.location.reload();
+
+        if (errorCount === 0) {
+            Swal.fire({
+                title: '¡Importación Exitosa!',
+                text: `Se registraron ${successCount} siniestros correctamente.`,
+                icon: 'success',
+                confirmButtonColor: '#28a745'
+            });
+        } else {
+            Swal.fire({
+                title: 'Proceso Finalizado',
+                text: `Registrados: ${successCount}, Errores: ${errorCount}. Por favor, revise la lista de registros.`,
+                icon: 'warning',
+                confirmButtonColor: '#696cff'
+            });
+        }
+    }
+
+    // --- FUNCIONALIDAD DE ARRASTRE (DRAG-TO-SCROLL) ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const sliders = document.querySelectorAll('.table-responsive');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        sliders.forEach(slider => {
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.classList.add('active');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; // multiplicador de velocidad
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

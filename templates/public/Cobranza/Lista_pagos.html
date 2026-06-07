@@ -1,0 +1,553 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Crud - Python 🐍 | Lista de Pagos{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<style>
+    .dropdown-btn {
+        cursor: pointer;
+    }
+
+    .dropdown-row {
+        display: none;
+        grid-column: 1 / -1;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .dropdown-row.show {
+        display: table-row;
+    }
+
+    :root {
+        --bg: #110921;
+        --purple: #3720b4;
+        --green: #5ff8c2;
+        --font: 'Roboto Mono', sans-serif;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+        background-color: var(--purple);
+        border-radius: 30px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .switch:after {
+        content: '';
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        border-radius: 24px;
+        background-color: white;
+        top: 3px;
+        left: 3px;
+        transition: all 0.3s;
+    }
+
+    input[type='checkbox']:checked+.switch:after {
+        transform: translateX(30px);
+        background-color: var(--bg);
+    }
+
+    input[type='checkbox']:checked+.switch {
+        background-color: var(--green);
+    }
+
+    .offscreen {
+        position: absolute;
+        left: -9999px;
+    }
+    /* ── Días de gracia: resaltado de fila ───────────────────── */
+    tr.row-gracia-critica td { background-color: #fff3cd !important; }
+    tr.row-gracia-normal td  { background-color: #fff8e1 !important; }
+    tr.row-vencida td        { background-color: #fde8e8 !important; }
+
+    /* Badge de gracia */
+    .badge-gracia-ok   { background: #198754; font-size: .75rem; }
+    .badge-gracia-warn { background: #fd7e14; font-size: .75rem; }
+    .badge-gracia-crit { background: #dc3545; font-size: .75rem; }
+    .badge-vencido     { background: #6c757d; font-size: .75rem; }
+    .badge-proximo     { background: #0dcaf0; color:#000 !important; font-size: .75rem; }
+    .badge-pagado      { background: #198754; font-size: .75rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="alert alert-info alert-dismissible d-flex align-items-center mb-3" role="alert">
+  <i class="bx bx-info-circle me-2 fs-5"></i>
+  <div>
+    <strong>Módulo de cobranza</strong><br>
+    Seguimiento de pagos de primas pendientes y cobrados. Podés filtrar por período, asegurado, o compañía y exportar los resultados a Excel.
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0">COBRANZA</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label class="form-label">Mes</label>
+                <select id="filtro_mes" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Año</label>
+                <input type="number" id="filtro_ano" class="form-control" placeholder="Ej: 2026">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Asegurado</label>
+                <select id="filtro_asegurado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for asegurado in asegurados %}
+                    <option value="{{ asegurado.CI }}">{{ asegurado.Nombre }} {{ asegurado.Apellido }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado Pago</label>
+                <select id="filtro_estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="PAGADO">Pagados</option>
+                    <option value="DISPONIBLE">Próximos a Cobrar (En proceso)</option>
+                    <option value="PENDIENTE">Futuros (En proceso)</option>
+                    <option value="GRACIA">⚠️ En Período de Gracia</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="filter" class="btn btn-primary me-2">Filtrar</button>
+                <button id="exportExcel" class="btn btn-success text-white" disabled>
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive text-nowrap">
+            <table id="pagos" class="table table-striped table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th>Nro Cuota</th>
+                        <th>Asegurado</th>
+                        <th>Poliza</th>
+                        <th>Cedula</th>
+                        <th>Moneda</th>
+                        <th>Nro Recibo</th>
+                        <th>Fecha</th>
+                        <th>Vencimiento</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pagoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar/Editar Pago</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pagoForm">
+                    <input type="hidden" id="pagoId" name="pagoId">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Cuota</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto ($)</label>
+                        <input type="text" class="form-control" id="monto" name="monto" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Moneda</label>
+                        <select id="moneda" class="form-select" name="moneda" required>
+                            <option value="">Seleccione</option>
+                            <option value="$">Dolar</option>
+                            <option value="BS">Bolivar</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Método de Pago</label>
+                        <select id="metodoPago" class="form-select" name="metodoPago" required></select>
+                    </div>
+                    <div id="tasaAndBsContainer" style="display: none;" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Monto Bs</label>
+                                <input type="text" class="form-control" id="montoBs" name="montoBs">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tasa</label>
+                                <input type="text" class="form-control" id="tasa" name="tasa" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha Pagada</label>
+                        <input type="date" class="form-control" id="fecha_pagada" name="fecha_pagada" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nro Recibo / Referencia</label>
+                        <input type="text" class="form-control" id="nro_recibo" name="nro_recibo" required>
+                    </div>
+                    <input type="hidden" id="nro_cuota" name="nro_cuota">
+                    <button type="submit" class="btn btn-primary w-100" id="btnActualizarPago">Actualizar Pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+
+<script>
+    // 1. Datos eliminados (ahora se traen por AJAX)
+    // let pagosGlobalData = [];
+
+    // 2. Utilidades
+    function formatDateForInput(dateStr) {
+        if (!dateStr || dateStr === 'None' || dateStr === '-') return '';
+        if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+        return dateStr.split(' ')[0];
+    }
+
+    function formatChildRow(d) {
+        let comisionesHtml = '<p class="text-muted">No hay comisiones asignadas</p>';
+        if (d.comisiones_info) {
+            const list = d.comisiones_info.split('||');
+            comisionesHtml = '<ul class="list-group list-group-flush">';
+            list.forEach(c => {
+                const parts = c.split(' - ');
+                let text = parts[0];
+                
+                // Si el texto contiene el nuevo formato con pipe, lo formateamos mejor
+                if (text.includes('|')) {
+                    const details = text.split(' | ');
+                    text = `<div class="d-flex flex-column gap-1">
+                        ${details.map(d => `<span><i class="bi bi-chevron-right me-1" style="font-size: 0.7em;"></i>${d}</span>`).join('')}
+                    </div>`;
+                }
+
+                const status = parts[1] || 'PENDIENTE';
+                const badgeClass = status === 'COBRADA' ? 'bg-success' : 'bg-warning text-dark';
+                
+                comisionesHtml += `<li class="list-group-item d-flex justify-content-between align-items-start bg-transparent border-0 px-0 py-2 border-bottom border-light">
+                    <div class="small text-muted">
+                        ${text}
+                    </div>
+                    <span class="badge rounded-pill ${badgeClass}" style="font-size: 0.65rem;">${status}</span>
+                </li>`;
+            });
+            comisionesHtml += '</ul>';
+        }
+
+        return `<div class="p-3 bg-light border rounded">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Compañía:</strong> ${d.Nombre_compania || 'N/A'}</p>
+                    <p class="mb-1"><strong>Método de Pago:</strong> ${d.Metodo_pago || '-'}</p>
+                    <p class="mb-0"><strong>Tasa:</strong> ${d.tasa || '-'}</p>
+                </div>
+                <div class="col-md-6 border-start">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-cash-stack me-1"></i> Comisiones Asignadas</h6>
+                    ${comisionesHtml}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // 3. Lógica del Modal
+    function setupModalLogic() {
+        const monedaSelect = document.getElementById('moneda');
+        const metodoSelect = document.getElementById('metodoPago');
+        const tasaContainer = document.getElementById('tasaAndBsContainer');
+
+        monedaSelect.addEventListener('change', function () {
+            metodoSelect.innerHTML = '<option value="">Seleccione</option>';
+            if (this.value === 'BS') {
+                metodoSelect.innerHTML += '<option value="transferencia">Transferencia</option><option value="pago movil">Pago móvil</option>';
+                tasaContainer.style.display = 'block';
+            } else {
+                metodoSelect.innerHTML += '<option value="Efectivo">Efectivo</option><option value="Zelle">Zelle</option>';
+                tasaContainer.style.display = 'none';
+            }
+        });
+
+        document.getElementById('montoBs').addEventListener('input', function () {
+            const usd = parseFloat(document.getElementById('monto').value) || 0;
+            const bs = parseFloat(this.value.replace(',', '.')) || 0;
+            if (usd > 0) document.getElementById('tasa').value = (bs / usd).toFixed(2);
+        });
+    }
+
+    // 4. Inicialización
+    $(document).ready(function () {
+        const table = $('#pagos').DataTable({
+            language: { url: "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json" },
+            serverSide: true,
+            processing: true,
+            searching: false, // Desactivar la caja de busqueda por defecto
+            ajax: {
+                url: '/api/pagos_datatable',
+                data: function (d) {
+                    d.mes = $('#filtro_mes').val();
+                    d.ano = $('#filtro_ano').val();
+                    d.asegurado_id = $('#filtro_asegurado').val();
+                    d.estado_filtro = $('#filtro_estado').val();
+                }
+            },
+            columns: [
+                { data: 'nro_cuota', render: d => d || '-' },
+                { data: null, render: function (data, type, row) { return row.Nombre_asegurado + ' ' + row.Apellido_asegurado; } },
+                { data: 'cod_poliza' },
+                { data: 'CI' },
+                { data: 'moneda' },
+                { data: 'recibo', render: d => d || '-' },
+                { data: 'fecha' },
+                {
+                    data: null,
+                    render: function (data, type, row) {
+                        if (row.estado === 'PAGADO') {
+                            return '<span class="badge badge-pagado text-white"><i class="bi bi-check-circle-fill me-1"></i>Completado</span>';
+                        }
+                        if (row.estado === 'ANULADO') return '<span class="badge bg-secondary">Anulado</span>';
+
+                        const fechaRecibo = new Date(row.fecha);
+                        const hoy = new Date();
+                        hoy.setHours(0,0,0,0);
+                        fechaRecibo.setHours(0,0,0,0);
+
+                        const diasGracia = row.dias_gracia || 15;
+                        const fechaLimite = new Date(fechaRecibo);
+                        fechaLimite.setDate(fechaLimite.getDate() + diasGracia);
+
+                        const diffLimite = Math.ceil((fechaLimite - hoy) / 86400000);
+                        const diffFecha  = Math.ceil((fechaRecibo - hoy) / 86400000);
+
+                        if (diffFecha > 0) {
+                            // Fecha aún no llegó → próximo
+                            return `<span class="badge badge-proximo"><i class="bi bi-clock me-1"></i>Próximo (${diffFecha}d)</span>`;
+                        } else if (diffLimite >= 0) {
+                            // Dentro del período de gracia
+                            let cls = diffLimite > 7 ? 'badge-gracia-ok' : diffLimite > 3 ? 'badge-gracia-warn' : 'badge-gracia-crit';
+                            let icon = diffLimite > 7 ? 'bi-shield-check' : diffLimite > 3 ? 'bi-exclamation-triangle' : 'bi-exclamation-octagon-fill';
+                            return `<span class="badge ${cls} text-white"><i class="bi ${icon} me-1"></i>Gracia: ${diffLimite}d rest.</span>`;
+                        } else {
+                            const diasVencido = Math.abs(diffLimite);
+                            return `<span class="badge badge-vencido text-white"><i class="bi bi-x-circle-fill me-1"></i>Vencido hace ${diasVencido}d</span>`;
+                        }
+                    }
+                },
+                { data: 'monto' },
+                { data: 'estado' },
+                {
+                    data: null,
+                    orderable: false,
+                    render: function (data, type, row) {
+                        let btnClass = row.estado === 'PAGADO' ? 'btn-warning' : 'btn-primary';
+                        let btnText = row.estado === 'PAGADO' ? 'Editar' : 'Pagar';
+                        let disabledAttr = '';
+                        let titleAttr = '';
+
+                        if (row.estado !== 'PAGADO' && row.estado !== 'ANULADO') {
+                            if (!row.es_proximo) {
+                                btnClass = 'btn-secondary';
+                                disabledAttr = 'disabled';
+                                titleAttr = 'Debe pagar la cuota anterior primero';
+                                btnText = '<i class="bi bi-lock-fill"></i> Bloqueado (Cuota previa pend.)';
+                            }
+                        }
+
+                        let revertirBtn = '';
+                        if (row.estado === 'PAGADO') {
+                            revertirBtn = `<button class="btn btn-secondary btn-sm text-white me-1" onclick="revertirAProceso('${row.cod_pago}')" title="Poner en Proceso"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+                        }
+
+                        let buttonHtml = '';
+                        if (row.estado !== 'ANULADO') {
+                            buttonHtml = `<button class="btn ${btnClass} btn-sm pagar-btn" data-pago-id="${row.cod_pago}" ${disabledAttr} title="${titleAttr}">
+                                            ${btnText}
+                                          </button>`;
+                        }
+
+                        return `
+                            <div class="d-flex gap-1" style="align-items: center;">
+                                <a href="/Pagos_poliza/${row.Cod_renovacion}/0/1" class="btn btn-info btn-sm text-white" title="Ir a la vista detallada de pagos de esta póliza"><i class="bi bi-eye"></i> Ir a pagos</a>
+                                ${revertirBtn}
+                                ${buttonHtml}
+                                <button class="dropdown-btn btn btn-sm btn-secondary" data-pago-id="${row.cod_pago}" title="Más opciones">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+            ],
+            createdRow: function (row, data, dataIndex) {
+                $(row).attr('id', 'pago_row_' + data.cod_pago);
+                $(row).data('details', data);
+
+                // Resaltar filas según estado de gracia
+                if (data.estado !== 'PAGADO' && data.estado !== 'ANULADO') {
+                    const fechaRecibo = new Date(data.fecha);
+                    const hoy = new Date();
+                    hoy.setHours(0,0,0,0);
+                    fechaRecibo.setHours(0,0,0,0);
+                    const diasGracia = data.dias_gracia || 15;
+                    const fechaLimite = new Date(fechaRecibo);
+                    fechaLimite.setDate(fechaLimite.getDate() + diasGracia);
+                    const diffLimite = Math.ceil((fechaLimite - hoy) / 86400000);
+                    const diffFecha  = Math.ceil((fechaRecibo - hoy) / 86400000);
+
+                    if (diffFecha <= 0 && diffLimite >= 0) {
+                        // En período de gracia
+                        if (diffLimite <= 3) {
+                            $(row).addClass('row-gracia-critica');
+                        } else {
+                            $(row).addClass('row-gracia-normal');
+                        }
+                    } else if (diffLimite < 0) {
+                        $(row).addClass('row-vencida');
+                    }
+                }
+            }
+        });
+
+        $('#filtro_asegurado').select2();
+        setupModalLogic();
+
+        // Eventos delegados para botones dentro de la tabla
+        $('#pagos tbody').on('click', '.dropdown-btn', function () {
+            const tr = $(this).closest('tr');
+            const row = table.row(tr);
+            if (row.child.isShown()) {
+                row.child.hide();
+                $(this).find('i').className = 'bi bi-chevron-down';
+            } else {
+                row.child(formatChildRow(tr.data('details'))).show();
+                $(this).find('i').className = 'bi bi-chevron-up';
+            }
+        });
+
+        $('#pagos tbody').on('click', '.pagar-btn', function () {
+            const tr = $(this).closest('tr');
+            const row = table.row(tr);
+            const data = row.data();
+            if (data) {
+                document.getElementById('pagoId').value = data.cod_pago;
+                document.getElementById('monto').value = data.monto;
+                document.getElementById('nro_cuota').value = data.nro_cuota;
+                document.getElementById('fecha').value = formatDateForInput(data.fecha);
+                $('#pagoModal').modal('show');
+            }
+        });
+
+        // Envío del Formulario
+        $('#pagoForm').on('submit', function (e) {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(this).entries());
+
+            fetch('/actualizar_pago', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire('Éxito', 'Pago procesado', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                });
+        });
+    });
+
+    // 5. Filtros AJAX
+    $('#filter').on('click', function () {
+        const btn = $(this);
+        btn.prop('disabled', true).text('Filtrando...');
+
+        const table = $('#pagos').DataTable();
+        table.ajax.reload(function () {
+            btn.prop('disabled', false).text('Filtrar');
+            $('#exportExcel').prop('disabled', false);
+        });
+    });
+
+    $('#exportExcel').on('click', function() {
+        const mes = $('#filtro_mes').val() || '';
+        const ano = $('#filtro_ano').val() || '';
+        const asegurado_id = $('#filtro_asegurado').val() || '';
+        const estado_filtro = $('#filtro_estado').val() || '';
+        
+        const url = `/descargar-excel-pagos?mes=${mes}&ano=${ano}&asegurado_id=${asegurado_id}&estado_filtro=${estado_filtro}`;
+        window.location.href = url;
+    });
+
+    function revertirAProceso(pagoId) {
+        if (!confirm(`¿Está seguro de que desea poner el pago ${pagoId} de nuevo en estado "EN PROCESO" ? Se borrarán los datos de pago cobrados.`)) {
+            return;
+        }
+
+        fetch('/revertir_pago_individual', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pagoId: pagoId }),
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Swal.fire('Éxito', result.message, 'success').then(() => {
+                        $('#pagos').DataTable().ajax.reload(null, false);
+                    });
+                } else {
+                    Swal.fire('Error', result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al procesar la solicitud.', 'error');
+            });
+    }
+</script>
+{% endblock %}

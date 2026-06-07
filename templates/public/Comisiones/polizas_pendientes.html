@@ -1,0 +1,177 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Pólizas Pendientes de Carga{% endblock %}
+
+{% block customCSS %}
+<style>
+    .pending-card {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: none;
+    }
+
+    .table-premium thead th {
+        background-color: #f8f9fa;
+        color: #4e73df;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .badge-moneda {
+        font-size: 0.7rem;
+        padding: 0.4em 0.6em;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Pólizas Pendientes</h2>
+            <p class="text-muted">Registros de comisiones que no coincidieron con ninguna póliza en el sistema.</p>
+        </div>
+        <span class="badge bg-primary fs-5 px-3 py-2">{{ polizas|length }} Pendientes</span>
+    </div>
+
+    <div class="card pending-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="table-pendientes">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Cliente / Descripción</th>
+                            <th>Póliza / Recibo</th>
+                            <th>Compañía</th>
+                            <th class="text-center">Moneda</th>
+                            <th>Fecha Registro</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in polizas %}
+                        <tr id="row-{{ p.id }}">
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">{{ p.nombre_cliente }}</div>
+                                <small class="text-muted d-block text-truncate" style="max-width: 250px;">{{
+                                    p.descripcion }}</small>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ p.nro_poliza }}</div>
+                                <div class="small text-muted">Recibo: {{ p.nro_recibo }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-label-secondary text-uppercase">{{ p.compania or 'N/A' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span
+                                    class="badge badge-moneda {{ 'bg-primary' if p.moneda == 'BOLIVARES' else 'bg-success' }}">
+                                    {{ p.moneda or 'DOLARES' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="small text-muted">{{ p.fecha_registro.strftime('%d/%m/%Y') if
+                                    p.fecha_registro else 'N/A' }}</div>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button class="btn btn-outline-info btn-action"
+                                        onclick="verificarExistencia('{{ p.id }}')" title="Verificar si ya existe">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                    <a href="{{ url_for('gestionar_pendiente', id_pendiente=p.id) }}"
+                                        class="btn btn-outline-primary btn-action" title="Gestionar Registro">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-action"
+                                        onclick="eliminarPendiente('{{ p.id }}')" title="Descartar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-check-circle text-success display-4 d-block mb-3"></i>
+                                <h5 class="text-muted">No hay pólizas pendientes por cargar.</h5>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Toast para notificaciones -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+        aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script>
+    function showToast(message, type = 'success') {
+        const toastEl = document.getElementById('liveToast');
+        const toastMsg = document.getElementById('toastMessage');
+        toastEl.className = `toast align-items-center text-white border-0 bg-${type === 'success' ? 'success' : 'danger'}`;
+        toastMsg.textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
+    async function verificarExistencia(id) {
+        try {
+            const response = await fetch(`/verificar-poliza-pendiente/${id}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                if (result.existe) {
+                    showToast(result.message, 'success');
+                } else {
+                    showToast(result.message, 'danger');
+                }
+            }
+        } catch (e) {
+            showToast('Error al conectar con el servidor', 'danger');
+        }
+    }
+
+    async function eliminarPendiente(id) {
+        if (!confirm('¿Seguro que desea descartar este registro?')) return;
+        try {
+            const response = await fetch(`/eliminar-poliza-pendiente/${id}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById(`row-${id}`).remove();
+                showToast(result.message);
+                if (document.querySelectorAll('#table-pendientes tbody tr').length === 0) {
+                    location.reload();
+                }
+            }
+        } catch (e) {
+            showToast('Error al descartar el registro', 'danger');
+        }
+    }
+</script>
+{% endblock %}

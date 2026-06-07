@@ -1,0 +1,1040 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Detalle poliza{% endblock %}
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+{% if (detalle_poliza|length) %}
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">
+      <a href="/lista-de-polizas" class="text-secondary me-2">
+        <i class="bi bi-arrow-left-circle"></i>
+      </a>
+      INFORMACIÓN DE LA POLIZA
+      <button type="button" id="editButton" class="btn btn-sm btn-outline-primary ms-2">
+        <i class="bi bi-pencil-square"></i>
+      </button>
+    </h3>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <div class="card-body">
+        <form id="updateForm" action="/actualizar-poliza-persona/{{ detalle_poliza.cod_poliza }}" method="POST">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="cod_poliza" class="form-label">
+                Codigo poliza
+              </label>
+              <input type="text" class="form-control" id="cod_poliza" name="cod_poliza"
+                value="{{ detalle_poliza.cod_poliza}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="CI_asegurado" class="form-label">
+                CI asegurado
+              </label>
+              <input type="text" class="form-control" id="CI_asegurado" name="CI_asegurado"
+                value="{{ detalle_poliza.CI_asegurado}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="nombres_asegurado" class="form-label">
+                Nombres del asegurado
+              </label>
+              <input type="text" class="form-control" id="nombres_asegurado" name="nombres_asegurado"
+                value="{{ detalle_poliza.NombreA}}  {{ detalle_poliza.Nombre2}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="apellidos_asegurado" class="form-label">
+                Apellidos del asegurado
+              </label>
+              <input type="text" class="form-control" id="apellidos_asegurado" name="apellidos_asegurado"
+                value="{{ detalle_poliza.ApellidoA}}  {{ detalle_poliza.Apellido2}}" readonly>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="fecha_emision" class="form-label">
+                Fecha emision
+              </label>
+              <input type="date" class="form-control" id="fecha_emision" name="fecha_emision"
+                value="{{ detalle_poliza.fecha_registro if detalle_poliza.fecha_registro else '' }}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="tomador_poliza" class="form-label">
+                Tomador poliza
+              </label>
+              <input type="text" class="form-control" id="tomador_poliza" name="tomador_poliza"
+                value="{{ detalle_poliza.Tomador}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="compania" class="form-label">
+                Compañía
+              </label>
+              <input type="text" class="form-control" id="compania" name="compania" value="{{detalle_poliza.NombreC}}"
+                readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="cobertura" class="form-label">
+                Cobertura
+              </label>
+              <input type="text" class="form-control" id="cobertura" name="cobertura"
+                value="{{detalle_poliza.cobertura}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="frecuencia" class="form-label">
+                Frecuencia
+              </label>
+              {% set frecuencia_map = {
+              '1': 'Anual',
+              '2': 'Mensual',
+              '3': 'Trimestral',
+              '4': 'Semestral',
+              '5': 'Cuatrimestral',
+              '6': 'Bimensual',
+              '10': 'Mensual (10 pagos)'
+              } %}
+              <select class="form-select select2-search" id="frecuencia" name="frecuencia" data-placeholder="Seleccione"
+                disabled>
+                <option value=""></option>
+                <option value="2" {% if detalle_poliza.frecuencia|string=='2' %}selected{% endif %}>Mensual</option>
+                <option value="6" {% if detalle_poliza.frecuencia|string=='6' %}selected{% endif %}>Bimensual</option>
+                <option value="3" {% if detalle_poliza.frecuencia|string=='3' %}selected{% endif %}>Trimestral</option>
+                <option value="5" {% if detalle_poliza.frecuencia|string=='5' %}selected{% endif %}>Cuatrimestral
+                </option>
+                <option value="4" {% if detalle_poliza.frecuencia|string=='4' %}selected{% endif %}>Semestral</option>
+                <option value="1" {% if detalle_poliza.frecuencia|string=='1' %}selected{% endif %}>Anual</option>
+                <option value="10" {% if detalle_poliza.frecuencia|string=='10' %}selected{% endif %}>Mensual (10 pagos)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="prima" class="form-label">
+                Prima
+              </label>
+              <input type="text" class="form-control" id="prima" name="prima"
+                value="{{ detalle_poliza.Prima if detalle_poliza.Prima else '' }}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="ramo" class="form-label">
+                Ramo
+              </label>
+              <input type="text" class="form-control" id="ramo" name="ramo" value="{{detalle_poliza.Ramo}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="subramo" class="form-label">
+                Subramo
+              </label>
+              <input type="text" class="form-control" id="subramo_display" value="{{detalle_poliza.Subramo}}" readonly>
+              <div id="subramo_wrapper" style="display: none;">
+                <select class="form-select select2-search" id="subramo" name="subramo" style="width: 100%;"
+                  data-placeholder="Subramo">
+                  <option value="{{detalle_poliza.Subramo}}" selected>{{detalle_poliza.Subramo}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="producto" class="form-label">
+                Producto
+              </label>
+              <input type="text" class="form-control" id="producto_display" value="{{ detalle_poliza.Producto}}"
+                readonly>
+              <div id="producto_wrapper" style="display: none;">
+                <select class="form-select select2-search" id="producto" name="producto" style="width: 100%;"
+                  data-placeholder="Producto">
+                  <option value="{{ detalle_poliza.Producto}}" selected>{{ detalle_poliza.Producto}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="referidor" class="form-label">
+                Referidor
+              </label>
+              <input type="text" class="form-control" id="referidor" name="referidor"
+                value="{{ detalle_poliza.Nombre1}} {{ detalle_poliza.Apellido1}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col-md-12">
+              <label for="riesgo_poliza" class="form-label">
+                Nivel de Riesgo
+              </label>
+              <br />
+              {% if detalle_poliza.riesgo is not none %}
+              {% set riesgo_val = detalle_poliza.riesgo|float %}
+
+              {% if riesgo_val >= 1.00 and riesgo_val <= 1.60 %} <i class="bi bi-circle-fill text-success fs-4"
+                data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo Bajo (Debida Diligencia Simplificada): {{ riesgo_val }}"></i>
+                <span class="ms-2">Debida Diligencia Simplificada ({{ riesgo_val }})</span>
+                {% elif riesgo_val >= 1.61 and riesgo_val <= 2.20 %} <i class="bi bi-circle-fill text-warning fs-4"
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Riesgo Medio (Debida Diligencia Mejorada): {{ riesgo_val }}"></i>
+                  <span class="ms-2">Debida Diligencia Mejorada ({{ riesgo_val }})</span>
+                  {% elif riesgo_val >= 2.21 and riesgo_val <= 3.00 %} <i class="bi bi-circle-fill text-danger fs-4"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Riesgo Alto (Debida Diligencia Intensificada): {{ riesgo_val }}"></i>
+                    <span class="ms-2">Debida Diligencia Intensificada ({{ riesgo_val }})</span>
+                    {% else %}
+                    <i class="bi bi-question-circle text-info fs-4" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Riesgo fuera de rango o desconocido: {{ riesgo_val }}"></i>
+                    <span class="ms-2">Riesgo fuera de rango o desconocido ({{ riesgo_val }})</span>
+                    {% endif %}
+                    {% else %}
+                    <i class="bi bi-question-circle text-secondary fs-4" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Riesgo no definido"></i>
+                    <span class="ms-2">Riesgo no definido</span>
+                    {% endif %}
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Recalcular Riesgo"
+                      onclick="recalcularRiesgoPoliza('{{ detalle_poliza.Cod_renovacion }}')">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+            </div>
+          </div>
+
+          <div class="row justify-content-center mb-2">
+            <div class="col-md-12">
+              <h3 class="text-center mt-5 mb-3" id="titulo">
+                INFORMACIÓN DEL BENEFICIARIO
+              </h3>
+              <hr />
+            </div>
+          </div>
+
+          <div class="row mt-3" id="trozo">
+            <div class="col-md-6">
+              <label for="NombreB" class="form-label">
+                Nombre
+              </label>
+              <input type="text" class="form-control" id="NombreB" name="NombreB" value="{{ detalle_poliza.Nombre}}"
+                readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="ApellidoB" class="form-label">
+                Apellido
+              </label>
+              <input type="text" class="form-control" id="ApellidoB" name="ApellidoB"
+                value="{{detalle_poliza.Apellido}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="Cedula" class="form-label">
+                Cedula
+              </label>
+              <input type="text" class="form-control" id="Cedula" name="Cedula" value="{{ detalle_poliza.Cedula}}"
+                readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="Parentesco" class="form-label">
+                Parentesco
+              </label>
+              <input type="text" class="form-control" id="Parentesco" name="Parentesco"
+                value="{{detalle_poliza.Parentesco}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col-md-12 text-end">
+              <button type="submit" id="updateButton" class="btn btn-success" style="display: none;">Actualizar</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 py-4">
+          <a href="/Pagos_poliza/{{ detalle_poliza.Cod_renovacion }}/0/1" class="btn btn-success">Ver
+            Pagos</a>
+          <button class="btn btn-primary" type="button" id="btnAdd"
+            onclick="location.href='/beneficiario_crear/{{ detalle_poliza.cod_poliza }}'">Agregar
+            beneficiario</button>
+          <button class="btn btn-primary" type="button" id="delete"
+            onclick="location.href='/beneficiario_borrar/{{ detalle_poliza.cod_poliza }}'">Borrar
+            beneficiario</button>
+          <button class="btn btn-primary" type="button" id="CartaAval"
+            onclick="location.href='/CartaAval/{{ detalle_poliza.cod_poliza }}'">Agregar carta
+            Aval</button>
+          <button class="btn btn-primary" type="button" id="Reembolso"
+            onclick="location.href='/Reembolso/{{ detalle_poliza.cod_poliza }}'">Agregar
+            Reembolso</button>
+          <div class="btn-group" id="renovar" style="display:none;">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Acciones
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/form_renovar/{{ detalle_poliza.cod_poliza }}">Renovar</a></li>
+              <li><a class="dropdown-item" href="/traspasar_poliza/{{ detalle_poliza.cod_poliza }}">Traspasar</a></li>
+              <li><a class="dropdown-item" href="/anular_poliza/{{ detalle_poliza.cod_poliza }}">Anular</a></li>
+            </ul>
+          </div>
+        </div>
+
+
+
+        <div class="tabla-desplegable">
+          <div class="encabezado-tabla bg-light text-center" onclick="toggleTabla()">
+            <span class="flecha">
+              <i class="bi bi-chevron-down"></i>
+            </span>
+            <span>Siniestros</span>
+          </div>
+          {% if siniestros %}
+          <table id="miTabla" class="table table-striped table-bordered table-hover table-responsive tabla-contenido"
+            style="display: none;">
+            <thead>
+              <tr>
+                <th>Cod</th>
+                <th>Tipo siniestro</th>
+                <th>Fecha inicio</th>
+                <th>Estado siniestro</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for siniestro in siniestros %}
+              <tr id="siniestro_{{ siniestro.cod_poliza }}">
+                <td>{{ siniestro.Cod_poliza }}</td>
+                <td>{{ siniestro.tipo_siniestro }}</td>
+                <td>{{ siniestro.fecha_inicio }}</td>
+                <td>{{ siniestro.estado_siniestro }}</td>
+                <td width="10px">
+                  <a href="#" title="Ver Detalles" type="button" class="btn btn-info btn-sm" data-bs-toggle="tooltip"
+                    data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>Ver detalles</span>"
+                    data-codigo="{{ siniestro.codigo }}" data-url-base="/detalles-{{ siniestro.tipo_siniestro }}/"
+                    onclick="window.location.href = this.dataset.url_base + this.dataset.codigo;">
+                    <i class="bi bi-eye"></i>
+                    Ver detalles
+                  </a>
+                  <a href="#" onclick="" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-offset="0,4"
+                    data-bs-placement="top" data-bs-html="true" title="<span>Eliminar siniestro </span>">
+                    <i class="bi bi-trash3"></i>
+                    Eliminar
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-center" style="display: none;" id="miTabla">No hay siniestros.</p>
+          {% endif %}
+        </div>
+
+
+        <div class="tabla-desplegable">
+          <div class="encabezado-tabla bg-light text-center" onclick="toggleTabla2()">
+            <span class="flecha2">
+              <i class="bi bi-chevron-down"></i>
+            </span>
+            <span>Antiguos contratos</span>
+          </div>
+          {% if antiguas[1:] %}
+          <table id="miTabla2" class="table table-striped table-bordered table-hover table-responsive tabla-contenido"
+            style="display: none;">
+            <thead>
+              <tr>
+                <th>Cod</th>
+                <th>CI asegurado</th>
+                <th>Fecha emision</th>
+                <th>Ramo</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for antigua in antiguas[1:] %}
+              <tr id="antigua_{{ antigua.cod_poliza }}">
+                <td>{{ antigua.cod_poliza }}</td>
+                <td>{{ antigua.CI_asegurado }}</td>
+                <td>{{ antigua.fecha }}</td>
+                <td>{{ antigua.Ramo }}</td>
+                <td width="10px">
+                  <a href="{{ url_for('detallePoliza', cod_poliza=antigua.cod_poliza, cod_renovacion=antigua.Cod_renovacion) }}"
+                    title="Ver Detalles" type="button" class="btn btn-info btn-sm" data-bs-toggle="tooltip"
+                    data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>Ver detalles</span>">
+                    <i class="bi bi-eye"></i>
+                    Ver detalles
+                  </a>
+                  <a href="{{ url_for('viewPagosPoliza', id = antigua.Cod_renovacion,boton = 0 , a = 1) }}"
+                    class="btn btn-success btn-sm" tooltip="Actualizar Registro">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Ver pagos
+                  </a>
+                  <a href="#" onclick="eliminarPoliza('{{ antigua.cod_poliza }}');" class="btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
+                    title="<span>Eliminar poliza </span>">
+                    <i class="bi bi-trash3"></i>
+                    Eliminar
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-center" style="display: none;" id="miTabla2">No hay antiguos contratos.</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<h2 class="text-center">
+  No existe la poliza 😭
+  <hr />
+</h2>
+{% endif %} {% endblock %}
+{% block customJS %}
+
+<script>
+  document.getElementById('editButton').addEventListener('click', function () {
+    const fieldsToEnable = ['cod_poliza', 'fecha_emision', 'tomador_poliza', 'cobertura', 'frecuencia', 'prima'];
+    fieldsToEnable.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        if (field.tagName.toLowerCase() === 'select') {
+          field.disabled = false;
+        } else {
+          field.readOnly = false;
+        }
+      }
+    });
+
+    // Subramo and Producto handling
+    document.getElementById('subramo_display').style.display = 'none';
+    document.getElementById('subramo_wrapper').style.display = 'block';
+    const subramoSelect = document.getElementById('subramo');
+
+    document.getElementById('producto_display').style.display = 'none';
+    document.getElementById('producto_wrapper').style.display = 'block';
+    const productoSelect = document.getElementById('producto');
+
+    // Inicializar select2 por si estaba oculto alargar su ancho correctamente
+    if (typeof $ !== 'undefined') {
+      $('#subramo').select2({ width: '100%' });
+      $('#producto').select2({ width: '100%' });
+    }
+
+    // Populate options
+    if (typeof updateSubRamoOptions === 'function') {
+      const currentSubramo = document.getElementById('subramo_display').value;
+      const currentProducto = document.getElementById('producto_display').value;
+
+      updateSubRamoOptions();
+
+      // Restore values if they exist in the new options
+      // We do this after a small delay or directly if synchronous
+      // updateSubRamoOptions is synchronous
+      if (currentSubramo) subramoSelect.value = currentSubramo;
+
+      updateProductoOptions();
+      if (currentProducto) productoSelect.value = currentProducto;
+    }
+
+    document.getElementById('updateButton').style.display = 'block';
+  });
+
+  const boton = document.getElementById("renovar")
+  const today = JSON.parse('{{ today | tojson }}');
+  const completo = JSON.parse('{{ completo | tojson }}');
+  console.log(completo);
+  const Fecha_vencimiento = JSON.parse('{{ detalle_poliza | tojson }}');
+  console.log(Fecha_vencimiento.Fecha_vencimiento)
+  const fechaVencimiento = new Date(Fecha_vencimiento.Fecha_vencimiento);
+  const todayA = new Date(today);
+  fechaVencimiento.setMonth(fechaVencimiento.getMonth() - 1);
+  console.log(fechaVencimiento);
+  console.log(todayA);
+  if (fechaVencimiento.getTime() <= todayA.getTime() && completo == "si") { boton.style.display = "block"; }
+
+
+  const enlaces = document.querySelectorAll('a[data-codigo]');
+
+  enlaces.forEach(enlace => {
+    const codigo = enlace.dataset.codigo;
+    let urlBase = enlace.dataset.urlBase;
+    if (urlBase == "/detalles-Carta Aval/") { urlBase = "/detalles-Carta_Aval/"; }
+    const url = `${urlBase}${codigo}/${0}`; // Construye la URL completa
+    enlace.href = url;
+    console.log(url);
+  });
+
+
+
+
+  const Boton = document.getElementById('btnAdd');
+  const deleteB = document.getElementById('delete')
+  const listaPolizas = JSON.parse('{{ detalle_poliza | tojson }}');
+  if (listaPolizas.Nombre === null) {
+
+    Boton.style.display = "block";
+    const elementos = document.getElementById('trozo')
+    const titulo = document.getElementById('titulo')
+    elementos.style.display = "none"
+    titulo.style.display = "none"
+    deleteB.style.display = "none"
+
+  } else {
+    Boton.style.display = "none";
+    elementos.style.display = "block"
+    titulo.style.display = "block"
+    deleteB.style.display = "block"
+
+  }
+
+
+  function toggleTabla() {
+    const tabla = document.getElementById("miTabla");
+    const flecha = document.querySelector(".flecha");
+
+    if (tabla.style.display === "none") {
+      tabla.style.display = "table";
+      flecha.style.transform = "rotate(180deg)"; /* Gira la flecha */
+    } else {
+      tabla.style.display = "none";
+      flecha.style.transform = "rotate(0deg)"; /* Restablece la flecha */
+    }
+  }
+
+  function toggleTabla2() {
+    const tabla = document.getElementById("miTabla2");
+    const flecha = document.querySelector(".flecha2");
+
+    if (tabla.style.display === "none") {
+      tabla.style.display = "table";
+      flecha.style.transform = "rotate(180deg)"; /* Gira la flecha */
+    } else {
+      tabla.style.display = "none";
+      flecha.style.transform = "rotate(0deg)"; /* Restablece la flecha */
+    }
+  }
+
+
+
+</script>
+
+<script>
+  function recalcularRiesgoPoliza(codRenovacion) {
+    console.log('Iniciando recálculo de riesgo para póliza/renovación:', codRenovacion);
+
+
+    fetch(`/recargar_riesgo/${codRenovacion}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || `Error HTTP: ${response.status} ${response.statusText}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          alert('Riesgo recalculado con éxito para póliza ' + codRenovacion + '. Nuevo riesgo: ' + data.nuevo_riesgo);
+          location.reload();
+        } else {
+          alert('Error al recalcular riesgo: ' + (data.message || 'Error desconocido del servidor.'));
+        }
+      })
+      .catch(error => {
+        console.error('Error durante el recálculo:', error);
+        alert('Hubo un error al recalcular el riesgo: ' + error.message);
+      });
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const primaInput = document.getElementById('prima');
+
+    // Initialize rawValue from the input's value.
+    // The value from the server might be a float like 1234.56
+    let rawValue = '0';
+    if (primaInput.value) {
+      // Convert server value (e.g., "1234.56") to cents string ("123456")
+      const numericValue = parseFloat(primaInput.value.replace(',', '.'));
+      if (!isNaN(numericValue)) {
+        rawValue = Math.round(numericValue * 100).toString();
+      }
+    }
+
+    const formatRawValue = () => {
+      // Rellena el valor para asegurar que tenga al menos 3 dígitos (para los decimales)
+      const paddedValue = rawValue.padStart(3, '0');
+      const integerPart = paddedValue.slice(0, -2);
+      const decimalPart = paddedValue.slice(-2);
+
+      // Formatea la parte entera con puntos como separadores de miles
+      const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+
+      return `${formattedInteger},${decimalPart}`;
+    };
+
+    // Initially format the value in the input
+    if (primaInput.value) {
+      primaInput.value = formatRawValue();
+    }
+
+    primaInput.addEventListener('focus', (e) => {
+      if (e.target.readOnly) {
+        return;
+      }
+      e.target.value = formatRawValue();
+      // Selecciona el texto para que el usuario pueda sobrescribirlo al empezar a escribir
+      setTimeout(() => e.target.select(), 0);
+    });
+
+    primaInput.addEventListener('blur', (e) => {
+      if (e.target.readOnly) {
+        return;
+      }
+      // Si el valor es 0,00 al perder el foco, limpia el campo
+      if (rawValue === '0') {
+        e.target.value = '';
+      } else {
+        e.target.value = formatRawValue();
+      }
+    });
+
+    primaInput.addEventListener('keydown', (e) => {
+      if (e.target.readOnly) {
+        return;
+      }
+      // Previene la acción por defecto para tener control total
+      e.preventDefault();
+
+      if (e.key >= '0' && e.key <= '9') {
+        // Si el valor es '0', lo reemplaza, si no, añade el dígito
+        if (rawValue === '0') {
+          rawValue = e.key;
+        } else {
+          rawValue += e.key;
+        }
+      } else if (e.key === 'Backspace') {
+        // Maneja el retroceso
+        rawValue = rawValue.slice(0, -1);
+        if (rawValue === '') {
+          rawValue = '0';
+        }
+      } else if (e.key === 'Delete') {
+        // Maneja la tecla suprimir para reiniciar el valor
+        rawValue = '0';
+      } else if (e.key === '.') {
+        // Ignora el punto, como se solicitó
+        return;
+      }
+
+      // Actualiza el valor del campo con el formato correcto
+      primaInput.value = formatRawValue();
+    });
+  });
+
+  // DATA AND LOGIC FOR SUBRAMO AND PRODUCTO
+  const productosI = {
+    'MERCANTIL PANAMÁ': {
+      'Persona': {
+        'SALUD': ['INTEGRAL', 'VITAL'],
+        'VIDA': ['VIDA A TERMINO']
+      }
+    },
+    'VUMI': {
+      'Persona': {
+        'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP']
+      }
+    },
+    'LA REGIONAL': {
+      'Persona': {
+        'SALUD': ['MEDICARE CLASSIC'],
+        'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'CONTINENTAL': {
+      'Viajes': {
+        'ANUALES MULTIVIAJES': ['CORPORATIVO'],
+        'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'],
+        'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'],
+        'ESTUDIANTES': ['ESTUDIANTES']
+      }
+    },
+    'AFIANAUCO': {
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'AMERICAN FIDELITY': {
+      'Persona': {
+        'VIDA': ['VIDA']
+      }
+    },
+    'PAN-AMERICAN': {
+      'Persona': {
+        'VIDA': ['VIDA']
+      }
+    }
+  };
+
+  const productosN = {
+    'MERCANTIL': {
+      'Persona': {
+        'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'],
+        'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA/PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRUA'],
+        'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+      },
+      'Viaje': {
+        'POR DIAS': ['POR DIAS']
+      }
+    },
+    'ESTAR SEGUROS': {
+      'Persona': {
+        'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'],
+        'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'],
+        'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'],
+        'VIDA': ['VIDA TEMPORAL']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'LA INTERNACIONAL': {
+      'Persona': {
+        'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'CARACAS': {
+      'Persona': {
+        'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'banesco': {
+      'Persona': {
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      }
+    },
+    'UNIVERSITAS': {
+      'Persona': {
+        'SALUD': ['SALUD INDIVIDUAL'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Mascotas': {
+        'MASCOTAS': ['MASCOTAS PLUS']
+      }
+    },
+
+    'QUALITAS': {
+      'Persona': {
+        'SALUD': ['TU APOYO PREMIUM'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'UNISEGUROS': {
+      'Persona': {
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'OCEANICA': {
+      'Persona': {
+        'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+        'VIDA': ['Temporal', 'A termino']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'PIRAMIDE': {
+      'Persona': {
+        'SALUD': ['HCM INDIVIDUAL'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      }
+    },
+    'REAL SEGUROS': {
+      'Persona': {
+        'SALUD': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['COMBINADO EMPRESARIAL'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+      }
+    },
+    'MAPFRE': {
+      'Persona': {
+        'SALUD': ['PROTECCIÓN SALUD']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'SEGUROS VENEZUELA': {
+      'Persona': {
+        'SALUD': ['ORO', 'PLATA', 'BRONCE'],
+        'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
+        'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
+        'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
+        'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
+      },
+      'Auto': {
+        'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
+        'PERDIDA TOTAL': ['PERDIDA TOTAL'],
+        'RCV': ['RCV']
+      }
+    }
+  };
+
+  const base = JSON.parse('{{ session.get("base") | tojson }}');
+  let productos;
+  if (base == "nacional") {
+    productos = productosN;
+  }
+  else { productos = productosI; }
+
+  function normalizeText(text) {
+    if (!text) return '';
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+  }
+
+  function findCompany(selectedCompania, productosObj) {
+    const normalizedSelected = normalizeText(selectedCompania);
+    if (!normalizedSelected) return null;
+
+    // Intento match exacto primero
+    if (productosObj[normalizedSelected]) return normalizedSelected;
+
+    // Intento match por subcadena (si la compañía seleccionada contiene la clave o viceversa)
+    const keys = Object.keys(productosObj);
+    for (const key of keys) {
+      const normalizedKey = normalizeText(key);
+      if (normalizedSelected.includes(normalizedKey) || normalizedKey.includes(normalizedSelected)) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  function updateSubRamoOptions() {
+    const companiaRaw = document.getElementById('compania').value;
+    const companiaKey = findCompany(companiaRaw, productos);
+
+    const ramo = document.getElementById('ramo').value;
+    const subRamoSelect = document.getElementById('subramo');
+    const productoSelect = document.getElementById('producto');
+
+    // Preserve current value if not replacing
+    const currentSubramo = document.getElementById('subramo_display').value;
+
+    subRamoSelect.innerHTML = '<option value="">Selecciona un sub ramo</option>';
+    productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+    if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo]) {
+      Object.keys(productos[companiaKey][ramo]).forEach(function (subRamo) {
+        const option = document.createElement('option');
+        option.value = subRamo;
+        option.text = subRamo;
+        if (subRamo == currentSubramo) {
+          option.selected = true;
+        }
+        subRamoSelect.appendChild(option);
+      });
+      $(subRamoSelect).trigger('change');
+    }
+  }
+
+  function updateProductoOptions() {
+    const companiaRaw = document.getElementById('compania').value;
+    const companiaKey = findCompany(companiaRaw, productos);
+
+    const ramo = document.getElementById('ramo').value;
+    const subRamoSelect = document.getElementById('subramo');
+    const productoSelect = document.getElementById('producto');
+    const subRamo = subRamoSelect.value;
+
+    const currentProducto = document.getElementById('producto_display').value;
+
+    productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+    if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo] && productos[companiaKey][ramo][subRamo]) {
+      productos[companiaKey][ramo][subRamo].forEach(function (producto) {
+        const option = document.createElement('option');
+        option.value = producto;
+        option.text = producto;
+        if (producto == currentProducto) {
+          option.selected = true;
+        }
+        productoSelect.appendChild(option);
+      });
+      $(productoSelect).trigger('change');
+    }
+  }
+
+  document.getElementById('subramo').addEventListener('change', updateProductoOptions);
+
+</script>
+
+{% endblock %}

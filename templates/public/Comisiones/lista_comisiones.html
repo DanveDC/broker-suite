@@ -1,0 +1,927 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Lista de Comisiones{% endblock %}
+
+{% block customCSS %}
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<style>
+  .main-container {
+    display: flex;
+    transition: margin-right 0.3s ease-in-out;
+  }
+
+  .table-container {
+    flex-grow: 1;
+    transition: width 0.3s ease-in-out;
+    width: 100%;
+  }
+
+  .selection-panel {
+    width: 350px;
+    position: fixed;
+    top: 0;
+    right: -350px;
+    /* Oculto por defecto */
+    height: 100vh;
+    background-color: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    padding: 20px;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1040;
+    /* Por encima de la mayoría de los elementos */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .selection-panel.open {
+    right: 0;
+  }
+
+  .main-container.panel-open .table-container {
+    width: 100%;
+  }
+
+  .selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .selection-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+  }
+
+  .selection-list li {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .details-control {
+    cursor: pointer;
+    color: #0d6efd;
+    transition: transform 0.2s ease;
+  }
+
+  .details-control:hover {
+    color: #0a58ca;
+    transform: scale(1.2);
+  }
+
+  tr.shown .details-control i {
+    transform: rotate(90deg);
+  }
+
+  .child-row-content {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 5px 0;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .info-label {
+    font-weight: bold;
+    color: #495057;
+    margin-right: 5px;
+  }
+</style>
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">
+      <a href="{{ url_for('inicio1') }}" class="text-secondary me-2"><i class="bi bi-arrow-left-circle"></i></a>
+      LISTA DE COMISIONES
+    </h3>
+  </div>
+  <div id="app" class="col-md-10 mx-auto">
+    <div class="row mb-3 justify-content-center">
+      <div class="col-md-4">
+        <input type="text" id="daterange" name="daterange" class="form-control" placeholder="Rango de fechas" />
+      </div>
+      <div class="col-md-4">
+        <select id="ejecutivo" class="form-select" name="referidor" aria-label="Seleccione un ejecutivo">
+          <option value="">Seleccione un ejecutivo</option>
+          {% for row in ejecutivos %}
+          <option value="{{ row.cod_ejecutivo }}">{{ row.Nombre }} {{ row.Apellido }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-md-10 mx-auto">
+    <div class="row mb-3 justify-content-center align-items-center">
+      <div class="col-auto ">
+        <button id="filterDates" class="btn btn-primary me-2">Filtrar</button>
+      </div>
+      <div class="col-auto ">
+        <button id="btn-borrar-fecha" class="btn btn-primary">Limpiar Filtro</button>
+      </div>
+      <div class="col-auto">
+        <div class="btn-group">
+          <button id="enviarComisionesDropdown" type="button" class="btn btn-primary dropdown-toggle"
+            data-bs-toggle="dropdown" aria-expanded="false" disabled>
+            Imprimir
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" id="imprimirPDF">PDF</a></li>
+            <li><a class="dropdown-item" href="#" id="imprimirExcel">Excel</a></li>
+            <li><a class="dropdown-item" href="#" id="imprimirAmbos">Ambos</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-auto" id="wrap-btn-recibo" style="display:none;">
+        <button id="btn-descargar-recibo" class="btn btn-success" title="Descargar Recibo de Comisiones del ejecutivo seleccionado">
+          <i class="bi bi-file-earmark-pdf-fill me-1"></i> Descargar Recibo PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="table-container">
+      <div class="row justify-content-center mb-2">
+        <div class="col-md-11">
+          <div class="table-responsive text-nowrap table-hover">
+            <table id="Comisiones" class="table table-hover" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th width="30px"></th>
+                  <th>Compañía</th>
+                  <th>Ramo</th>
+                  <th>Subramo</th>
+                  <th>Producto</th>
+                  <th>Ejecutivo</th>
+                  <th>Tipo Ejec.</th>
+                  <th>Prima $</th>
+                  <th>Fracción</th>
+                  <th>Comisión</th>
+                  <th>Moneda</th>
+                  <th>Fecha</th>
+                  <th>Com. Ejec.</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Modal de Previsualización de PDF -->
+<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pdfPreviewModalLabel">Previsualización de Reporte</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="height: 80vh;">
+        <iframe id="pdf-preview-iframe" src="about:blank" width="100%" height="100%" frameborder="0"></iframe>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="mb-3">
+            <label for="pdfNote" class="form-label">Nota Adicional (opcional):</label>
+            <textarea id="pdfNote" class="form-control" rows="2"
+              placeholder="Escriba una nota para agregar al reporte..."></textarea>
+          </div>
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-info me-auto" id="updatePdfBtn">Agregar Nota y Actualizar Vista
+              Previa</button>
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="downloadPdfBtn">Descargar PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Configuración Rápida de Regla -->
+<div class="modal fade" id="quickRuleModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="quickRuleModalLabel" aria-hidden="true" style="z-index: 9999;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="background: white !important; opacity: 1 !important;">
+      <div class="modal-header bg-warning text-dark border-0">
+        <h5 class="modal-title fw-bold" id="quickRuleModalLabel"><i class="bi bi-gear-fill me-2"></i>Ajustar Regla Especial</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="quickRuleForm">
+        <div class="modal-body p-4">
+          <div class="mb-4 text-center">
+            <h6 id="qr_tipo_label" class="text-uppercase text-muted small fw-bold mb-1">Ejecutivo</h6>
+            <h4 id="qr_nombre_ejecutivo" class="text-primary fw-bold mb-3"> - </h4>
+            <div class="p-3 bg-light border-start border-4 border-warning rounded shadow-sm">
+                <i class="bi bi-file-earmark-text me-2"></i><span id="qr_details" class="fw-bold text-dark"></span>
+            </div>
+          </div>
+          
+          <input type="hidden" id="qr_compania" name="compania">
+          <input type="hidden" id="qr_ramo" name="ramo">
+          <input type="hidden" id="qr_subramo" name="subramo">
+          <input type="hidden" id="qr_producto" name="producto">
+          <input type="hidden" id="qr_cod_ejecutivo" name="cod_ejecutivo">
+          
+          <div class="mb-4">
+            <label class="form-label fw-bold"><i class="bi bi-percent me-2"></i>Porcentaje de Comisión</label>
+            <div class="d-flex align-items-center mb-3">
+              <input type="range" class="form-range flex-grow-1 me-3" id="qr_porcentaje_range" min="0" max="100" step="0.1" value="5">
+              <div class="input-group" style="width: 160px;">
+                <input type="number" class="form-control text-center fw-bold fs-5" id="qr_porcentaje_input" name="porcentaje" step="0.1" min="0" max="100" value="5" required>
+                <span class="input-group-text bg-light fw-bold">%</span>
+              </div>
+            </div>
+            <div id="agente_warning" class="alert alert-info py-2 px-3 small border-0 mb-0 fade show" style="display:none;">
+              <i class="bi bi-info-circle-fill me-2"></i>Tasa base detectada (Agente): <strong id="min_agente_val">0</strong>%
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm">Guardar y Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+
+
+<script>
+  $(function () {
+    // Inicializar DataTable
+    const table = new DataTable('#Comisiones', {
+      language: {
+        "url": "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+      },
+      serverSide: true,
+      processing: true,
+      searching: false, // Deshabilitar la caja de búsqueda por defecto
+      ajax: {
+        url: '/api/comisiones_datatable',
+        data: function (d) {
+          const daterangepicker = $('#daterange').data('daterangepicker');
+          if ($('#daterange').val()) {
+            d.minDateStr = daterangepicker.startDate.format('YYYY-MM-DD');
+            d.maxDateStr = daterangepicker.endDate.format('YYYY-MM-DD');
+          }
+          d.ejecutivo_id = $('#ejecutivo').val();
+        }
+      },
+      columns: [
+        {
+          data: null,
+          render: () => '<i class="bi bi-plus-circle-fill"></i>',
+          className: 'details-control text-center',
+          orderable: false
+        },
+        { data: 'compania', render: d => `<span style="font-size: 0.85rem;">${d || ''}</span>` },
+        { data: 'Ramo', render: d => `<span class="badge bg-light text-dark border">${d}</span>` },
+        { data: 'subramo', render: d => `<span style="font-size: 0.85rem;">${d || '-'}</span>` },
+        { data: 'producto', render: d => `<span style="font-size: 0.85rem;">${d || '-'}</span>` },
+        { data: null, render: function (data, type, row) { return `<span style="font-size: 0.85rem;">${row.Nombre || ''} ${row.Apellido || ''}</span>`; } },
+        { data: 'Tipo', render: d => `<span class="badge bg-secondary">${d}</span>` },
+        { data: 'Prima', render: d => parseFloat(d || 0).toFixed(2) },
+        { data: 'monto', render: d => parseFloat(d || 0).toFixed(2) },
+        { data: 'comision_monto', render: d => parseFloat(d || 0).toFixed(2) + ' $' },
+        {
+          data: 'moneda',
+          render: d => `<span class="badge ${d === '$' ? 'bg-success' : 'bg-info'}">${d}</span>`
+        },
+        { data: 'fecha' },
+        {
+          data: null,
+          render: function (data, type, row) {
+            const valor = parseFloat(row.comision_ejecutivo || 0).toFixed(2);
+            const pct = (parseFloat(row.porcentaje_ejecutivo || 0)).toFixed(1);
+            
+            // Caso 1: Tiene su propia regla específica configurada
+            if (row.has_rule && !row.es_fallback) {
+              return `
+                <div class="text-center">
+                    <span class="text-success fw-bold" style="font-size: 1rem;">${valor} $</span>
+                    <div class="badge bg-success d-block mt-1" style="font-size: 0.65rem;">
+                        <i class="bi bi-check-circle-fill"></i> REGLA ESPECÍFICA
+                    </div>
+                    <small class="text-muted d-block" style="font-size: 0.7rem;">(${pct}%)</small>
+                </div>`;
+            }
+            
+            // Caso 2: Está usando el Fallback de Agente (INDICADOR NARANJA)
+            if (row.es_fallback) {
+                return `
+                    <div class="text-center">
+                        <span class="text-warning fw-bold" style="font-size: 1rem;">${valor} $</span>
+                        <div class="badge bg-warning text-dark d-block mt-1 border border-warning-subtle" style="font-size: 0.65rem;">
+                            <i class="bi bi-info-circle-fill"></i> TASA AGENTE (FALLBACK)
+                        </div>
+                    </div>`;
+            }
+            
+            // Caso 3: NO HAY REGLA (Directa o Fallback) - INDICADOR ROJO
+            if (!row.has_rule) {
+                return `
+                    <div class="text-center">
+                        <span class="text-danger fw-bold">0.00 $</span>
+                        <div class="badge bg-danger text-white d-block mt-1" style="font-size: 0.65rem;">
+                            <i class="bi bi-x-circle-fill"></i> REGLA FALTANTE
+                        </div>
+                    </div>`;
+            }
+
+            return `<span class="text-muted">0.00 $</span>`;
+          }
+        },
+        {
+          data: null,
+          orderable: false,
+          render: function (data, type, row) {
+            let actions = `
+              <div class="btn-group">
+                <a href="/detalles-poliza/${row.cod_poliza}" class="btn btn-outline-info btn-sm"
+                  data-bs-toggle="tooltip" title="Ver Detalles">
+                  <i class="bi bi-eye"></i>
+                </a>
+            `;
+            
+            // Permitir configurar regla rápida si es personalizado o si falta la regla
+            if (!row.has_rule || (row.Tipo && row.Tipo.toUpperCase() === 'PERSONALIZADO')) {
+              actions += `
+                <button type="button" class="btn btn-outline-warning btn-sm btn-quick-rule" 
+                  data-compania="${row.compania}" 
+                  data-ramo="${row.Ramo}" 
+                  data-subramo="${row.subramo || ''}" 
+                  data-producto="${row.producto || ''}"
+                  data-cod-ejecutivo="${row.cod_ejecutivo}"
+                  data-nombre="${row.Nombre} ${row.Apellido}"
+                  data-tipo="${row.Tipo}"
+                  title="Configurar Regla Específica">
+                  <i class="bi bi-gear-fill"></i>
+                </button>
+              `;
+            }
+            
+            actions += `</div>`;
+            return actions;
+          }
+        }
+      ],
+      createdRow: function (row, data, dataIndex) {
+        $(row).attr('id', 'comision_' + data.Cod_pago);
+        $(row).attr('data-child-data', JSON.stringify(data));
+      },
+      order: [[11, 'desc']] // Ordenar por fecha por defecto
+    });
+
+    // Función para formatear el contenido de la fila hija
+    function format(d) {
+      if (!d) return '';
+      const data = typeof d === 'string' ? JSON.parse(d) : d;
+      return `
+        <div class="child-row-content">
+          <div class="row">
+            <div class="col-md-6 border-end">
+              <h6 class="text-primary mb-3"><i class="bi bi-person-badge me-2"></i>Información del Asegurado</h6>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Asegurado:</div>
+                <div class="col-sm-8">${data.N_asegu} ${data.A_Asegu}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Cédula/ID:</div>
+                <div class="col-sm-8">${data.ci_asegurado || 'N/A'}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Ejecutivo:</div>
+                <div class="col-sm-8">${data.Nombre} ${data.Apellido} <span class="badge bg-secondary ms-2">${data.Tipo}</span></div>
+              </div>
+            </div>
+            <div class="col-md-6 ps-4">
+              <h6 class="text-primary mb-3"><i class="bi bi-file-earmark-text me-2"></i>Detalles de la Póliza</h6>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Póliza:</div>
+                <div class="col-sm-8"><span class="badge bg-light text-dark border">${data.cod_poliza}</span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Compañía:</div>
+                <div class="col-sm-8">${data.compania || 'N/A'}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Ramo/Prod:</div>
+                <div class="col-sm-8">${data.Ramo} - ${data.producto || 'N/A'}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Subramo:</div>
+                <div class="col-sm-8">${data.subramo || 'N/A'}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-sm-4 info-label">Estado:</div>
+                <div class="col-sm-8"><span class="badge ${data.Estado == 'Cobrado' ? 'bg-success' : 'bg-warning'}">${data.Estado}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Event listener para abrir y cerrar detalles
+    $('#Comisiones tbody').on('click', 'td.details-control', function () {
+      var tr = $(this).closest('tr');
+      var row = table.row(tr);
+
+      if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('shown');
+      } else {
+        const childData = tr.attr('data-child-data');
+        row.child(format(childData)).show();
+        tr.addClass('shown');
+      }
+    });
+
+  });
+
+
+  // Variable global o accesible para almacenar los datos filtrados
+  let filteredCommissionsData = [];
+  // Eventos de selección removidos
+
+  const btnBorrarFecha = document.getElementById('btn-borrar-fecha');
+  btnBorrarFecha.addEventListener('click', function () {
+    window.location.href = '/lista-de-comisiones';
+  });
+
+  // Modifica esta función para aceptar los datos directamente
+  // Ahora acepta rango de fechas y ejecutivo
+  async function enviarComisionesAlBackend(comisionesParaEnviar, tipo, rangoFechas = '', ejecutivo = '') {
+    console.log("Tipo de acción:", tipo);
+    if (!comisionesParaEnviar || comisionesParaEnviar.length === 0) {
+      alert("No hay comisiones seleccionadas para imprimir. Por favor, seleccione al menos una.");
+      return;
+    }
+
+    const dateRangeValue = $('#daterange').val() || "Todos";
+    const ejecutivoText = $('#ejecutivo option:selected').text();
+    // Empaquetar los datos en un solo objeto
+    const payload = {
+      comisiones: comisionesParaEnviar,
+      rangoFechas: rangoFechas,
+      ejecutivo: ejecutivo
+    };
+    console.log("Datos que se enviarán al backend:", payload);
+
+    // Función auxiliar para manejar la descarga de un blob
+    function downloadBlob(data, filename, type) {
+      const blob = new Blob([data], { type: type });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      $(a).remove(); // Eliminar el elemento <a> después de la descarga
+    }
+
+    try {
+      if (tipo === 'pdf' || tipo === 'ambos') {
+        // --- Solicitud para la PREVISUALIZACIÓN del PDF ---
+        console.log("Enviando solicitud para previsualizar PDF...");
+        const pdfResponse = await fetch('/previsualizar-pdf-comisiones', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (pdfResponse.ok) {
+          const pdfBlob = await pdfResponse.blob();
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+
+          // Mostrar el PDF en el iframe del modal
+          $('#pdf-preview-iframe').attr('src', pdfUrl);
+          const previewModal = new bootstrap.Modal(document.getElementById('pdfPreviewModal'));
+          previewModal.show();
+
+          // Configurar el botón de descarga del modal para que use los mismos datos
+          $('#downloadPdfBtn').off('click').on('click', function () {
+            downloadBlob(pdfBlob, 'comisiones.pdf', 'application/pdf');
+          });
+
+        } else {
+          const errorText = await pdfResponse.text();
+          console.error('Error al generar PDF:', pdfResponse.status, errorText);
+          alert('Error al generar el PDF. Por favor, inténtelo de nuevo.');
+        }
+      }
+      if (tipo === 'excel' || tipo === 'ambos') {
+        // --- Solicitud para descargar el Excel ---
+        console.log("Enviando solicitud para Excel...");
+        const excelResponse = await fetch('/descargar-excel-comisiones', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (excelResponse.ok) {
+          const excelBlob = await excelResponse.blob();
+          let excelFilename = 'comisiones.xlsx';
+          const excelDisposition = excelResponse.headers.get('Content-Disposition');
+          if (excelDisposition && excelDisposition.indexOf('attachment') !== -1) {
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = filenameRegex.exec(excelDisposition);
+            if (matches != null && matches[1]) {
+              excelFilename = matches[1].replace(/['"]/g, '');
+            }
+          }
+          downloadBlob(excelBlob, excelFilename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          console.log("Excel generado y descargado exitosamente.");
+        } else {
+          const errorText = await excelResponse.text();
+          console.error('Error al generar Excel:', excelResponse.status, errorText);
+          alert('Error al generar el Excel. Por favor, inténtelo de nuevo.');
+        }
+      }
+    } catch (error) {
+      console.error('Error en la solicitud general:', error);
+      alert('Ocurrió un error inesperado. Por favor, inténtelo de nuevo.');
+    }
+  }
+  // Inicializa tooltips al cargar la página si ya hay contenido
+  $(document).ready(function () {
+    const table = $('#Comisiones').DataTable();
+
+    // --- INICIO: NUEVA LÓGICA DE FILTRADO CLIENT-SIDE ---
+
+    // Inicializar daterangepicker
+    $('input[name="daterange"]').daterangepicker({
+      opens: 'left',
+      autoUpdateInput: false, // No actualizar el input automáticamente
+      locale: {
+        format: 'YYYY-MM-DD',
+        cancelLabel: 'Limpiar'
+      },
+      ranges: {
+        'Hoy': [moment(), moment()],
+        'Ayer': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Últimos 7 Días': [moment().subtract(6, 'days'), moment()],
+        'Últimos 30 Días': [moment().subtract(29, 'days'), moment()],
+        'Este Mes': [moment().startOf('month'), moment().endOf('month')],
+        'Mes Pasado': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+      }
+    });
+
+    // Evento cuando se aplica una fecha
+    $('input[name="daterange"]').on('apply.daterangepicker', function (ev, picker) {
+      $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+    });
+
+    // Evento para limpiar el campo de fecha
+    $('input[name="daterange"]').on('cancel.daterangepicker', function (ev, picker) {
+      $(this).val('');
+    });
+
+    // Modificar el filtro personalizado de DataTables (ahora se gestiona en el backend)
+    // Evento del botón "Filtrar"
+    $('#filterDates').on('click', function () {
+      table.ajax.reload(); // Redibuja la tabla recargando desde el servidor
+      document.getElementById("enviarComisionesDropdown").disabled = false;
+      // Mostrar botón de recibo solo si hay ejecutivo seleccionado
+      const ejecutivoSeleccionado = $('#ejecutivo').val();
+      if (ejecutivoSeleccionado) {
+        $('#wrap-btn-recibo').show();
+      } else {
+        $('#wrap-btn-recibo').hide();
+      }
+    });
+
+    // Limpiar el filtro y redibujar la tabla
+    $('#btn-borrar-fecha').on('click', function () {
+      $('#daterange').val('');
+      $('#ejecutivo').val('');
+      table.ajax.reload();
+      $('#wrap-btn-recibo').hide();
+    });
+
+    // --- FIN: NUEVA LÓGICA DE FILTRADO ---
+
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+    // Configurar botones de impresión para usar los datos filtrados
+    $('#imprimirPDF, #imprimirExcel, #imprimirAmbos').on('click', async function (e) {
+      e.preventDefault();
+
+      const tipo = $(this).attr('id').replace('imprimir', '').toLowerCase();
+
+      const daterangepicker = $('#daterange').data('daterangepicker');
+      let minDateStr = $('#daterange').val() ? daterangepicker.startDate.format('YYYY-MM-DD') : '';
+      let maxDateStr = $('#daterange').val() ? daterangepicker.endDate.format('YYYY-MM-DD') : '';
+      let ejecutivo_id = $('#ejecutivo').val() || '';
+
+      const start = 0;
+      const length = 10000; // Pedir todos los registros (podría ser pesado pero es para PDF)
+
+      try {
+        const response = await fetch(`/api/comisiones_datatable?start=${start}&length=${length}&minDateStr=${minDateStr}&maxDateStr=${maxDateStr}&ejecutivo_id=${ejecutivo_id}`);
+        const resultado = await response.json();
+        const selectedData = resultado.data;
+        enviarComisionesAlBackend(selectedData, tipo);
+      } catch (error) {
+        console.error("Error trayendo comisiones para exportar:", error);
+      }
+    });
+
+    // --- INICIO: LÓGICA PARA AGREGAR NOTA AL PDF ---
+    $('#updatePdfBtn').on('click', async function () {
+      const note = $('#pdfNote').val();
+
+      const daterangepicker = $('#daterange').data('daterangepicker');
+      let minDateStr = $('#daterange').val() ? daterangepicker.startDate.format('YYYY-MM-DD') : '';
+      let maxDateStr = $('#daterange').val() ? daterangepicker.endDate.format('YYYY-MM-DD') : '';
+      let ejecutivo_id = $('#ejecutivo').val() || '';
+
+      const start = 0;
+      const length = 10000; // Pedir todos los registros (podría ser pesado pero es para PDF)
+
+      let selectedData = [];
+      try {
+        const responseRequest = await fetch(`/api/comisiones_datatable?start=${start}&length=${length}&minDateStr=${minDateStr}&maxDateStr=${maxDateStr}&ejecutivo_id=${ejecutivo_id}`);
+        const resultadoRequest = await responseRequest.json();
+        selectedData = resultadoRequest.data;
+      } catch (error) {
+        console.error("Error trayendo comisiones para actualizar PDF:", error);
+      }
+
+      if (selectedData.length === 0) {
+        alert("No hay comisiones seleccionadas para actualizar.");
+        return;
+      }
+
+      // Muestra un indicador de carga
+      const originalBtnText = $(this).html();
+      $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Actualizando...');
+      $(this).prop('disabled', true);
+
+      const payload = {
+        comisiones: selectedData,
+        rangoFechas: $('#daterange').val() || "Todos",
+        ejecutivo: $('#ejecutivo option:selected').text(),
+        nota: note // Añadimos la nota al payload
+      };
+
+      try {
+        const response = await fetch('/previsualizar-pdf-comisiones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const pdfBlob = await response.blob();
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          $('#pdf-preview-iframe').attr('src', pdfUrl);
+
+          // Actualizar también el botón de descarga principal
+          $('#downloadPdfBtn').off('click').on('click', function () {
+            const a = document.createElement('a');
+            a.href = pdfUrl;
+            a.download = 'comisiones_con_nota.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pdfUrl);
+          });
+
+        } else {
+          const errorText = await response.text();
+          console.error('Error al actualizar el PDF con la nota:', errorText);
+          alert('No se pudo actualizar la previsualización del PDF.');
+        }
+      } catch (error) {
+        console.error('Error en la solicitud para actualizar el PDF:', error);
+        alert('Ocurrió un error al intentar actualizar el PDF.');
+      } finally {
+        // Restaura el botón
+        $(this).html(originalBtnText);
+        $(this).prop('disabled', false);
+      }
+    });
+    // --- INICIO: LÓGICA PARA REGLA RÁPIDA ---
+    $(document).on('click', '.btn-quick-rule', async function() {
+        const btn = $(this);
+        const data = btn.data();
+        
+        // Rellenar modal
+        try {
+            // Limpiar modal
+            $('#qr_porcentaje_input').val('');
+            $('#qr_porcentaje_range').val(0);
+            $('#qr_details').text(`${data.compania} | ${data.ramo} | ${data.producto}`);
+            
+            // Valores ocultos
+            $('#qr_compania').val(btn.data('compania'));
+            $('#qr_ramo').val(btn.data('ramo'));
+            $('#qr_subramo').val(btn.data('subramo'));
+            $('#qr_producto').val(btn.data('producto'));
+            $('#qr_cod_ejecutivo').val(btn.data('cod-ejecutivo')); // Usar acceso directo al atributo con guiones
+            $('#qr_tipo').val(btn.data('tipo'));
+            
+            $('#qr_ejecutivo_nombre').text(data.nombre);
+
+            // Obtener tasa mínima de Agente como referencia
+            const res = await fetch(`/api/get-agente-commission?compania=${encodeURIComponent(data.compania)}&ramo=${encodeURIComponent(data.ramo)}&subramo=${encodeURIComponent(data.subramo)}&producto=${encodeURIComponent(data.producto)}`);
+            const info = await res.json();
+            
+            if (info.success && info.porcentaje !== null) {
+                const minVal = parseFloat(info.porcentaje) * 100; // Convertir decimal a entero para el modal
+                $('#qr_porcentaje_input').attr('min', minVal);
+                $('#qr_porcentaje_range').attr('min', minVal);
+                $('#qr_porcentaje_input').val(minVal);
+                $('#qr_porcentaje_range').val(minVal);
+                $('#qr_min_hint').text(`(Tasa Agente: ${minVal}%)`);
+            } else {
+                $('#qr_porcentaje_input').attr('min', 0);
+                $('#qr_porcentaje_range').attr('min', 0);
+                $('#qr_porcentaje_input').val(5);
+                $('#qr_porcentaje_range').val(5);
+            }
+        } catch (e) {
+            console.error("Error buscando comision agente:", e);
+        }
+        
+        new bootstrap.Modal('#quickRuleModal').show();
+    });
+
+    // Sincronizar Slider con Input y Validar Mínimo
+    $('#qr_porcentaje_range').on('input', function() {
+        const minAttr = parseFloat($(this).attr('min')) || 0;
+        let val = parseFloat($(this).val());
+        if (val < minAttr) {
+            val = minAttr;
+            $(this).val(val);
+        }
+        $('#qr_porcentaje_input').val(val);
+    });
+
+    $('#qr_porcentaje_input').on('change', function() {
+        const minAttr = parseFloat($(this).attr('min')) || 0;
+        let val = parseFloat($(this).val());
+        if (val < minAttr) {
+            alert(`No se permite asignar un monto menor a la tasa base (${minAttr}%)`);
+            val = minAttr;
+            $(this).val(val);
+        }
+        $('#qr_porcentaje_range').val(val);
+    });
+
+    // Guardar Regla
+    $('#quickRuleForm').on('submit', async function(e) {
+        e.preventDefault();
+        const minAttr = parseFloat($('#qr_porcentaje_input').attr('min')) || 0;
+        const currentVal = parseFloat($('#qr_porcentaje_input').val());
+
+        if (currentVal < minAttr) {
+            alert("No puedes guardar una comisión inferior a la del ejecutivo tipo Agente.");
+            return;
+        }
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        try {
+            const response = await fetch('/api/configurar-regla-rapida', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                bootstrap.Modal.getInstance('#quickRuleModal').hide();
+                table.ajax.reload(null, false); // Recargar sin resetear paginas
+                alert("Regla guardada correctamente. Las comisiones se actualizarán.");
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (error) {
+            alert("Error al conectar con el servidor");
+        }
+    });
+    // --- FIN: LÓGICA PARA REGLA RÁPIDA ---
+
+    // --- FIN: LÓGICA PARA AGREGAR NOTA AL PDF ---
+
+    // --- INICIO: LÓGICA PARA DESCARGAR RECIBO PDF POR EJECUTIVO ---
+    $('#btn-descargar-recibo').on('click', async function () {
+      const btn = $(this);
+      const originalHtml = btn.html();
+
+      const daterangepicker = $('#daterange').data('daterangepicker');
+      let minDateStr = $('#daterange').val() ? daterangepicker.startDate.format('YYYY-MM-DD') : '';
+      let maxDateStr = $('#daterange').val() ? daterangepicker.endDate.format('YYYY-MM-DD') : '';
+      let ejecutivo_id = $('#ejecutivo').val() || '';
+      const ejecutivo_nombre = $('#ejecutivo option:selected').text();
+      const rangoFechas = $('#daterange').val() || 'Todos';
+
+      if (!ejecutivo_id) {
+        alert('Por favor seleccione un ejecutivo antes de descargar el recibo.');
+        return;
+      }
+
+      // Mostrar spinner
+      btn.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Generando...');
+      btn.prop('disabled', true);
+
+      try {
+        // Traer TODOS los registros del ejecutivo (sin paginación)
+        const response = await fetch(
+          `/api/comisiones_datatable?start=0&length=99999&minDateStr=${minDateStr}&maxDateStr=${maxDateStr}&ejecutivo_id=${ejecutivo_id}`
+        );
+        const resultado = await response.json();
+        const comisiones = resultado.data;
+
+        if (!comisiones || comisiones.length === 0) {
+          alert('No se encontraron comisiones para el ejecutivo en el período seleccionado.');
+          return;
+        }
+
+        const payload = {
+          comisiones: comisiones,
+          rangoFechas: rangoFechas,
+          ejecutivo: ejecutivo_nombre,
+        };
+
+        const pdfResponse = await fetch('/descargar-recibo-pdf-comisiones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (pdfResponse.ok) {
+          const pdfBlob = await pdfResponse.blob();
+          const url = window.URL.createObjectURL(pdfBlob);
+          const a = document.createElement('a');
+          // Construir nombre de archivo con el nombre del ejecutivo
+          const ejSlug = ejecutivo_nombre.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase();
+          const fechaHoy = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          a.download = `RECIBO_COMISIONES_${ejSlug}_${fechaHoy}.pdf`;
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          $(a).remove();
+        } else {
+          const errText = await pdfResponse.text();
+          console.error('Error del servidor:', errText);
+          alert('Error al generar el recibo PDF. Por favor intente nuevamente.');
+        }
+      } catch (err) {
+        console.error('Error descargando recibo PDF:', err);
+        alert('Ocurrió un error inesperado al generar el recibo.');
+      } finally {
+        btn.html(originalHtml);
+        btn.prop('disabled', false);
+      }
+    });
+    // --- FIN: LÓGICA PARA DESCARGAR RECIBO PDF POR EJECUTIVO ---
+  });
+
+</script>
+
+{% endblock %}

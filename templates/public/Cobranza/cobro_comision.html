@@ -1,0 +1,553 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Cobro de Comisión{% endblock %}
+
+{% block customCSS %}
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-12">
+            <h3 class="text-center mt-5 mb-3">
+                <a href="{{ url_for('inicio1') }}">
+                    <i class="bi bi-arrow-left-circle"></i>
+                </a>
+                COBRO DE COMISIÓN
+            </h3>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-11 text-end">
+            <button id="btnAsignarComisiones" class="btn btn-success">Asignar Comisiones Faltantes</button>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-11">
+            <div class="table-responsive text-nowrap table-hover">
+                <table id="tablaCobroComision" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Fecha Cobro</th>
+                            <th>Nro. Póliza</th>
+                            <th>Nombre Ejecutivo</th>
+                            <th>Nombre Cliente</th>
+                            <th>Monto Prima</th>
+                            <th>Fraccion</th>
+                            <th>Tasa Pago</th>
+                            <th>Tasa Comisión</th>
+                            <th>Monto Comisión Bs</th>
+                            <th>Monto Comisión $</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comision in comisiones %}
+                        <tr>
+                            <td>{{ comision.get('FECHA COBRO RECIBO') or 'N/A' }}</td>
+                            <td>{{ comision.get('NRO. POLIZA') or 'N/A' }}</td>
+                            <td>{{ comision.get('NOMBRE EJECUTIVO') or 'N/A' }}</td>
+                            <td>{{ comision.get('NOMBRE CLIENTE') or 'N/A' }}</td>
+                            <td>{{ "%.2f $"|format(comision.get('MONTO PRIMA')|float) if comision.get('MONTO PRIMA') is
+                                not none else 'N/A' }}</td>
+                            <td>{{ "%.2f $"|format(comision.get('MONTO FRACCION')|float) if comision.get('MONTO
+                                FRACCION') is not none else 'N/A' }}</td>
+                            <td>{{ "%.2f"|format(comision.get('TASA PAGO')|float) if comision.get('TASA PAGO') is not
+                                none else 'N/A' }}</td>
+                            <td>
+                                {% if comision.get('TASA COMISION') is not none %}
+                                {{ "%.2f"|format(comision.get('TASA COMISION')|float) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if comision.get('MONTO BS COMISION') is not none %}
+                                {{ "%.2f Bs"|format(comision.get('MONTO BS COMISION')|float) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if comision.get('MONTO D') is not none %}
+                                {{ "%.2f $"|format(comision.get('MONTO D')|float) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if comision.get('procesado') != 'si' %}
+                                <button class="btn btn-primary btn-sm procesar-btn"
+                                    data-recibo-id="{{ comision.get('NRO. RECIBO') }}"
+                                    data-cod-renovacion="{{ comision.get('COD. RENOVACION') }}" data-bs-toggle="modal"
+                                    data-bs-target="#procesarComisionModal">
+                                    Procesar
+                                </button>
+                                {% else %}
+                                <span class="badge bg-success me-1">Procesado</span>
+                                <button class="btn btn-warning btn-sm editar-comision-btn"
+                                    data-recibo-id="{{ comision.get('NRO. RECIBO') }}"
+                                    data-cod-renovacion="{{ comision.get('COD. RENOVACION') }}" data-bs-toggle="modal"
+                                    data-bs-target="#procesarComisionModal" data-edit-mode="true">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block customJS %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+
+<!-- Modal para Procesar Comisión -->
+<div class="modal fade" id="procesarComisionModal" tabindex="-1" aria-labelledby="procesarComisionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="procesarComisionModalLabel">Procesar Comisión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formProcesarComision">
+                    <input type="hidden" id="modalReciboId" name="reciboId">
+                    <input type="hidden" id="modalCodRenovacion" name="codRenovacion">
+                    <input type="hidden" id="modalCodEjecutivo" name="codEjecutivo">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Ejecutivo</label>
+                            <input type="text" class="form-control" id="modalEjecutivo" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Asegurado</label>
+                            <input type="text" class="form-control" id="modalAsegurado" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Póliza</label>
+                            <input type="text" class="form-control" id="modalPoliza" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Prima $</label>
+                            <input type="text" class="form-control" id="modalPrima" name="prima" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Monto Fracción</label>
+                            <input type="text" class="form-control" id="modalMontoFraccion" name="montoFraccion"
+                                placeholder="0,00" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Comision $</label>
+                            <input type="text" class="form-control" id="modalMontoDolar" name="montoDolar"
+                                placeholder="0,00">
+                        </div>
+                        <div class="col-md-4 mb-3 bs-field">
+                            <label class="form-label">Comision Bs</label>
+                            <input type="text" class="form-control" id="modalComisionBs" name="comisionBs"
+                                placeholder="0,00">
+                        </div>
+                        <div class="col-md-4 mb-3 bs-field">
+                            <label class="form-label">Tasa</label>
+                            <input type="text" class="form-control" id="modalTasa" name="tasa" placeholder="0,00">
+                        </div>
+                        <div class="col-md-4 mb-3 bs-field">
+                            <label class="form-label">Bono Bs</label>
+                            <input type="text" class="form-control" id="modalBono" name="bono" placeholder="0,00">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label d-flex justify-content-between">
+                                % Comisión <span id="porcentajeBadge" class="badge bg-primary">0%</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="range" class="form-range flex-grow-1" id="modalPorcentajeSlider" min="0"
+                                    max="100" step="0.1" value="0">
+                                <div class="input-group" style="width: 100px;">
+                                    <input type="number" class="form-control px-1 text-center" id="modalPorcentaje"
+                                        name="comisionPorcentaje" step="0.01" placeholder="0.00">
+                                    <span class="input-group-text px-1">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Moneda</label>
+                            <select class="form-select select2-search" id="modalMoneda" name="moneda"
+                                data-placeholder="Moneda">
+                                <option value="$">$ (Dólares)</option>
+                                <option value="Bs">Bs (Bolívares)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para formatear inputs de moneda (similar a la de pagos.html)
+    function setupCurrencyInput(inputElement) {
+        let rawValue;
+        const initialValue = inputElement.value.replace(',', '.'); // Replace comma with dot for parseFloat
+        const numericInitialValue = parseFloat(initialValue);
+
+        if (!isNaN(numericInitialValue)) {
+            rawValue = Math.round(numericInitialValue * 100).toString();
+        } else {
+            rawValue = '0';
+        }
+
+        const formatRawValue = () => {
+            const paddedValue = rawValue.padStart(3, '0');
+            const integerPart = paddedValue.slice(0, -2);
+            const decimalPart = paddedValue.slice(-2);
+            const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+            return `${formattedInteger},${decimalPart}`;
+        };
+
+        inputElement.value = formatRawValue();
+
+        inputElement.addEventListener('focus', (e) => {
+            if (e.target.readOnly) return;
+            e.target.value = formatRawValue();
+            setTimeout(() => e.target.select(), 0);
+        });
+
+        inputElement.addEventListener('blur', (e) => {
+            if (e.target.readOnly) return;
+            if (rawValue === '0') {
+                e.target.value = '';
+            } else {
+                e.target.value = formatRawValue();
+            }
+        });
+
+        inputElement.addEventListener('keydown', (e) => {
+            if (e.target.readOnly) return;
+            e.preventDefault();
+
+            if (e.key >= '0' && e.key <= '9') {
+                if (rawValue === '0') {
+                    rawValue = e.key;
+                } else {
+                    rawValue += e.key;
+                }
+            } else if (e.key === 'Backspace') {
+                rawValue = rawValue.slice(0, -1) || '0';
+            } else if (e.key === 'Delete') {
+                rawValue = '0';
+            } else if (e.key === '.') {
+                return;
+            }
+            inputElement.value = formatRawValue();
+        });
+    }
+
+    function getFloatValue(inputElement) {
+        if (!inputElement || !inputElement.value) return 0;
+        const value = inputElement.value.replace(/\./g, '').replace(',', '.');
+        const floatVal = parseFloat(value);
+        return isNaN(floatVal) ? 0 : floatVal;
+    }
+
+    function formatFloatToCurrency(value) {
+        if (isNaN(value)) value = 0;
+        return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
+
+    function toggleBsFields() {
+        const moneda = document.getElementById('modalMoneda').value;
+        const bsFields = document.querySelectorAll('.bs-field');
+        bsFields.forEach(field => {
+            if (moneda === '$') {
+                field.style.display = 'none';
+            } else {
+                field.style.display = 'block';
+            }
+        });
+    }
+
+    function calculateFields(changedFieldId) {
+        const montoDolarInput = document.getElementById('modalMontoDolar');
+        const tasaInput = document.getElementById('modalTasa');
+        const comisionBsInput = document.getElementById('modalComisionBs');
+        const porcentajeInput = document.getElementById('modalPorcentaje');
+        const montoFraccionInput = document.getElementById('modalMontoFraccion');
+
+        const montoDolar = getFloatValue(montoDolarInput);
+        const tasa = getFloatValue(tasaInput);
+        const comisionBs = getFloatValue(comisionBsInput);
+        const fraccion = getFloatValue(montoFraccionInput);
+        const porcentaje = parseFloat(porcentajeInput.value) || 0;
+
+        if (changedFieldId === 'modalPorcentaje') {
+            if (fraccion > 0) {
+                const calculatedDolar = fraccion * (porcentaje / 100);
+                montoDolarInput.value = formatFloatToCurrency(calculatedDolar);
+                if (tasa > 0) {
+                    comisionBsInput.value = formatFloatToCurrency(calculatedDolar * tasa);
+                }
+            }
+        } else if (changedFieldId === 'modalMontoDolar') {
+            if (fraccion > 0 && montoDolar > 0) {
+                porcentajeInput.value = ((montoDolar / fraccion) * 100).toFixed(2);
+            }
+            if (tasa > 0 && montoDolar > 0) {
+                comisionBsInput.value = formatFloatToCurrency(montoDolar * tasa);
+            }
+        } else if (changedFieldId === 'modalComisionBs') {
+            if (tasa > 0 && comisionBs > 0) {
+                const calculatedDolar = comisionBs / tasa;
+                montoDolarInput.value = formatFloatToCurrency(calculatedDolar);
+                if (fraccion > 0) {
+                    porcentajeInput.value = ((calculatedDolar / fraccion) * 100).toFixed(2);
+                }
+            }
+        } else if (changedFieldId === 'modalTasa') {
+            if (montoDolar > 0) {
+                comisionBsInput.value = formatFloatToCurrency(montoDolar * tasa);
+            } else if (comisionBs > 0 && tasa > 0) {
+                montoDolarInput.value = formatFloatToCurrency(comisionBs / tasa);
+            }
+        }
+
+        // Sync slider with numeric input (except when the slider itself was the trigger)
+        if (changedFieldId !== 'modalPorcentajeSlider') {
+            document.getElementById('modalPorcentajeSlider').value = porcentajeInput.value || 0;
+        }
+
+        // Update Badge
+        const badge = document.getElementById('porcentajeBadge');
+        if (badge) {
+            const currentPerc = parseFloat(porcentajeInput.value) || 0;
+            badge.innerText = currentPerc.toFixed(1) + '%';
+        }
+    }
+
+    $(document).ready(function () {
+        new DataTable('#tablaCobroComision', {
+            destroy: true, // Agregado para evitar el error de reinicialización
+            language: {
+                "url": "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+            }
+        });
+
+        const btnAsignar = document.getElementById('btnAsignarComisiones');
+        if (btnAsignar) {
+            btnAsignar.addEventListener('click', function () {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+
+                fetch('/asignar-comisiones-faltantes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let alertMessage = `${data.message}`; // Usar el mensaje completo del backend
+                            if (data.failed > 0 && data.failed_list) {
+                                alertMessage += `\nRenovaciones que fallaron: ${data.failed_list.join(', ')}`;
+                            }
+                            alert(alertMessage);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error en la solicitud:', error);
+                        alert('Ocurrió un error de conexión.');
+                    })
+                    .finally(() => {
+                        // Se recarga la página, por lo que no es estrictamente necesario reactivar el botón.
+                    });
+            });
+        }
+
+        // Lógica para abrir el modal y cargar datos
+        $('.procesar-btn, .editar-comision-btn').on('click', function () {
+            const reciboId = $(this).data('recibo-id');
+            const comisionesData = JSON.parse('{{ comisiones | tojson | safe }}');
+            const comision = comisionesData.find(c => c['NRO. RECIBO'].toString() === reciboId.toString());
+
+            if (comision) {
+                $('#modalReciboId').val(comision['NRO. RECIBO']);
+                $('#modalCodRenovacion').val(comision['COD. RENOVACION']);
+                $('#modalCodEjecutivo').val(comision['COD. EJECUTIVO']);
+                $('#modalEjecutivo').val(comision['NOMBRE EJECUTIVO'] || 'N/A');
+                $('#modalAsegurado').val(comision['NOMBRE CLIENTE'] || 'N/A');
+                $('#modalPoliza').val(comision['NRO. POLIZA'] || 'N/A');
+
+                const primaValue = comision['MONTO PRIMA'] !== null ? parseFloat(comision['MONTO PRIMA']).toFixed(2).replace('.', ',') : '';
+                $('#modalPrima').val(primaValue);
+
+                const isEditMode = $(this).data('edit-mode');
+
+                if (isEditMode) {
+                    $('#procesarComisionModalLabel').text('Editar Comisión');
+                    const bonoValue = comision['BONO COMISION'] !== null ? parseFloat(comision['BONO COMISION']).toFixed(2).replace('.', ',') : '0,00';
+                    const tasaComisionValue = comision['TASA COMISION'] !== null ? parseFloat(comision['TASA COMISION']).toFixed(2).replace('.', ',') : '0,00';
+                    const montoBsComisionValue = comision['MONTO BS COMISION'] !== null ? parseFloat(comision['MONTO BS COMISION']).toFixed(2).replace('.', ',') : '0,00';
+                    const montoFraccionValue = comision['MONTO PAGADO'] !== null && comision['MONTO PAGADO'] !== undefined ? parseFloat(comision['MONTO PAGADO']).toFixed(2).replace('.', ',') : '0,00';
+                    const montoDolarValue = comision['MONTO D'] !== null && comision['MONTO D'] !== undefined ? parseFloat(comision['MONTO D']).toFixed(2).replace('.', ',') : '0,00';
+
+                    $('#modalBono').val(bonoValue);
+                    $('#modalTasa').val(tasaComisionValue);
+                    $('#modalComisionBs').val(montoBsComisionValue);
+                    $('#modalMontoFraccion').val(montoFraccionValue);
+                    $('#modalMontoDolar').val(montoDolarValue);
+                    $('#modalMoneda').val(comision['MONEDA COMISION'] || '$');
+                    $('#formProcesarComision').data('mode', 'edit');
+                } else {
+                    const montoFraccionValue = comision['MONTO PAGADO'] !== null && comision['MONTO PAGADO'] !== undefined ? parseFloat(comision['MONTO PAGADO']).toFixed(2).replace('.', ',') : '0,00';
+                    $('#procesarComisionModalLabel').text('Procesar Comisión');
+                    $('#modalBono').val('0,00');
+                    $('#modalTasa').val('0,00');
+                    $('#modalComisionBs').val('0,00');
+                    $('#modalMontoFraccion').val(montoFraccionValue);
+                    $('#modalMontoDolar').val('0,00');
+                    $('#modalMoneda').val('$');
+                    $('#formProcesarComision').data('mode', 'process');
+                }
+
+                toggleBsFields();
+
+                setupCurrencyInput(document.getElementById('modalBono'));
+                setupCurrencyInput(document.getElementById('modalComisionBs'));
+                setupCurrencyInput(document.getElementById('modalTasa'));
+                setupCurrencyInput(document.getElementById('modalMontoDolar'));
+
+                // Initial percentage if values exist
+                if (comision && comision['COMISION %']) {
+                    const perc = (parseFloat(comision['COMISION %']) * 100).toFixed(2);
+                    $('#modalPorcentaje').val(perc);
+                    $('#modalPorcentajeSlider').val(perc);
+                    $('#porcentajeBadge').text(parseFloat(perc).toFixed(1) + '%');
+                } else {
+                    $('#modalPorcentaje').val('0.00');
+                    $('#modalPorcentajeSlider').val(0);
+                    $('#porcentajeBadge').text('0.0%');
+                }
+
+                // Attach blur listeners for calculation
+                $('#modalMontoDolar, #modalTasa, #modalComisionBs').off('blur').on('blur', function () {
+                    calculateFields(this.id);
+                });
+                $('#modalPorcentaje').off('input').on('input', function () {
+                    calculateFields(this.id);
+                });
+                $('#modalPorcentajeSlider').off('input').on('input', function () {
+                    document.getElementById('modalPorcentaje').value = this.value;
+                    calculateFields('modalPorcentaje');
+                });
+
+                $('#modalMoneda').off('change').on('change', function () {
+                    toggleBsFields();
+                });
+
+                const modalElement = document.getElementById('procesarComisionModal');
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                modalInstance.show();
+            } else {
+                alert('No se encontraron datos para esta comisión.');
+            }
+        });
+
+        $('#formProcesarComision').on('submit', function (event) {
+            event.preventDefault();
+            const mode = $(this).data('mode');
+
+            const tasaValue = getFloatValue(document.getElementById('modalTasa'));
+            const montoDolarValue = getFloatValue(document.getElementById('modalMontoDolar'));
+            const comisionBsValue = getFloatValue(document.getElementById('modalComisionBs'));
+
+            const monedaValue = document.getElementById('modalMoneda').value;
+            if (monedaValue === 'Bs' && tasaValue === 0) {
+                alert('El campo "Tasa" es obligatorio para cobros en Bolívares.');
+                return;
+            }
+            if (monedaValue === '$' && montoDolarValue === 0) {
+                alert('Debe ingresar un valor para "Comision $".');
+                return;
+            }
+            if (monedaValue === 'Bs' && comisionBsValue === 0) {
+                alert('Debe ingresar un valor para "Comision Bs".');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            let url = (mode === 'edit') ? '/actualizar-comision-cobrada' : '/procesar-comision';
+
+            data.montoDolar = getFloatValue(document.getElementById('modalMontoDolar'));
+            data.tasa = getFloatValue(document.getElementById('modalTasa'));
+            data.comisionBs = getFloatValue(document.getElementById('modalComisionBs'));
+            data.bono = getFloatValue(document.getElementById('modalBono'));
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert(result.message);
+                        const modalElement = document.getElementById('procesarComisionModal');
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                        location.reload();
+                    } else {
+                        alert('Error al procesar/actualizar la comisión: ' + result.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error de conexión al procesar/actualizar la comisión.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                });
+        });
+
+    });
+
+    const modalEl = document.getElementById('procesarComisionModal');
+    modalEl.addEventListener('hidden.bs.modal', function (event) {
+        const backdrops = document.getElementsByClassName('modal-backdrop');
+        while (backdrops.length > 0) {
+            document.body.removeChild(backdrops[0]);
+        }
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+    });
+
+</script>
+{% endblock %}

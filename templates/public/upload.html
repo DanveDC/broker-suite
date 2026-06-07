@@ -1,0 +1,1387 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Carga Masiva Asegurados | App Seguros{% endblock %}
+
+{% block customCSS %}
+<style>
+/* ── Upload Zone ───────────────────────────────────── */
+.upload-area {
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.upload-area.dragover, .upload-area:hover {
+  background: rgba(255,255,255,0.85);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+.file-icon {
+  font-size: 3rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+#file-name { font-weight: 500; color: var(--primary-color); }
+
+/* ── Stream banner ─────────────────────────────────── */
+#streamBanner {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0.45rem 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+
+/* ── Preview section ───────────────────────────────── */
+#previewSection { display: none; }
+
+.preview-header {
+  position: sticky;
+  top: 47px;
+  z-index: 190;
+}
+
+/* Scrollable table */
+#tableWrap {
+  max-height: 66vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+#tableWrap table { margin-bottom: 0; }
+#tableWrap thead th {
+  position: sticky;
+  top: 0; z-index: 10;
+  background: #f8f9fa;
+  box-shadow: 0 1px 0 #dee2e6;
+  white-space: nowrap;
+}
+
+/* ── Status badges ─────────────────────────────────── */
+.sbadge {
+  font-size: .68rem;
+  padding: .18rem .5rem;
+  border-radius: 20px;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+}
+.reason-txt {
+  font-size: .6rem;
+  line-height: 1.2;
+  display: block;
+  margin-top: 1px;
+}
+
+/* Inline native select for executive */
+.exec-sel {
+  font-size: .75rem;
+  padding: 2px 4px;
+  height: 27px;
+  border: 1px solid #d9dee3;
+  border-radius: 4px;
+  width: 100%;
+  background-color: #fff;
+  cursor: pointer;
+}
+.exec-sel:focus { outline: none; border-color: var(--primary-color); }
+
+/* Row animation */
+@keyframes fadeInRow {
+  from { opacity: 0; background: rgba(105,108,255,.05); }
+  to   { opacity: 1; background: transparent; }
+}
+.row-new { animation: fadeInRow .2s ease; }
+
+/* Import strip */
+#importStrip {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  z-index: 190;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  padding: .45rem 1rem;
+  box-shadow: 0 -2px 6px rgba(0,0,0,.06);
+}
+#importStrip .import-controls .btn {
+  font-size: .78rem;
+  padding: 3px 14px;
+  border-radius: 99px;
+  font-weight: 600;
+  transition: all .2s;
+}
+#importStrip .import-controls .btn i { margin-right: 3px; }
+.import-status-label {
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+  display: inline-block;
+}
+@keyframes pulsePause {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+.import-paused-pulse {
+  animation: pulsePause 1.2s ease-in-out infinite;
+}
+
+/* Counters */
+.cnt-pill {
+  font-size: .75rem; font-weight: 700;
+  padding: .15rem .5rem;
+  border-radius: 99px; display: inline-block;
+}
+
+/* Action buttons in rows */
+.btn-xs { font-size: .65rem; padding: 1px 6px; }
+
+/* Search bar */
+#searchBar {
+  font-size: .82rem; height: 30px;
+  border-radius: 99px; padding: 0 .7rem;
+  max-width: 210px;
+}
+#statusFilter { font-size: .78rem; height: 30px; }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- Stream progress banner -->
+<div id="streamBanner">
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <span class="small fw-bold" id="streamMsg">
+      <span class="spinner-border spinner-border-sm text-primary me-1"></span>Leyendo archivo...
+    </span>
+    <span class="small text-muted" id="streamCount">0 filas</span>
+    <span class="small fw-bold text-secondary" id="streamPct">0%</span>
+  </div>
+  <div class="progress" style="height:5px;border-radius:99px;">
+    <div id="streamBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+         style="width:0%;transition:width .2s;"></div>
+  </div>
+</div>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ 'danger' if category=='error' else category }} alert-dismissible fade show">
+  {{ message|safe }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<!-- Info banner -->
+<div class="alert alert-info alert-dismissible d-flex align-items-center mb-3" role="alert">
+  <i class="bx bx-info-circle me-2 fs-5"></i>
+  <div>
+    <strong>Carga masiva de datos</strong><br>
+    Permite importar múltiples pólizas y asegurados desde un archivo CSV o Excel. Descargá la plantilla, completala con los datos y cargala aquí. El sistema validará cada fila antes de confirmar la importación.
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- ═══ UPLOAD CARD ═══════════════════════════════════════════ -->
+<div class="row justify-content-center" id="uploadCard">
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <div class="d-flex align-items-center">
+          <a href="{{ url_for('inicio1') }}" class="text-secondary me-3">
+            <i class="bi bi-arrow-left-circle fs-4"></i>
+          </a>
+          <h5 class="card-title mb-0 fw-bold">Carga Masiva — Asegurados (Genérico)</h5>
+        </div>
+      </div>
+      <div class="card-body p-4 p-lg-5">
+        <div class="text-center mb-5">
+          <div class="display-6 fw-bold mb-2">Importar Registros</div>
+          <p class="text-muted">La vista previa aparece <strong>de forma progresiva</strong> mientras el sistema valida cada póliza.</p>
+          <div class="mt-3">
+            <a href="{{ url_for('descargar_plantilla', tipo='generico') }}"
+               class="btn btn-outline-success btn-sm rounded-pill">
+              <i class="bi bi-file-earmark-excel me-1"></i>Descargar Plantilla Genérica
+            </a>
+          </div>
+        </div>
+
+        <div class="upload-area p-5 text-center mb-4" id="dropZone"
+             onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" class="d-none" accept=".xlsx" onchange="handleFileSelected(this)">
+          <div class="file-icon mb-3"><i class="bi bi-grid-3x3-gap"></i></div>
+          <h4 class="fw-bold" id="file-label">Seleccionar archivo Excel</h4>
+          <p class="text-muted small mb-0" id="file-name">Formato permitido: .xlsx</p>
+        </div>
+
+        <div class="p-3 rounded mb-4" style="background:var(--bg-main);">
+          <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Instrucciones</h6>
+          <ul class="small text-muted mb-0">
+            <li>El archivo debe seguir la estructura de la plantilla genérica.</li>
+            <li>La vista previa se carga fila por fila — puede revisar mientras el proceso continúa.</li>
+            <li>Se detectan automáticamente duplicados, renovaciones existentes y ejecutivos sin coincidencia.</li>
+            <li>Puede editar cualquier registro antes de importar.</li>
+          </ul>
+        </div>
+
+        <div class="d-grid">
+          <button type="button" class="btn btn-primary btn-lg" id="submit-btn"
+                  disabled onclick="startStream()">
+            <span class="spinner-border spinner-border-sm d-none" id="btn-spinner"></span>
+            <span id="btn-text">Subir y Previsualizar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PREVIEW SECTION ══════════════════════════════════════ -->
+<div id="previewSection">
+
+  <!-- Sticky action header -->
+  <div class="card border-0 shadow-sm preview-header">
+    <div class="card-header bg-white py-2 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+
+      <!-- Left: back + counters -->
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="resetToUpload()">
+          <i class="bi bi-arrow-left-circle me-1"></i>Nuevo Archivo
+        </button>
+        <span class="cnt-pill bg-success-light text-success" title="Listos para importar">
+          <i class="bi bi-check-circle me-1"></i><span id="cntReady">0</span>
+        </span>
+        <span class="cnt-pill bg-warning-light text-warning" title="Avisos (asegurado existe / renovación)">
+          <i class="bi bi-exclamation-circle me-1"></i><span id="cntWarn">0</span>
+        </span>
+        <span class="cnt-pill bg-danger-light text-danger" title="Inválidos / Duplicados / Errores">
+          <i class="bi bi-x-circle me-1"></i><span id="cntInvalid">0</span>
+        </span>
+        <span class="cnt-pill bg-light text-secondary border" title="Total">
+          <span id="cntTotal">0</span> total
+        </span>
+      </div>
+
+      <!-- Centre: search + filter -->
+      <div class="d-flex gap-2 align-items-center">
+        <input type="text" id="searchBar" class="form-control"
+               placeholder="&#128269; Buscar póliza / cédula / nombre..."
+               oninput="applyFilter()">
+        <select id="statusFilter" class="form-select" style="width:auto;" onchange="applyFilter()">
+          <option value="">Todos</option>
+          <option value="ready">Listos</option>
+          <option value="insured_exists">Aseg. existe</option>
+          <option value="new_renewal">Renovación</option>
+          <option value="duplicate">Duplicados</option>
+          <option value="invalid">Inválidos</option>
+          <option value="error">Errores</option>
+          <option value="imported">Importados</option>
+        </select>
+        <select id="sortFilter" class="form-select" style="width:auto;" onchange="applyFilter()">
+          <option value="index">Orden Original</option>
+          <option value="errors">Errores Primero</option>
+          <option value="status">Agrupado por Estado</option>
+          <option value="name">Nombre (A-Z)</option>
+        </select>
+      </div>
+
+      <!-- Right: bulk + import -->
+      <div class="d-flex gap-2 align-items-center">
+        <div class="d-flex gap-1 align-items-center border-end pe-2">
+          <div style="width:160px;">
+            <select id="bulkExecutive" class="form-select form-select-sm" style="font-size:.8rem;">
+              <option value="">Ejecutivo...</option>
+            </select>
+          </div>
+          <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="applyBulkExecutive()"
+                  title="Asignar a seleccionados">
+            <i class="bi bi-check-all"></i>
+          </button>
+        </div>
+        <div class="form-check form-switch d-flex align-items-center">
+          <input class="form-check-input" type="checkbox" id="stopOnErrorSwitch" checked
+                 style="cursor:pointer;transform:scale(1.1);">
+          <label class="form-check-label ms-2 small fw-bold text-muted text-nowrap"
+                 for="stopOnErrorSwitch">Pausar en error</label>
+        </div>
+        <button id="startImportBtn" class="btn btn-primary px-3 fw-bold" disabled
+                onclick="startBulkImport()">
+          <i class="bi bi-play-circle me-1"></i>Importar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card border-0 shadow-sm" style="border-top:none;">
+    <div id="tableWrap">
+      <table class="table table-hover align-middle mb-0" id="mainTable">
+        <thead>
+          <tr>
+            <th class="ps-3" style="width:36px;">
+              <input class="form-check-input" type="checkbox" id="selectAll" checked>
+            </th>
+            <th style="width:105px;">Cédula</th>
+            <th>Asegurado</th>
+            <th style="width:130px;">Póliza / Ramo</th>
+            <th style="width:190px;">Ejecutivo</th>
+            <th style="width:105px;">Emisión / Prima</th>
+            <th style="width:160px;">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="px-3 py-2 border-top bg-light d-flex justify-content-between" style="font-size:.75rem;">
+      <span class="text-muted" id="tableInfo">Sin datos</span>
+      <span class="text-muted" id="tableFiltered"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Import progress strip (sticky bottom) -->
+<div id="importStrip">
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <div class="d-flex align-items-center gap-2">
+      <span class="small fw-bold" id="importMsg">Importando...</span>
+      <span id="importStatusLabel" class="import-status-label d-none"></span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="small fw-bold" id="importPct">0%</span>
+      <div class="import-controls d-flex gap-1">
+        <button id="btnPauseImport" class="btn btn-warning" onclick="pauseImport()" title="Pausar importación">
+          <i class="bi bi-pause-fill"></i>Pausar
+        </button>
+        <button id="btnResumeImport" class="btn btn-success d-none" onclick="resumeImport()" title="Reanudar importación">
+          <i class="bi bi-play-fill"></i>Reanudar
+        </button>
+        <button id="btnStopImport" class="btn btn-outline-danger" onclick="stopImport()" title="Detener importación">
+          <i class="bi bi-stop-fill"></i>Detener
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="progress" style="height:6px;border-radius:99px;">
+    <div id="importBar" class="progress-bar progress-bar-striped progress-bar-animated"
+         style="width:0%;transition:width .3s;"></div>
+  </div>
+</div>
+
+<!-- ═══ EDIT MODAL ═══════════════════════════════════════════ -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-pencil-square me-2 text-primary"></i>Editar Registro
+          <small class="text-muted fw-normal fs-6" id="editRowLabel"></small>
+        </h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <input type="hidden" id="editIndex">
+        <div id="editAlert" class="alert alert-danger py-2 small d-none mb-2">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i><span id="editAlertMsg"></span>
+        </div>
+        <!-- Original error display -->
+        <div id="editOriginalError" class="alert alert-warning py-2 small mb-3 d-none">
+          <i class="bi bi-info-circle me-1"></i><strong>Error detectado:</strong>
+          <span id="editOriginalErrorMsg"></span>
+        </div>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label small fw-bold text-muted text-uppercase">Nombre Completo *</label>
+            <input type="text" class="form-control" id="editNombre">
+          </div>
+          <div class="col-3">
+            <label class="form-label small fw-bold text-muted text-uppercase">Tipo CI</label>
+            <select class="form-select" id="editTipoCI">
+              <option>V</option><option>E</option><option>J</option><option>G</option><option>P</option>
+            </select>
+          </div>
+          <div class="col-9">
+            <label class="form-label small fw-bold text-muted text-uppercase">Cédula *</label>
+            <input type="text" class="form-control" id="editCedula" placeholder="Solo números">
+            <div class="form-text">Solo dígitos, mínimo 4 caracteres.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-muted text-uppercase">Nro. Póliza *</label>
+            <input type="text" class="form-control" id="editPoliza">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted text-uppercase">Ramo</label>
+            <input type="text" class="form-control" id="editRamo">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted text-uppercase">Prima *</label>
+            <div class="input-group input-group-sm">
+              <select class="form-select" id="editMoneda" style="max-width:58px;">
+                <option value="$">$</option>
+                <option value="Bs">Bs</option>
+              </select>
+              <input type="number" step="0.01" min="0" class="form-control" id="editPrima">
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-muted text-uppercase">Ejecutivo / Referidor</label>
+            <select class="form-select" id="editEjecutivo"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-muted text-uppercase">Correo</label>
+            <input type="email" class="form-control" id="editCorreo">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-muted text-uppercase">Teléfono</label>
+            <input type="text" class="form-control" id="editTelefono">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-muted text-uppercase">Fecha Emisión *</label>
+            <input type="date" class="form-control" id="editFecha">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-muted text-uppercase">Tipo Venta</label>
+            <select class="form-select" id="editTipoVenta">
+              <option value="3">CONTRATO NUEVO (3)</option>
+              <option value="1">VENTA 1</option>
+              <option value="2">VENTA 2</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted text-uppercase">Cuota</label>
+            <input type="number" min="1" class="form-control" id="editNroCuota">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted text-uppercase">Recibo</label>
+            <input type="text" class="form-control" id="editRecibo">
+          </div>
+        </div>
+
+        <!-- Raw data collapsible -->
+        <div class="mt-3">
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#rawCollapse">
+            <i class="bi bi-table me-1"></i>Datos originales del Excel
+          </button>
+          <div class="collapse mt-2" id="rawCollapse">
+            <div class="border rounded p-2 bg-light" style="max-height:160px;overflow-y:auto;font-size:.72rem;"
+                 id="rawViewer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary rounded-pill" onclick="saveChanges()">
+          <i class="bi bi-floppy me-1"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ═══════════════════════════════════════════════════════════
+const allData       = [];       // all records received from stream
+let ejecutivosList  = [];
+let execOptsHtml    = '';       // pre-built <option> HTML — reused for every row
+let editExecOptsHtml= '';       // same but with empty first option for modal
+let streamDone      = false;
+let isImporting     = false;
+let importPaused    = false;
+let importStopped   = false;
+let _importResolve  = null;   // to wake up the paused loop
+let filt_text       = '';
+let filt_status     = '';
+let filt_sort       = 'index';
+
+// Selection: stored in allData[i].selected
+// count cache
+let cntR=0, cntW=0, cntI=0;
+
+// Pending batch rows (for fast streaming insertion)
+let _pendingHtml  = '';
+let _batchFlushed = true;
+
+const Toast = Swal.mixin({
+  toast: true, position:'top-end',
+  showConfirmButton: false, timer: 3000, timerProgressBar: true
+});
+
+// ═══════════════════════════════════════════════════════════
+//  STATUS HELPER
+// ═══════════════════════════════════════════════════════════
+const STATUS_CFG = {
+  ready:          { cls:'bg-success-light text-success',    label:'Listo',        rc:'text-muted' },
+  insured_exists: { cls:'bg-warning-light text-warning',    label:'Exist. aseg.', rc:'text-warning' },
+  new_renewal:    { cls:'bg-info-light text-info',          label:'Renovación',   rc:'text-info' },
+  duplicate:      { cls:'bg-danger-light text-danger',      label:'Duplicado',    rc:'text-danger' },
+  invalid:        { cls:'bg-secondary-light text-secondary',label:'Inválido',     rc:'text-danger' },
+  imported:       { cls:'bg-success text-white',            label:'Importado ✓',  rc:'text-success' },
+  error:          { cls:'bg-danger text-white',             label:'Error',        rc:'text-danger' },
+};
+function sc(status) { return STATUS_CFG[status] || { cls:'bg-light text-muted', label:status, rc:'text-muted' }; }
+
+function defaultSelected(r) {
+  return r.status !== 'duplicate' && r.status !== 'invalid' && !r.missing_executive;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRAG & DROP
+// ═══════════════════════════════════════════════════════════
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.xlsx')) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    document.getElementById('file-input').files = dt.files;
+    handleFileSelected(document.getElementById('file-input'));
+  }
+});
+function handleFileSelected(inp) {
+  const ok = inp.files.length > 0 && inp.files[0].name.endsWith('.xlsx');
+  document.getElementById('file-label').innerText = ok ? 'Archivo seleccionado' : 'Seleccionar archivo Excel';
+  document.getElementById('file-name').innerText  = ok ? inp.files[0].name : 'Formato permitido: .xlsx';
+  document.getElementById('submit-btn').disabled  = !ok;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BUILD EXEC OPTIONS (done ONCE when executives arrive)
+// ═══════════════════════════════════════════════════════════
+function buildExecOptions() {
+  execOptsHtml    = '';
+  editExecOptsHtml = '<option value="">— Sin ejecutivo —</option>';
+  ejecutivosList.forEach(ej => {
+    const name = (ej.Nombre + ' ' + (ej.Apellido||'')).trim();
+    execOptsHtml     += `<option value="${ej.cod_ejecutivo}">${name}</option>`;
+    editExecOptsHtml += `<option value="${ej.cod_ejecutivo}">${name}</option>`;
+  });
+  // Populate bulk select
+  const bulk = document.getElementById('bulkExecutive');
+  bulk.innerHTML = `<option value="">Ejecutivo...</option>${execOptsHtml}`;
+  // Populate edit modal select
+  document.getElementById('editEjecutivo').innerHTML = editExecOptsHtml;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ROW HTML BUILDER  (NO Select2 — native select only)
+// ═══════════════════════════════════════════════════════════
+const fmtDate = ds => ds ? ds.substring(0,10).split('-').reverse().join('/') : '—';
+
+function buildRowHtml(r) {
+  const i   = r.index;
+  const cfg = sc(r.status);
+  const sel = r.selected !== undefined ? r.selected : defaultSelected(r);
+  const canSel = r.status !== 'duplicate' && r.status !== 'imported';
+
+  // Build exec options with selected flag (fast string concat)
+  let opts = '<option value=""></option>';
+  ejecutivosList.forEach(ej => {
+    const match = String(ej.cod_ejecutivo) === String(r.ejecutivo);
+    opts += `<option value="${ej.cod_ejecutivo}"${match?' selected':''}>${ej.Nombre} ${ej.Apellido||''}</option>`;
+  });
+
+  return `<tr id="row-${i}" data-index="${i}" data-status="${r.status}" class="row-new">
+  <td class="ps-3">
+    <input class="form-check-input row-cb" type="checkbox" data-idx="${i}"
+           ${sel&&canSel?'checked':''} ${!canSel?'disabled':''}>
+  </td>
+  <td>
+    <div class="fw-bold small">${r.tipo_ci||'V'}-${r.cedula||'—'}</div>
+    <div class="text-muted" style="font-size:.59rem;">${r.referidor_original||''}</div>
+  </td>
+  <td>
+    <div class="small fw-bold text-truncate" style="max-width:170px;" title="${r.nombre_completo||''}">${r.nombre_completo||'Desconocido'}</div>
+  </td>
+  <td>
+    <div class="small">${r.poliza||'—'}</div>
+    <span class="badge bg-info-light text-info border-0 px-2" style="font-size:.59rem;">${r.ramo||'—'}</span>
+  </td>
+  <td>
+    <select class="exec-sel" data-idx="${i}" onchange="onExecChange(this)">${opts}</select>
+    ${r.missing_executive?'<div class="text-danger" style="font-size:.58rem;"><i class="bi bi-exclamation-triangle"></i> Sin match</div>':''}
+  </td>
+  <td>
+    <div class="small fw-bold">${fmtDate(r.fecha_emision)}</div>
+    <div class="text-success small fw-bold">${r.moneda||'$'} ${(+r.prima||0).toFixed(2)}</div>
+  </td>
+  <td>
+    <span class="sbadge ${cfg.cls}">${cfg.label}</span>
+    <span class="status-icon"></span>
+    <span class="reason-txt ${cfg.rc}" title="${r.reason||''}">${r.reason||''}</span>
+    <div class="mt-1 d-flex gap-1">
+      <button class="btn btn-xs btn-outline-primary rounded-pill edit-btn" data-idx="${i}"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-xs btn-outline-warning rounded-pill retry-btn d-none" data-idx="${i}"><i class="bi bi-arrow-clockwise"></i></button>
+    </div>
+  </td>
+</tr>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXEC SELECT CHANGE (native, no Select2)
+// ═══════════════════════════════════════════════════════════
+function onExecChange(sel) {
+  const i = parseInt(sel.dataset.idx);
+  const r = allData[i]; if (!r) return;
+  const newId   = sel.value;
+  const newName = sel.options[sel.selectedIndex].text;
+  r.ejecutivo        = newId;
+  r.ejecutivo_nombre = newName;
+  r.missing_executive = !newId;
+  r.selected = !!newId && r.status !== 'duplicate';
+  const cb = document.querySelector(`#row-${i} .row-cb`);
+  if (cb && !cb.disabled) cb.checked = r.selected;
+  const warn = document.querySelector(`#row-${i} td:nth-child(5) .text-danger`);
+  if (warn && newId) warn.style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BATCH DOM INSERTION (key for streaming performance)
+// ═══════════════════════════════════════════════════════════
+function scheduleFlush() {
+  if (!_batchFlushed) return;
+  _batchFlushed = false;
+  requestAnimationFrame(() => {
+    if (_pendingHtml) {
+      document.getElementById('tableBody').insertAdjacentHTML('beforeend', _pendingHtml);
+      _pendingHtml = '';
+    }
+    _batchFlushed = true;
+    updateTableInfo();
+  });
+}
+
+function appendRow(r) {
+  if (!passesFilter(r)) return;
+  _pendingHtml += buildRowHtml(r);
+  scheduleFlush();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILTER
+// ═══════════════════════════════════════════════════════════
+function passesFilter(r) {
+  if (filt_status && r.status !== filt_status) return false;
+  if (!filt_text) return true;
+  const q = filt_text;
+  return (r.cedula||'').includes(q)
+      || (r.poliza||'').toLowerCase().includes(q)
+      || (r.nombre_completo||'').toLowerCase().includes(q)
+      || (r.referidor_original||'').toLowerCase().includes(q);
+}
+
+function applyFilter() {
+  filt_text   = document.getElementById('searchBar').value.trim().toLowerCase();
+  filt_status = document.getElementById('statusFilter').value;
+  filt_sort   = document.getElementById('sortFilter').value;
+
+  // Clone data for sorting
+  let displayData = [...allData];
+
+  // Apply sorting
+  if (filt_sort === 'errors') {
+    displayData.sort((a, b) => {
+      const isErrA = (a.status === 'error' || a.status === 'invalid') ? 0 : 1;
+      const isErrB = (b.status === 'error' || b.status === 'invalid') ? 0 : 1;
+      if (isErrA !== isErrB) return isErrA - isErrB;
+      return a.index - b.index;
+    });
+  } else if (filt_sort === 'status') {
+    const priority = { 'error': 0, 'invalid': 1, 'ready': 2, 'new_renewal': 3, 'insured_exists': 4, 'duplicate': 5, 'imported': 6 };
+    displayData.sort((a, b) => {
+      const pA = priority[a.status] !== undefined ? priority[a.status] : 99;
+      const pB = priority[b.status] !== undefined ? priority[b.status] : 99;
+      if (pA !== pB) return pA - pB;
+      return a.index - b.index;
+    });
+  } else if (filt_sort === 'name') {
+    displayData.sort((a, b) => (a.nombre_completo || '').localeCompare(b.nombre_completo || ''));
+  } else {
+    displayData.sort((a, b) => a.index - b.index);
+  }
+
+  // Rebuild table in one shot
+  let html = ''; let vis = 0;
+  displayData.forEach(r => { 
+    if (passesFilter(r)) { 
+      html += buildRowHtml(r); 
+      vis++; 
+    } 
+  });
+  
+  document.getElementById('tableBody').innerHTML = html;
+  document.getElementById('tableFiltered').innerText =
+    vis < allData.length ? `(${vis} de ${allData.length} coinciden)` : '';
+  updateTableInfo();
+
+  // Highlight rows that are imported or errors if needed
+  // Re-inject reports for visible rows if they were already processed
+  displayData.forEach(r => {
+    const processedStatuses = ['imported', 'error', 'invalid', 'insured_exists', 'new_renewal'];
+    if (passesFilter(r) && r.lastReport && processedStatuses.includes(r.status)) {
+        const rowEl = document.getElementById(`row-${r.index}`);
+        if (rowEl) injectRowReport(rowEl, r.lastReport.html, r.lastReport.type, r.lastReport.ids);
+    }
+  });
+}
+
+function updateTableInfo() {
+  const vis = document.querySelectorAll('#tableBody tr').length;
+  document.getElementById('tableInfo').innerText =
+    `${allData.length} registros totales${vis !== allData.length ? ` · ${vis} visibles` : ''}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  COUNTERS
+// ═══════════════════════════════════════════════════════════
+function addToCounters(r, delta) {
+  if (r.status === 'ready' || r.status === 'imported') cntR = Math.max(0, cntR + delta);
+  else if (r.status === 'invalid' || r.status === 'error' || r.status === 'duplicate') cntI = Math.max(0, cntI + delta);
+  else cntW = Math.max(0, cntW + delta);
+  document.getElementById('cntReady').innerText   = cntR;
+  document.getElementById('cntWarn').innerText    = cntW;
+  document.getElementById('cntInvalid').innerText = cntI;
+  document.getElementById('cntTotal').innerText   = allData.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  STREAMING
+// ═══════════════════════════════════════════════════════════
+async function startStream() {
+  const fi = document.getElementById('file-input');
+  if (!fi.files.length) return;
+
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('btn-spinner').classList.remove('d-none');
+  document.getElementById('btn-text').innerText  = 'Procesando...';
+  document.getElementById('streamBanner').style.display  = 'block';
+  document.getElementById('previewSection').style.display= 'block';
+  document.getElementById('uploadCard').style.display    = 'none';
+
+  const fd = new FormData();
+  fd.append('file', fi.files[0]);
+
+  let totalExp = 0, loaded = 0;
+
+  try {
+    const resp = await fetch('/api/upload_csv_stream', { method:'POST', body:fd });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const reader = resp.body.getReader();
+    const dec    = new TextDecoder();
+    let buf      = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream:true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try { handleMsg(JSON.parse(line)); } catch(e) {}
+      }
+    }
+    if (buf.trim()) try { handleMsg(JSON.parse(buf)); } catch(e) {}
+
+  } catch(err) {
+    Swal.fire('Error de conexión', err.message, 'error');
+    resetToUpload();
+  }
+
+  function handleMsg(msg) {
+    if (msg.type === 'init') {
+      ejecutivosList = msg.ejecutivos || [];
+      totalExp       = msg.total || 0;
+      buildExecOptions();
+
+    } else if (msg.type === 'row') {
+      loaded++;
+      msg.selected = defaultSelected(msg);
+      allData.push(msg);
+      addToCounters(msg, +1);
+      appendRow(msg);  // batched RAF insertion
+
+      const pct = totalExp ? Math.round(loaded/totalExp*100) : 0;
+      document.getElementById('streamBar').style.width = pct + '%';
+      document.getElementById('streamPct').innerText   = pct + '%';
+      document.getElementById('streamCount').innerText = `${loaded}${totalExp?' / '+totalExp:''} filas`;
+
+    } else if (msg.type === 'done') {
+      streamDone = true;
+      document.getElementById('streamBar').classList.remove('progress-bar-animated','progress-bar-striped');
+      document.getElementById('streamBar').classList.add('bg-success');
+      document.getElementById('streamBar').style.width = '100%';
+      document.getElementById('streamMsg').innerHTML   = `<i class="bi bi-check-circle-fill text-success me-1"></i>Completado · ${loaded} pólizas`;
+      document.getElementById('streamPct').innerText   = '100%';
+      document.getElementById('startImportBtn').disabled = false;
+      Toast.fire({ icon:'success', title:`${loaded} registros cargados` });
+
+    } else if (msg.type === 'error') {
+      Swal.fire('Error', msg.message, 'error');
+    }
+    // 'saved' → ignore silently
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EVENT DELEGATION (single listener, no per-row binding)
+// ═══════════════════════════════════════════════════════════
+document.getElementById('tableBody').addEventListener('click', e => {
+  const eb = e.target.closest('.edit-btn');
+  if (eb) { openEditModal(parseInt(eb.dataset.idx)); return; }
+  const rb = e.target.closest('.retry-btn');
+  if (rb) { importSingleRecord(parseInt(rb.dataset.idx)); return; }
+  const cb = e.target.closest('.row-cb');
+  if (cb) {
+    const i = parseInt(cb.dataset.idx);
+    if (allData[i]) allData[i].selected = cb.checked;
+  }
+});
+
+document.getElementById('selectAll').addEventListener('change', function() {
+  const chk = this.checked;
+  document.querySelectorAll('.row-cb:not([disabled])').forEach(cb => {
+    const i = parseInt(cb.dataset.idx);
+    cb.checked = chk;
+    if (allData[i]) allData[i].selected = chk;
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BULK EXECUTIVE
+// ═══════════════════════════════════════════════════════════
+function applyBulkExecutive() {
+  const bulkSel = document.getElementById('bulkExecutive');
+  const id   = bulkSel.value;
+  const name = bulkSel.options[bulkSel.selectedIndex].text;
+  if (!id) { Swal.fire('Atención','Selecciona un ejecutivo primero.','warning'); return; }
+  let count = 0;
+  document.querySelectorAll('.row-cb:checked:not([disabled])').forEach(cb => {
+    const i = parseInt(cb.dataset.idx);
+    const r = allData[i]; if (!r) return;
+    r.ejecutivo        = id;
+    r.ejecutivo_nombre = name;
+    r.missing_executive= false;
+    r.selected = true;
+    // Update native select in DOM
+    const sel = document.querySelector(`#row-${i} .exec-sel`);
+    if (sel) sel.value = id;
+    const warn = document.querySelector(`#row-${i} td:nth-child(5) .text-danger`);
+    if (warn) warn.style.display = 'none';
+    count++;
+  });
+  if (!count) { Swal.fire('Atención','Selecciona al menos un registro.','warning'); return; }
+  Toast.fire({ icon:'success', title:`Ejecutivo asignado a ${count} registros` });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EDIT MODAL — ROBUST
+// ═══════════════════════════════════════════════════════════
+function openEditModal(idx) {
+  const r = allData[idx]; if (!r) return;
+
+  document.getElementById('editIndex').value  = idx;
+  document.getElementById('editRowLabel').innerText = `— fila ${idx+1}`;
+  document.getElementById('editAlert').classList.add('d-none');
+
+  // Show original error if any
+  const errBox = document.getElementById('editOriginalError');
+  if (r.status === 'invalid' || r.status === 'error') {
+    document.getElementById('editOriginalErrorMsg').innerText = r.reason || '';
+    errBox.classList.remove('d-none');
+  } else { errBox.classList.add('d-none'); }
+
+  // Fill modal fields
+  document.getElementById('editNombre').value     = r.nombre_completo || '';
+  document.getElementById('editTipoCI').value     = r.tipo_ci || 'V';
+  document.getElementById('editCedula').value     = r.cedula || '';
+  document.getElementById('editPoliza').value     = r.poliza || '';
+  document.getElementById('editRamo').value       = r.ramo || '';
+  document.getElementById('editPrima').value      = r.prima != null ? r.prima : '';
+  document.getElementById('editMoneda').value     = r.moneda || '$';
+  document.getElementById('editCorreo').value     = r.correo || '';
+  document.getElementById('editTelefono').value   = r.telefono || '';
+  document.getElementById('editFecha').value      = (r.fecha_emision||'').substring(0,10);
+  document.getElementById('editTipoVenta').value  = String(r.tipo_venta||'3');
+  document.getElementById('editNroCuota').value   = r.nro_cuota || '1';
+  document.getElementById('editRecibo').value     = r.recibo || '';
+
+  // Populate exec select
+  document.getElementById('editEjecutivo').innerHTML = editExecOptsHtml;
+  document.getElementById('editEjecutivo').value = r.ejecutivo || '';
+
+  // Raw data viewer
+  let rawHtml = '';
+  if (r.raw_data) {
+    Object.entries(r.raw_data).forEach(([k,v]) => {
+      if (v != null && v !== '') rawHtml += `<div class="d-flex gap-2 border-bottom py-1"><span class="text-muted fw-bold" style="min-width:180px;">${k}</span><span>${v}</span></div>`;
+    });
+  }
+  document.getElementById('rawViewer').innerHTML = rawHtml || '<em class="text-muted">Sin datos</em>';
+
+  new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function showEditAlert(msg) {
+  document.getElementById('editAlertMsg').innerText = msg;
+  document.getElementById('editAlert').classList.remove('d-none');
+}
+
+function saveChanges() {
+  const idx = parseInt(document.getElementById('editIndex').value);
+  const r   = allData[idx]; if (!r) return;
+
+  const newNombre = document.getElementById('editNombre').value.trim();
+  const newTipoCI = document.getElementById('editTipoCI').value;
+  const newCedula = document.getElementById('editCedula').value.trim().replace(/\D/g,'');
+  const newPoliza = document.getElementById('editPoliza').value.trim();
+  const newRamo   = document.getElementById('editRamo').value.trim();
+  const newPrima  = parseFloat(document.getElementById('editPrima').value);
+  const newMoneda = document.getElementById('editMoneda').value;
+  const execSel   = document.getElementById('editEjecutivo');
+  const newEjec   = execSel.value;
+  const newEjecNm = execSel.options[execSel.selectedIndex]?.text || '';
+  const newCorreo = document.getElementById('editCorreo').value.trim();
+  const newTel    = document.getElementById('editTelefono').value.trim();
+  const newFecha  = document.getElementById('editFecha').value;
+  const newTV     = document.getElementById('editTipoVenta').value;
+  const newCuota  = document.getElementById('editNroCuota').value;
+  const newRecibo = document.getElementById('editRecibo').value.trim();
+
+  // Validations
+  if (!newNombre)                   return showEditAlert('El nombre del asegurado es obligatorio.');
+  if (!newCedula || newCedula.length < 4) return showEditAlert('La cédula debe tener al menos 4 dígitos numéricos.');
+  if (!newPoliza)                   return showEditAlert('El número de póliza es obligatorio.');
+  if (!newFecha)                    return showEditAlert('La fecha de emisión es obligatoria.');
+  if (isNaN(newPrima) || newPrima <= 0) return showEditAlert('La prima debe ser un valor mayor a 0.');
+
+  // Update record
+  const oldStatus = r.status;
+  r.nombre_completo  = newNombre;
+  r.tipo_ci          = newTipoCI;
+  r.cedula           = newCedula;
+  r.poliza           = newPoliza;
+  r.ramo             = newRamo;
+  r.prima            = newPrima;
+  r.moneda           = newMoneda;
+  r.ejecutivo        = newEjec;
+  r.ejecutivo_nombre = newEjecNm;
+  r.missing_executive= !newEjec;
+  r.correo           = newCorreo;
+  r.telefono         = newTel;
+  r.fecha_emision    = newFecha;
+  r.tipo_venta       = newTV;
+  r.nro_cuota        = newCuota;
+  r.recibo           = newRecibo;
+
+  // Sync raw_data critical fields
+  if (!r.raw_data) r.raw_data = {};
+  r.raw_data['ASEGURADO']               = newNombre;
+  r.raw_data['CEDULA DEL ASEGURADO']    = `${newTipoCI} ${newCedula}`;
+  r.raw_data['POLIZA']                  = newPoliza;
+  r.raw_data['RAMO']                    = newRamo;
+  r.raw_data['PRIMA TOTAL (SIN IGTF)']  = newPrima;
+
+  // Auto-resolve invalid/error status
+  if (oldStatus === 'invalid' || oldStatus === 'error') {
+    addToCounters(r, -1);  // remove old count
+    r.status = 'ready';
+    r.reason = 'Corregido manualmente';
+    addToCounters(r, +1);  // add new count
+  }
+
+  r.selected = !r.missing_executive && r.status !== 'duplicate';
+
+  // Re-render the row in DOM
+  const rowEl = document.getElementById(`row-${idx}`);
+  if (rowEl) rowEl.outerHTML = buildRowHtml(r);
+
+  bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+  Toast.fire({ icon:'success', title:'Registro actualizado' });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BULK IMPORT — iterates allData, NOT DOM checkboxes
+//  With PAUSE / RESUME / STOP support
+// ═══════════════════════════════════════════════════════════
+
+// ── Pause / Resume / Stop helpers ──────────────────────────
+function pauseImport() {
+  if (!isImporting || importPaused) return;
+  importPaused = true;
+  updateImportControls('paused');
+}
+
+function resumeImport() {
+  if (!importPaused) return;
+  importPaused = false;
+  updateImportControls('running');
+  // Wake up the loop
+  if (_importResolve) { _importResolve(); _importResolve = null; }
+}
+
+function stopImport() {
+  if (!isImporting) return;
+  importStopped = true;
+  importPaused  = false;
+  // Wake up the loop if paused so it can exit
+  if (_importResolve) { _importResolve(); _importResolve = null; }
+}
+
+function waitForResume() {
+  return new Promise(resolve => { _importResolve = resolve; });
+}
+
+function updateImportControls(state) {
+  const btnPause   = document.getElementById('btnPauseImport');
+  const btnResume  = document.getElementById('btnResumeImport');
+  const btnStop    = document.getElementById('btnStopImport');
+  const statusLbl  = document.getElementById('importStatusLabel');
+  const bar        = document.getElementById('importBar');
+
+  if (state === 'running') {
+    btnPause.classList.remove('d-none');
+    btnResume.classList.add('d-none');
+    btnStop.classList.remove('d-none');
+    statusLbl.classList.add('d-none');
+    bar.classList.add('progress-bar-animated');
+    bar.classList.remove('bg-warning');
+    bar.classList.add('bg-primary');
+  } else if (state === 'paused') {
+    btnPause.classList.add('d-none');
+    btnResume.classList.remove('d-none');
+    btnStop.classList.remove('d-none');
+    statusLbl.className = 'import-status-label bg-warning text-dark import-paused-pulse';
+    statusLbl.innerHTML = '<i class="bi bi-pause-fill me-1"></i>EN PAUSA';
+    bar.classList.remove('progress-bar-animated');
+    bar.classList.remove('bg-primary');
+    bar.classList.add('bg-warning');
+    document.getElementById('importMsg').innerText = 'Importación en pausa — revisa los registros';
+    Toast.fire({ icon: 'info', title: 'Importación pausada' });
+  } else if (state === 'stopped') {
+    btnPause.classList.add('d-none');
+    btnResume.classList.add('d-none');
+    btnStop.classList.add('d-none');
+    statusLbl.className = 'import-status-label bg-secondary text-white';
+    statusLbl.innerHTML = '<i class="bi bi-stop-fill me-1"></i>DETENIDA';
+    bar.classList.remove('progress-bar-animated');
+    bar.classList.remove('bg-primary', 'bg-warning');
+    bar.classList.add('bg-secondary');
+  } else if (state === 'done') {
+    btnPause.classList.add('d-none');
+    btnResume.classList.add('d-none');
+    btnStop.classList.add('d-none');
+    statusLbl.classList.add('d-none');
+  }
+}
+
+async function startBulkImport() {
+  if (isImporting) return;
+
+  // Build list from JS state, not DOM
+  const toImport = allData
+    .filter(r => r.selected && r.status !== 'imported' && r.status !== 'duplicate')
+    .map(r => r.index);
+
+  if (!toImport.length) {
+    Swal.fire('Atención', 'No hay registros seleccionados para importar.', 'warning'); return;
+  }
+
+  const res = await Swal.fire({
+    title: '¿Iniciar importación?',
+    html: `Se procesarán <strong>${toImport.length}</strong> registros.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonText: 'Sí, importar', cancelButtonText: 'Cancelar'
+  });
+  if (!res.isConfirmed) return;
+
+  isImporting  = true;
+  importPaused = false;
+  importStopped= false;
+
+  const btn = document.getElementById('startImportBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Importando...';
+  document.getElementById('importStrip').style.display = 'block';
+  updateImportControls('running');
+
+  let processed = 0, errors = 0, total = toImport.length;
+
+  for (const idx of toImport) {
+    // ── Check STOP ──
+    if (importStopped) {
+      updateImportControls('stopped');
+      document.getElementById('importMsg').innerText =
+        `Detenido — ${processed} de ${total} procesados (${errors} errores)`;
+      Toast.fire({ icon: 'warning', title: 'Importación detenida por el usuario' });
+      break;
+    }
+
+    // ── Check PAUSE — wait until resumed ──
+    if (importPaused) {
+      await waitForResume();
+      // After resume, re-check stop
+      if (importStopped) {
+        updateImportControls('stopped');
+        document.getElementById('importMsg').innerText =
+          `Detenido — ${processed} de ${total} procesados (${errors} errores)`;
+        break;
+      }
+      updateImportControls('running');
+    }
+
+    const ok = await importSingleRecord(idx);
+    processed++;
+
+    const pct = Math.round(processed/total*100);
+    document.getElementById('importBar').style.width = pct + '%';
+    document.getElementById('importPct').innerText   = pct + '%';
+    
+    // Check stopOnErr switch dynamicly
+    const stopOnErr = document.getElementById('stopOnErrorSwitch').checked;
+
+    if (!importPaused) {
+      document.getElementById('importMsg').innerText = `Importando ${processed} de ${total}...`;
+    }
+
+    // Scroll to row if in DOM
+    document.getElementById(`row-${idx}`)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    if (!ok) {
+      errors++;
+      if (stopOnErr) {
+        importPaused = true;
+        updateImportControls('paused');
+        document.getElementById('importMsg').innerText =
+          `Error en fila ${idx+1} — corrige y reanuda (${processed}/${total})`;
+        Toast.fire({ icon: 'error', title: `Error en registro ${idx+1}` });
+
+        await waitForResume();
+        if (importStopped) {
+          updateImportControls('stopped');
+          document.getElementById('importMsg').innerText =
+            `Detenido — ${processed} de ${total} procesados (${errors} errores)`;
+          break;
+        }
+        updateImportControls('running');
+      } else {
+        // If not stopping, just show a brief toast or notification
+        Toast.fire({ icon: 'warning', title: `Error en registro ${idx+1}, continuando...`, timer: 1500 });
+      }
+    }
+  }
+
+  isImporting = false;
+  importPaused = false;
+  _importResolve = null;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-play-circle me-1"></i>Reanudar / Importar';
+
+  if (!importStopped && processed >= total && !errors) {
+    updateImportControls('done');
+    document.getElementById('importMsg').innerText = '✓ Finalizado exitosamente';
+    document.getElementById('importBar').classList.remove('bg-warning','bg-secondary');
+    document.getElementById('importBar').classList.add('bg-success');
+    Swal.fire('Completado ✓','Todos los registros fueron importados.','success');
+  } else if (!importStopped && errors && !stopOnErr) {
+    updateImportControls('done');
+    Swal.fire('Completado con errores',`${processed-errors} importados, ${errors} fallaron.`,'warning');
+  }
+  importStopped = false;
+}
+
+
+async function importSingleRecord(idx) {
+  const r     = allData[idx]; if (!r) return false;
+  const rowEl = document.getElementById(`row-${idx}`);
+  const icon  = rowEl?.querySelector('.status-icon');
+  const badge = rowEl?.querySelector('.sbadge');
+  const reason= rowEl?.querySelector('.reason-txt');
+  const retry = rowEl?.querySelector('.retry-btn');
+
+  if (icon)  icon.innerHTML = '<span class="spinner-border spinner-border-sm text-primary" style="width:.9rem;height:.9rem;"></span>';
+  if (badge) { badge.className = 'sbadge bg-light text-primary'; badge.textContent = 'Procesando...'; }
+
+  try {
+    const resp = await fetch('/process_single_generic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(r)
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+
+    // ── Build inline report HTML ──────────────────────────
+    const reportHtml = buildReportHtml(result.report || [], result.ids || {});
+
+    if (result.success && result.verificado !== false) {
+      // ✅ Genuinely verified
+      addToCounters(r, -1);
+      r.status = 'imported';
+      r.reason = 'Importado y verificado ✓';
+      r.selected = false;
+      addToCounters(r, +1);
+
+      if (icon)  icon.innerHTML = '';
+      if (badge) { badge.className = 'sbadge bg-success text-white'; badge.textContent = 'Importado ✓'; }
+      if (reason) { reason.className = 'reason-txt text-success'; reason.textContent = 'Verificado en BD'; }
+      const cb = rowEl?.querySelector('.row-cb');
+      if (cb) { cb.disabled = true; cb.checked = false; }
+      rowEl?.setAttribute('data-status', 'imported');
+
+      // Inject report below the row
+      r.lastReport = { html: reportHtml, type: 'success', ids: result.ids };
+      injectRowReport(rowEl, reportHtml, 'success', result.ids);
+      return true;
+
+    } else if (result.success && result.verificado === false) {
+      // ⚠️ Commit ran but verification SELECT found nothing — real data integrity issue
+      addToCounters(r, -1);
+      r.status = 'error';
+      r.reason = '⚠️ Commit sin verificación — revisar BD';
+      r.selected = false;
+      addToCounters(r, +1);
+
+      if (icon)  icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+      if (badge) { badge.className = 'sbadge bg-warning text-dark'; badge.textContent = 'Sin verificar'; }
+      if (reason){ reason.className = 'reason-txt text-warning fw-bold'; reason.textContent = 'Commit OK pero póliza no encontrada en BD'; }
+      if (retry) retry.classList.remove('d-none');
+      rowEl?.setAttribute('data-status', 'error');
+
+      r.lastReport = { html: reportHtml, type: 'warning', ids: result.ids };
+      injectRowReport(rowEl, reportHtml, 'warning', result.ids);
+      return false;
+
+    } else {
+      // ❌ Error
+      addToCounters(r, -1);
+      r.status = 'error';
+      r.reason = result.message || 'Error desconocido';
+      r.selected = false;
+      addToCounters(r, +1);
+
+      if (icon)  icon.innerHTML = '';
+      if (badge) { badge.className = 'sbadge bg-danger text-white'; badge.textContent = 'Error'; }
+      if (reason){ reason.className = 'reason-txt text-danger'; reason.textContent = r.reason; }
+      if (retry) retry.classList.remove('d-none');
+      rowEl?.setAttribute('data-status', 'error');
+
+      r.lastReport = { html: reportHtml, type: 'error', ids: result.ids };
+      injectRowReport(rowEl, reportHtml, 'error', result.ids);
+      return false;
+    }
+
+  } catch(err) {
+    if (icon)  icon.innerHTML = '<i class="bi bi-wifi-off text-warning"></i>';
+    if (badge) { badge.className = 'sbadge bg-warning-light text-warning'; badge.textContent = 'Red'; }
+    if (reason){ reason.className = 'reason-txt text-danger'; reason.textContent = `Error de red: ${err.message}`; }
+    if (retry) retry.classList.remove('d-none');
+    return false;
+  }
+}
+
+// Build the stepwise report HTML from backend report array
+function buildReportHtml(steps, ids) {
+  if (!steps.length) return '';
+  const iconMap = { ok: '✅', info: 'ℹ️', warn: '⚠️', error: '❌' };
+  const clsMap  = { ok: 'text-success', info: 'text-info', warn: 'text-warning', error: 'text-danger' };
+  let rows = steps.map(s =>
+    `<tr>
+      <td>${iconMap[s.status]||'?'}</td>
+      <td class="fw-bold">${s.step}</td>
+      <td class="${clsMap[s.status]||''}" style="font-size:.7rem;">${s.detail}</td>
+    </tr>`
+  ).join('');
+
+  // IDs summary
+  let idsBadges = '';
+  if (ids.cedula)    idsBadges += `<span class="badge bg-light text-dark border me-1">CI: ${ids.cedula}</span>`;
+  if (ids.poliza)    idsBadges += `<span class="badge bg-light text-dark border me-1">Póliza: ${ids.poliza}</span>`;
+  if (ids.renovacion)idsBadges += `<span class="badge bg-light text-dark border me-1">Ren. ID: ${ids.renovacion}</span>`;
+  if (ids.pago)      idsBadges += `<span class="badge bg-light text-dark border me-1">Pago ID: ${ids.pago}</span>`;
+
+  return `
+    <div class="mb-1" style="font-size:.68rem;">${idsBadges}</div>
+    <table class="table table-sm table-borderless mb-0" style="font-size:.68rem;">
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// Inject report as an expanding detail below a row
+function injectRowReport(rowEl, reportHtml, type, ids) {
+  if (!rowEl || !reportHtml) return;
+  const colCount = rowEl.querySelectorAll('td').length;
+
+  // Remove old report if exists
+  const existing = rowEl.nextElementSibling;
+  if (existing && existing.classList.contains('row-report-detail')) existing.remove();
+
+  const bgMap   = { success: 'rgba(25,135,84,.05)', warning: 'rgba(255,193,7,.06)', error: 'rgba(220,53,69,.04)' };
+  const borderMap={ success: '#19875440', warning: '#ffc10750', error: '#dc354540' };
+
+  const tr = document.createElement('tr');
+  tr.className = 'row-report-detail';
+  tr.innerHTML = `
+    <td colspan="${colCount}" class="p-0">
+      <div style="background:${bgMap[type]};border-left:3px solid ${borderMap[type]};padding:6px 12px;">
+        ${reportHtml}
+        ${ids.poliza ? `<a href="/detalles-poliza/${ids.poliza}" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill mt-1">
+          <i class="bi bi-box-arrow-up-right me-1"></i>Ver póliza ${ids.poliza}</a>` : ''}
+      </div>
+    </td>`;
+  rowEl.after(tr);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  RESET
+
+// ═══════════════════════════════════════════════════════════
+function resetToUpload() {
+  allData.length = 0;
+  ejecutivosList = []; execOptsHtml = ''; editExecOptsHtml = '';
+  streamDone = isImporting = false;
+  cntR = cntW = cntI = 0;
+  filt_text = filt_status = '';
+  filt_sort = 'index';
+  _pendingHtml = ''; _batchFlushed = true;
+
+  document.getElementById('tableBody').innerHTML          = '';
+  document.getElementById('streamBanner').style.display  = 'none';
+  document.getElementById('previewSection').style.display= 'none';
+  document.getElementById('importStrip').style.display   = 'none';
+  document.getElementById('uploadCard').style.display    = 'flex';
+  document.getElementById('file-label').innerText = 'Seleccionar archivo Excel';
+  document.getElementById('file-name').innerText  = 'Formato permitido: .xlsx';
+  document.getElementById('submit-btn').disabled  = true;
+  document.getElementById('btn-spinner').classList.add('d-none');
+  document.getElementById('btn-text').innerText   = 'Subir y Previsualizar';
+  document.getElementById('file-input').value     = '';
+  document.getElementById('streamBar').style.width= '0%';
+  document.getElementById('streamBar').className  = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
+  document.getElementById('streamMsg').innerHTML  = '<span class="spinner-border spinner-border-sm text-primary me-1"></span>Leyendo archivo...';
+  document.getElementById('startImportBtn').disabled = true;
+  document.getElementById('startImportBtn').innerHTML= '<i class="bi bi-play-circle me-1"></i>Importar';
+  document.getElementById('searchBar').value  = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('sortFilter').value = 'index';
+  ['cntReady','cntWarn','cntInvalid','cntTotal'].forEach(id => document.getElementById(id).innerText='0');
+}
+</script>
+{% endblock %}

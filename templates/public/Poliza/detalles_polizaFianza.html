@@ -1,0 +1,693 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Detalle fianza {% endblock %}
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+{% if (detalle_poliza|length) %}
+<div class="card">
+  <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+    <h3 class="card-title text-center fw-bold mb-0">
+      <a href="/lista-de-polizas" class="text-secondary me-2">
+        <i class="bi bi-arrow-left-circle"></i>
+      </a>
+      INFORMACIÓN DE LA POLIZA FIANZA
+    </h3>
+    <button id="editButton" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil-square"></i> Editar
+    </button>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <div class="card-body">
+        <form id="updateForm" action="/actualizar-poliza-fianza/{{ detalle_poliza.cod_poliza }}" method="POST">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="cod_poliza" class="form-label">
+                Codigo poliza
+              </label>
+              <input type="text" class="form-control" id="cod_poliza" name="cod_poliza"
+                value="{{ detalle_poliza.cod_poliza}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="CI_asegurado" class="form-label">
+                CI asegurado
+              </label>
+              <input type="text" class="form-control" id="CI_asegurado" name="CI_asegurado"
+                value="{{ detalle_poliza.CI_asegurado}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="nombres_asegurado" class="form-label">
+                Nombres del asegurado
+              </label>
+              <input type="text" class="form-control" id="nombres_asegurado" name="nombres_asegurado"
+                value="{{ detalle_poliza.NombreA}} {{ detalle_poliza.Nombre2 or ''}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="apellidos_asegurado" class="form-label">
+                Apellidos del asegurado
+              </label>
+              <input type="text" class="form-control" id="apellidos_asegurado" name="apellidos_asegurado"
+                value="{{ detalle_poliza.ApellidoA}} {{ detalle_poliza.Apellido2 or ''}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="fecha_emision" class="form-label">
+                Fecha emision
+              </label>
+              <input type="date" class="form-control" id="fecha_emision" name="fecha_emision"
+                value="{{ detalle_poliza.fecha_registro}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="tomador_poliza" class="form-label">
+                Tomador poliza
+              </label>
+              <input type="text" class="form-control" id="tomador_poliza" name="tomador_poliza"
+                value="{{ detalle_poliza.Tomador}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="compania" class="form-label">
+                Compañía
+              </label>
+              <input type="text" class="form-control" id="compania" name="compania" value="{{detalle_poliza.NombreC}}"
+                readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="ramo" class="form-label">
+                Ramo
+              </label>
+              <input type="text" class="form-control" id="ramo" name="ramo" value="{{detalle_poliza.Ramo}}" readonly>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="subramo" class="form-label">
+                Subramo
+              </label>
+              <input type="text" class="form-control" id="subramo_display" value="{{detalle_poliza.Subramo}}" readonly>
+              <div id="subramo_wrapper" style="display: none;">
+                <select class="form-select select2-search" id="subramo" name="subramo" style="width: 100%;"
+                  data-placeholder="Subramo">
+                  <option value="{{detalle_poliza.Subramo}}" selected>{{detalle_poliza.Subramo}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="producto" class="form-label">
+                Producto
+              </label>
+              <input type="text" class="form-control" id="producto_display" value="{{ detalle_poliza.Producto}}"
+                readonly>
+              <div id="producto_wrapper" style="display: none;">
+                <select class="form-select select2-search" id="producto" name="producto" style="width: 100%;"
+                  data-placeholder="Producto">
+                  <option value="{{ detalle_poliza.Producto}}" selected>{{ detalle_poliza.Producto}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="ejecutivo" class="form-label">
+                Ejecutivo
+              </label>
+              <input type="text" class="form-control" id="ejecutivo" name="ejecutivo"
+                value="{{ detalle_poliza.Nombre}} {{ detalle_poliza.Apellido}}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="frecuencia" class="form-label">
+                Frecuencia
+              </label>
+              <select class="form-select" id="frecuencia" name="frecuencia" disabled>
+                <option value="1" {% if detalle_poliza.Frecuencia==1 %}selected{% endif %}>Anual</option>
+                <option value="4" {% if detalle_poliza.Frecuencia==4 %}selected{% endif %}>Semestral</option>
+                <option value="3" {% if detalle_poliza.Frecuencia==3 %}selected{% endif %}>Trimestral</option>
+                <option value="2" {% if detalle_poliza.Frecuencia==2 %}selected{% endif %}>Mensual</option>
+                <option value="5" {% if detalle_poliza.Frecuencia==5 %}selected{% endif %}>Cuatrimestral</option>
+                <option value="6" {% if detalle_poliza.Frecuencia==6 %}selected{% endif %}>Bimensual</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="prima" class="form-label">
+                Prima
+              </label>
+              <input type="text" class="form-control" id="prima" name="prima" value="{{ detalle_poliza.Prima }}"
+                readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="cobertura" class="form-label">
+                Cobertura
+              </label>
+              <input type="text" class="form-control" id="cobertura" name="cobertura"
+                value="{{ detalle_poliza.cobertura }}" readonly>
+            </div>
+          </div>
+
+          <div class="mt-4" id="updateButton" style="display: none;">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+          </div>
+        </form>
+
+        <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 py-4">
+          <a href="/Pagos_poliza/{{ detalle_poliza.Cod_renovacion }}/0/1" class="btn btn-success">Ver
+            Pagos</a>
+          <div class="btn-group" id="renovar" style="display:none;">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Acciones
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item"
+                  href="/form_renovar/{{ detalle_poliza.cod_poliza|replace('/', '-') }}">Renovar</a></li>
+              <li><a class="dropdown-item"
+                  href="/traspasar_poliza/{{ detalle_poliza.cod_poliza|replace('/', '-') }}">Traspasar</a></li>
+              <li><a class="dropdown-item"
+                  href="/anular_poliza/{{ detalle_poliza.cod_poliza|replace('/', '-') }}">Anular</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<h2 class="text-center">
+  No existe la poliza 😭
+  <hr />
+</h2>
+{% endif %} {% endblock %}
+
+{% block customJS %}
+
+<script>
+  const boton = document.getElementById("renovar")
+  const today = JSON.parse('{{ today | tojson }}');
+  const completo = JSON.parse('{{ completo | tojson }}');
+  const detail = JSON.parse('{{ detalle_poliza | tojson }}');
+  const fechaVencimiento = new Date(detail.Fecha_vencimiento);
+  const todayA = new Date(today);
+  fechaVencimiento.setMonth(fechaVencimiento.getMonth() - 1);
+  if (fechaVencimiento.getTime() <= todayA.getTime() && completo == "si") { boton.style.display = "block"; }
+
+  document.getElementById('editButton').addEventListener('click', function () {
+    const fieldsToEnable = ['cod_poliza', 'fecha_emision', 'tomador_poliza', 'frecuencia', 'prima', 'cobertura'];
+    fieldsToEnable.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        if (field.tagName.toLowerCase() === 'select') {
+          field.disabled = false;
+        } else {
+          field.readOnly = false;
+        }
+      }
+    });
+
+    // Subramo and Producto handling
+    document.getElementById('subramo_display').style.display = 'none';
+    document.getElementById('subramo_wrapper').style.display = 'block';
+    const subramoSelect = document.getElementById('subramo');
+
+    document.getElementById('producto_display').style.display = 'none';
+    document.getElementById('producto_wrapper').style.display = 'block';
+    const productoSelect = document.getElementById('producto');
+
+    // Inicializar select2
+    if (typeof $ !== 'undefined') {
+      $('#subramo').select2({ width: '100%' });
+      $('#producto').select2({ width: '100%' });
+    }
+
+    // Populate options
+    if (typeof updateSubRamoOptions === 'function') {
+      const currentSubramo = document.getElementById('subramo_display').value;
+      const currentProducto = document.getElementById('producto_display').value;
+
+      updateSubRamoOptions();
+
+      if (currentSubramo) subramoSelect.value = currentSubramo;
+      updateProductoOptions();
+      if (currentProducto) productoSelect.value = currentProducto;
+    }
+
+    document.getElementById('updateButton').style.display = 'block';
+  });
+
+  // DATA AND LOGIC FOR SUBRAMO AND PRODUCTO
+  const productosI = {
+    'MERCANTIL PANAMÁ': {
+      'Persona': {
+        'SALUD': ['INTEGRAL', 'VITAL'],
+        'VIDA': ['VIDA A TERMINO']
+      }
+    },
+    'VUMI': {
+      'Persona': {
+        'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP']
+      }
+    },
+    'LA REGIONAL': {
+      'Persona': {
+        'SALUD': ['MEDICARE CLASSIC'],
+        'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'CONTINENTAL': {
+      'Viajes': {
+        'ANUALES MULTIVIAJES': ['CORPORATIVO'],
+        'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'],
+        'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'],
+        'ESTUDIANTES': ['ESTUDIANTES']
+      }
+    },
+    'AFIANAUCO': {
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'AMERICAN FIDELITY': {
+      'Persona': {
+        'VIDA': ['VIDA']
+      }
+    },
+    'PAN-AMERICAN': {
+      'Persona': {
+        'VIDA': ['VIDA']
+      }
+    }
+  };
+
+  const productosN = {
+    'MERCANTIL': {
+      'Persona': {
+        'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'],
+        'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA/PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRUA'],
+        'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+      },
+      'Viaje': {
+        'POR DIAS': ['POR DIAS']
+      }
+    },
+    'ESTAR SEGUROS': {
+      'Persona': {
+        'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'],
+        'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'],
+        'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'],
+        'VIDA': ['VIDA TEMPORAL']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'LA INTERNACIONAL': {
+      'Persona': {
+        'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'CARACAS': {
+      'Persona': {
+        'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'banesco': {
+      'Persona': {
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      }
+    },
+    'UNIVERSITAS': {
+      'Persona': {
+        'SALUD': ['SALUD INDIVIDUAL'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Mascotas': {
+        'MASCOTAS': ['MASCOTAS PLUS']
+      }
+    },
+
+    'QUALITAS': {
+      'Persona': {
+        'SALUD': ['TU APOYO PREMIUM'],
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'UNISEGUROS': {
+      'Persona': {
+        'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'OCEANICA': {
+      'Persona': {
+        'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+        'VIDA': ['Temporal', 'A termino']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'EMBARCACIONES': ['EMBARCACIONES'],
+        'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+        'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'PIRAMIDE': {
+      'Persona': {
+        'SALUD': ['HCM INDIVIDUAL'],
+        'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+      },
+      'Auto': {
+        'CA / PT': ['CA', 'PT'],
+        'RCV': ['RCV', 'RCV + GRÚA'],
+        'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+      }
+    },
+    'REAL SEGUROS': {
+      'Persona': {
+        'SALUD': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS']
+      },
+      'Patrimonial': {
+        'COMBINADO EMPRESARIAL': ['COMBINADO EMPRESARIAL'],
+        'COMBINADO RESIDENCIAL': ['HOGAR'],
+        'RCG': ['RCG'],
+        'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+        'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+      }
+    },
+    'MAPFRE': {
+      'Persona': {
+        'SALUD': ['PROTECCIÓN SALUD']
+      },
+      'Fianzas': {
+        'FIANZAS': ['FIANZAS'],
+        'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+        'LABORAL': ['LABORAL'],
+        'LICITACION': ['LICITACION']
+      }
+    },
+    'SEGUROS VENEZUELA': {
+      'Persona': {
+        'SALUD': ['ORO', 'PLATA', 'BRONCE'],
+        'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
+        'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
+        'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
+        'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
+      },
+      'Auto': {
+        'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
+        'PERDIDA TOTAL': ['PERDIDA TOTAL'],
+        'RCV': ['RCV']
+      }
+    }
+  };
+
+  const base = JSON.parse('{{ session.get("base") | tojson }}');
+  let productos;
+  if (base == "nacional") {
+    productos = productosN;
+  }
+  else { productos = productosI; }
+
+  function normalizeText(text) {
+    if (!text) return '';
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+  }
+
+  function findCompany(selectedCompania, productosObj) {
+    const normalizedSelected = normalizeText(selectedCompania);
+    if (!normalizedSelected) return null;
+
+    if (productosObj[normalizedSelected]) return normalizedSelected;
+
+    const keys = Object.keys(productosObj);
+    for (const key of keys) {
+      const normalizedKey = normalizeText(key);
+      if (normalizedSelected.includes(normalizedKey) || normalizedKey.includes(normalizedSelected)) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  function updateSubRamoOptions() {
+    const companiaRaw = document.getElementById('compania').value;
+    const companiaKey = findCompany(companiaRaw, productos);
+    const ramo = document.getElementById('ramo').value;
+    const subRamoSelect = document.getElementById('subramo');
+    const productoSelect = document.getElementById('producto');
+    const currentSubramo = document.getElementById('subramo_display').value;
+
+    subRamoSelect.innerHTML = '<option value="">Selecciona un sub ramo</option>';
+    productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+    if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo]) {
+      Object.keys(productos[companiaKey][ramo]).forEach(function (subRamo) {
+        const option = document.createElement('option');
+        option.value = subRamo;
+        option.text = subRamo;
+        if (subRamo == currentSubramo) {
+          option.selected = true;
+        }
+        subRamoSelect.appendChild(option);
+      });
+      $(subRamoSelect).trigger('change');
+    }
+  }
+
+  function updateProductoOptions() {
+    const companiaRaw = document.getElementById('compania').value;
+    const companiaKey = findCompany(companiaRaw, productos);
+    const ramo = document.getElementById('ramo').value;
+    const subRamoSelect = document.getElementById('subramo');
+    const productoSelect = document.getElementById('producto');
+    const subRamo = subRamoSelect.value;
+    const currentProducto = document.getElementById('producto_display').value;
+
+    productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+    if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo] && productos[companiaKey][ramo][subRamo]) {
+      productos[companiaKey][ramo][subRamo].forEach(function (producto) {
+        const option = document.createElement('option');
+        option.value = producto;
+        option.text = producto;
+        if (producto == currentProducto) {
+          option.selected = true;
+        }
+        productoSelect.appendChild(option);
+      });
+      $(productoSelect).trigger('change');
+    }
+  }
+
+  document.getElementById('subramo').addEventListener('change', updateProductoOptions);
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const primaInput = document.getElementById('prima');
+
+    // Initialize rawValue from the input's value.
+    let rawValue = '0';
+    if (primaInput.value) {
+      const numericValue = parseFloat(primaInput.value.replace(',', '.'));
+      if (!isNaN(numericValue)) {
+        rawValue = Math.round(numericValue * 100).toString();
+      }
+    }
+
+    const formatRawValue = () => {
+      const paddedValue = rawValue.padStart(3, '0');
+      const integerPart = paddedValue.slice(0, -2);
+      const decimalPart = paddedValue.slice(-2);
+      const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+      return `${formattedInteger},${decimalPart}`;
+    };
+
+    if (primaInput.value) {
+      primaInput.value = formatRawValue();
+    }
+
+    primaInput.addEventListener('focus', (e) => {
+      if (e.target.readOnly) return;
+      e.target.value = formatRawValue();
+      setTimeout(() => e.target.select(), 0);
+    });
+
+    primaInput.addEventListener('blur', (e) => {
+      if (e.target.readOnly) return;
+      if (rawValue === '0') {
+        e.target.value = '';
+      } else {
+        e.target.value = formatRawValue();
+      }
+    });
+
+    primaInput.addEventListener('keydown', (e) => {
+      if (e.target.readOnly) return;
+      e.preventDefault();
+      if (e.key >= '0' && e.key <= '9') {
+        if (rawValue === '0') {
+          rawValue = e.key;
+        } else {
+          rawValue += e.key;
+        }
+      } else if (e.key === 'Backspace') {
+        rawValue = rawValue.slice(0, -1);
+        if (rawValue === '') rawValue = '0';
+      } else if (e.key === 'Delete') {
+        rawValue = '0';
+      } else if (e.key === '.') {
+        return;
+      }
+      primaInput.value = formatRawValue();
+    });
+  });
+</script>
+
+{% endblock %}

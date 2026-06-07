@@ -1,0 +1,1130 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Reportes & Analytics | Cabal Intelligence{% endblock %}
+
+{% block customCSS %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --primary: #4f46e5;
+        --primary-light: #818cf8;
+        --primary-glow: rgba(79,70,229,0.18);
+        --secondary: #7c3aed;
+        --accent: #f43f5e;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --info: #0ea5e9;
+        --danger: #ef4444;
+        --bg: linear-gradient(135deg, #eef0f8 0%, #e5e8f5 60%, #dde3f2 100%);
+        --card-bg: rgba(255,255,255,0.82);
+        --glass-border: rgba(255,255,255,0.5);
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --text-dim: #94a3b8;
+        --glass-shadow: 0 8px 40px 0 rgba(79,70,229,0.08);
+        --card-radius: 22px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        background: var(--bg);
+        color: var(--text-main);
+        font-family: 'Outfit', 'Inter', sans-serif;
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .dash-wrap {
+        padding: 2rem 2.2rem;
+        animation: slideUp .7s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Glass Card ── */
+    .g-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--card-radius);
+        box-shadow: var(--glass-shadow);
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow .35s, transform .35s;
+    }
+    .g-card:hover {
+        box-shadow: 0 20px 50px rgba(79,70,229,0.13);
+        transform: translateY(-4px);
+    }
+    .g-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--card-radius);
+        padding: 1px;
+        background: linear-gradient(135deg,rgba(255,255,255,.6),rgba(255,255,255,.1));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        pointer-events: none;
+    }
+
+    /* ── Header ── */
+    .dash-header { margin-bottom: 1.8rem; }
+    .dash-header h1 {
+        font-size: 2rem; font-weight: 800;
+        letter-spacing: -.03em; margin: 0 0 .25rem;
+        color: var(--text-main);
+    }
+    .text-gradient {
+        background: linear-gradient(135deg, var(--primary), #a855f7);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .breadcrumb-label {
+        font-size: .8rem; font-weight: 600;
+        color: var(--text-muted); letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+    .last-update-badge {
+        background: rgba(79,70,229,.08);
+        border: 1px solid rgba(79,70,229,.15);
+        color: var(--primary);
+        font-size: .78rem; font-weight: 700;
+        padding: 5px 14px; border-radius: 100px;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+        background: rgba(255,255,255,.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 1.1rem 1.4rem;
+        display: flex; gap: 1.2rem; flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,.04);
+    }
+    .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 160px; }
+    .filter-label {
+        font-size: .68rem; font-weight: 800;
+        color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .f-select {
+        background: #fff; border: 1.5px solid #e2e8f0;
+        color: var(--text-main); border-radius: 12px;
+        padding: .55rem 1rem; font-size: .88rem; font-weight: 500;
+        cursor: pointer; transition: all .25s;
+        font-family: 'Outfit', sans-serif;
+    }
+    .f-select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,.12); outline: none; }
+
+    .btn-refresh {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff; border: none; border-radius: 14px;
+        padding: .65rem 1.6rem; font-weight: 700; font-size: .92rem;
+        cursor: pointer; white-space: nowrap;
+        box-shadow: 0 8px 24px -4px rgba(79,70,229,.4);
+        transition: all .3s cubic-bezier(.175,.885,.32,1.275);
+        font-family: 'Outfit', sans-serif;
+    }
+    .btn-refresh:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 30px -4px rgba(124,58,237,.5); }
+    .btn-refresh:active { transform: scale(.98); }
+
+    /* ── KPI Strip ── */
+    .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    @media(max-width: 1200px){ .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 768px){ .kpi-strip { grid-template-columns: 1fr 1fr; } }
+
+    .kpi-card {
+        padding: 1.5rem 1.4rem;
+        overflow: hidden;
+        cursor: default;
+    }
+    .kpi-accent-bar {
+        position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        border-radius: 22px 22px 0 0;
+    }
+    .kpi-label {
+        font-size: .72rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: .07em; color: var(--text-muted); margin-bottom: .7rem;
+    }
+    .kpi-num {
+        font-size: 2.1rem; font-weight: 800; letter-spacing: -.04em;
+        color: #0f172a; margin-bottom: .55rem; line-height: 1;
+    }
+    .kpi-sub {
+        font-size: .78rem; color: var(--text-muted); font-weight: 500;
+    }
+    .kpi-sparkline { margin-top: .8rem; }
+    .trend-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: .78rem; font-weight: 800;
+        padding: 4px 12px; border-radius: 100px;
+        margin-top: .5rem;
+    }
+    .trend-up   { background: rgba(16,185,129,.1); color: #059669; }
+    .trend-down { background: rgba(244,63,94,.1);  color: #e11d48; }
+    .trend-flat { background: rgba(100,116,139,.1); color: var(--text-muted); }
+    .kpi-icon-bg {
+        position: absolute; bottom: -14px; right: -14px;
+        font-size: 5.5rem; opacity: .04;
+        color: var(--primary-light); transform: rotate(-15deg);
+    }
+
+    /* ── Section Header ── */
+    .section-head {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 1.2rem;
+    }
+    .section-title {
+        font-weight: 800; font-size: 1.05rem;
+        color: #334155; letter-spacing: -.01em;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .section-title i { color: var(--primary); font-size: 1.1rem; }
+    .section-badge {
+        background: #f1f5f9; color: #475569;
+        font-weight: 700; font-size: .72rem;
+        padding: 4px 12px; border-radius: 8px;
+        text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    /* ── Tabs Premium ── */
+    .tabs-wrap {
+        background: rgba(255,255,255,.55);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 18px;
+        padding: 7px;
+        display: flex; gap: 4px; flex-wrap: wrap;
+        margin-bottom: 1.8rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,.04);
+    }
+    .tab-btn {
+        flex: 1; min-width: 130px;
+        background: transparent; border: none;
+        border-radius: 13px;
+        padding: 11px 20px;
+        font-size: .9rem; font-weight: 700;
+        color: var(--text-muted); cursor: pointer;
+        transition: all .3s cubic-bezier(.4,0,.2,1);
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-family: 'Outfit', sans-serif;
+    }
+    .tab-btn.active {
+        background: #fff; color: var(--primary);
+        box-shadow: 0 4px 16px rgba(79,70,229,.12);
+        transform: scale(1.02);
+    }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,.5); color: var(--text-main); }
+
+    /* ── Progress Bars ── */
+    .prog-bar-wrap { margin-bottom: .9rem; }
+    .prog-label {
+        display: flex; justify-content: space-between;
+        font-size: .82rem; font-weight: 600;
+        color: var(--text-main); margin-bottom: .4rem;
+    }
+    .prog-track {
+        height: 8px; background: #f1f5f9;
+        border-radius: 100px; overflow: hidden;
+    }
+    .prog-fill {
+        height: 100%; border-radius: 100px;
+        transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Ranking Table ── */
+    .rank-table { width: 100%; border-collapse: collapse; }
+    .rank-table thead th {
+        font-size: .7rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: .06em; color: var(--text-muted);
+        padding: .5rem .8rem; border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+    }
+    .rank-table tbody tr {
+        border-bottom: 1px solid #f8fafc;
+        transition: background .2s;
+    }
+    .rank-table tbody tr:hover { background: rgba(79,70,229,.03); }
+    .rank-table tbody td {
+        padding: .65rem .8rem; font-size: .88rem; font-weight: 500;
+    }
+    .rank-pos {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 26px; height: 26px; border-radius: 8px;
+        font-weight: 800; font-size: .78rem;
+    }
+    .pos-1 { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#fff; }
+    .pos-2 { background: linear-gradient(135deg,#94a3b8,#64748b); color:#fff; }
+    .pos-3 { background: linear-gradient(135deg,#fb923c,#ea580c); color:#fff; }
+    .pos-n { background: #f1f5f9; color: var(--text-muted); }
+    .yoy-pos { color: #059669; font-weight: 800; }
+    .yoy-neg { color: #e11d48; font-weight: 800; }
+
+    /* ── Callout ── */
+    .info-callout {
+        background: rgba(79,70,229,.06);
+        border: 1px solid rgba(79,70,229,.15);
+        border-left: 4px solid var(--primary);
+        border-radius: 14px; padding: 1rem 1.2rem;
+        font-size: .88rem; color: var(--text-main);
+        display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1rem;
+    }
+    .info-callout i { color: var(--primary); margin-top: 2px; flex-shrink: 0; }
+
+    /* ── Metric mini ── */
+    .metric-grid {
+        display: grid; grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem; margin-top: 1.2rem;
+    }
+    .metric-mini { text-align: center; }
+    .metric-mini-val { font-size: 1.4rem; font-weight: 800; color: #0f172a; }
+    .metric-mini-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+
+    /* ── Cobranza badges ── */
+    .cobr-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 100px;
+        font-weight: 700; font-size: .82rem; margin-bottom: .5rem;
+    }
+    .cobr-primary { background: rgba(79,70,229,.08); color: var(--primary); border: 1px solid rgba(79,70,229,.2); }
+    .cobr-warning  { background: rgba(245,158,11,.08); color: #b45309; border: 1px solid rgba(245,158,11,.2); }
+
+    /* ── Divider ── */
+    .subtle-divider { border: none; border-top: 1px solid rgba(0,0,0,.05); margin: 1rem 0; }
+
+    /* ── Export Button ── */
+    .btn-export {
+        background: #f8fafc; border: 1.5px solid #e2e8f0;
+        color: var(--text-main); border-radius: 12px;
+        padding: .5rem 1.1rem; font-weight: 700; font-size: .82rem;
+        cursor: pointer; transition: all .2s;
+        display: inline-flex; align-items: center; gap: 6px;
+        font-family: 'Outfit', sans-serif;
+    }
+    .btn-export:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dash-wrap" id="initial-data-holder" data-initial="{{ datos_iniciales | tojson | safe }}">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="dash-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <div class="breadcrumb-label mb-1"><i class="bi bi-house me-1"></i> Inicio / Analytics</div>
+            <h1>Cabal <span class="text-gradient">Intelligence</span></h1>
+            <p class="mb-0" style="color:var(--text-muted);font-size:.9rem;font-weight:500;">
+                Panel de análisis avanzado · Cartera de clientes
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap mt-1">
+            <span class="last-update-badge"><i class="bi bi-clock me-1"></i> Actualizado: <span id="ts_update">—</span></span>
+            <button class="btn-export" onclick="window.print()"><i class="bi bi-file-earmark-pdf"></i> Exportar PDF</button>
+            <button class="btn-refresh" id="btn_update"><i class="bi bi-arrow-repeat"></i> Sincronizar Datos</button>
+        </div>
+    </div>
+
+    <!-- ═══ FILTERS ═══ -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label class="filter-label">Año Fiscal</label>
+            <select id="filter_ano" class="f-select">
+                <option value="">Todos</option>
+                {% for item in filtros.anos %}
+                <option value="{{ item.ano }}" {% if item.ano==ano_actual %}selected{% endif %}>{{ item.ano }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Mes</label>
+            <select id="filter_mes" class="f-select">
+                <option value="">Toda la gestión</option>
+                {% set meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] %}
+                {% for mes in meses %}
+                <option value="{{ loop.index }}">{{ mes }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Aseguradora</label>
+            <select id="filter_compania" class="f-select">
+                <option value="">Todas las compañías</option>
+                {% for item in filtros.companias %}
+                <option value="{{ item.Cod_compania }}">{{ item.Nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Ramo</label>
+            <select id="filter_ramo" class="f-select">
+                <option value="">Todos los ramos</option>
+                {% for item in filtros.ramos %}
+                <option value="{{ item.Ramo }}">{{ item.Ramo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Consultor / Ejecutivo</label>
+            <select id="filter_ejecutivo" class="f-select">
+                <option value="">Todos los ejecutivos</option>
+                {% for item in filtros.ejecutivos %}
+                <option value="{{ item.cod_ejecutivo }}">{{ item.Nombre_Completo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- ═══ KPI STRIP (4 métricas: Facturación, Pólizas Pagadas, Eficiencia, Crecimiento) ═══ -->
+    <div class="kpi-strip">
+        <!-- 1. Facturación -->
+        <div class="g-card kpi-card">
+            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+            <i class="bi bi-currency-dollar kpi-icon-bg"></i>
+            <div class="kpi-label">Facturación (Prima USD)</div>
+            <div class="kpi-num" id="val_facturacion">$0.00</div>
+            <div class="trend-pill trend-up" id="pill_crecimiento"><i class="bi bi-graph-up-arrow"></i><span id="val_crecimiento_fact">0%</span> vs año ant.</div>
+        </div>
+        <!-- 2. Pólizas Pagadas (cuota 1 pagada) -->
+        <div class="g-card kpi-card">
+            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#10b981,#34d399);"></div>
+            <i class="bi bi-shield-check kpi-icon-bg"></i>
+            <div class="kpi-label">Pólizas Pagadas</div>
+            <div class="kpi-num" id="val_polizas">0</div>
+            <div class="kpi-sub">Nuevas + Renovadas (cuota 1)</div>
+        </div>
+        <!-- 3. Eficiencia de Cobro -->
+        <div class="g-card kpi-card">
+            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#0ea5e9,#38bdf8);"></div>
+            <i class="bi bi-speedometer2 kpi-icon-bg"></i>
+            <div class="kpi-label">Eficiencia de Cobro</div>
+            <div class="kpi-num" id="val_eficiencia">0.00%</div>
+            <div id="kpi_eficiencia_bar" style="margin-top:.6rem;height:6px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
+                <div id="kpi_eficiencia_fill" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;border-radius:10px;transition:width 1.2s cubic-bezier(.4,0,.2,1);"></div>
+            </div>
+        </div>
+        <!-- 4. Recaudación Externa -->
+        <div class="g-card kpi-card">
+            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+            <i class="bi bi-arrow-left-right kpi-icon-bg"></i>
+            <div class="kpi-label">Recaudación Externa</div>
+            <div class="kpi-num" id="val_recaud_ext">$0.00</div>
+            <div class="kpi-sub" id="val_recaud_ext_cant">0 cuotas de otros períodos</div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB NAVIGATION (3 pestañas) ═══ -->
+    <div class="tabs-wrap" id="tab-nav">
+        <button class="tab-btn active" data-tab="tab-global" id="tab-btn-global"><i class="bi bi-globe2"></i> Panorama General</button>
+        <button class="tab-btn" data-tab="tab-cartera" id="tab-btn-cartera"><i class="bi bi-people"></i> Análisis de Cartera</button>
+        <button class="tab-btn" data-tab="tab-productividad" id="tab-btn-productividad"><i class="bi bi-bar-chart-steps"></i> Productividad</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         TAB 1: PANORAMA GENERAL
+    ═══════════════════════════════════════ -->
+    <div class="tab-content" id="tab-global">
+        <div class="row g-4">
+            <!-- Evolución mensual de prima (fecha de pago + año anterior) -->
+            <div class="col-xl-8">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-bar-chart-line"></i> Evolución Mensual de Prima</span>
+                        <div class="d-flex gap-2">
+                            <span class="section-badge" id="badge_year_label">Vista Anual</span>
+                        </div>
+                    </div>
+                    <div class="info-callout">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Prima anualizada de pólizas pagadas (cuota 1) por fecha de pago. Las barras grises representan el año anterior.</span>
+                    </div>
+                    <div id="chart_tendencia" style="min-height:340px;"></div>
+                </div>
+            </div>
+            <!-- Distribución por Ramo (renombrado de "Proporción") -->
+            <div class="col-xl-4">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-pie-chart-fill"></i> Distribución por Ramo</span>
+                    </div>
+                    <div id="chart_ramos" style="min-height:280px;"></div>
+                    <hr class="subtle-divider">
+                    <div id="ramos_legend_detail"></div>
+                </div>
+            </div>
+            <!-- Treemap de Cartera (movido desde Cartera) -->
+            <div class="col-xl-8">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Treemap de Cartera por Ramo</span>
+                        <span class="section-badge">Prima por segmento</span>
+                    </div>
+                    <div class="info-callout">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Cada rectángulo representa un segmento; el área es proporcional a la prima generada.
+                    </div>
+                    <div id="chart_treemap" style="min-height:360px;"></div>
+                </div>
+            </div>
+            <!-- Distribución por tipo de venta (movido desde Cartera, con nombre de departamento) -->
+            <div class="col-xl-4">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-tags-fill"></i> Distribución por Tipo de Venta</span>
+                    </div>
+                    <div id="chart_tipo_venta" style="min-height:280px;"></div>
+                    <hr class="subtle-divider">
+                    <div id="tipo_venta_legend"></div>
+                </div>
+            </div>
+            <!-- Desempeño por Compañía -->
+            <div class="col-12">
+                <div class="g-card p-4">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-building"></i> Desempeño por Compañía Aseguradora</span>
+                        <span class="section-badge">TOP 10</span>
+                    </div>
+                    <div id="chart_aseguradoras" style="min-height:340px;"></div>
+                </div>
+            </div>
+            <!-- Heatmap -->
+            <div class="col-12">
+                <div class="g-card p-4">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-calendar3"></i> Mapa de Calor: Actividad por Mes / Ramo</span>
+                        <span class="section-badge">Heatmap BI</span>
+                    </div>
+                    <div id="chart_heatmap" style="min-height:280px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         TAB 2: ANÁLISIS DE CARTERA
+    ═══════════════════════════════════════ -->
+    <div class="tab-content d-none" id="tab-cartera">
+        <div class="row g-4">
+            <!-- Concentración de Prima por Ramo (Pareto) -->
+            <div class="col-lg-6">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-funnel-fill"></i> Concentración de Prima (Pareto)</span>
+                        <span class="section-badge">Curva 80/20</span>
+                    </div>
+                    <div id="chart_pareto" style="min-height:300px;"></div>
+                </div>
+            </div>
+            <!-- Contribución por Ramo (barras de progreso) -->
+            <div class="col-lg-6">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-list-ol"></i> Contribución por Ramo</span>
+                        <span class="section-badge">% del total</span>
+                    </div>
+                    <div id="ramos_progress_container">
+                        <p class="text-muted small">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Comparativa mes a mes vs año anterior -->
+            <div class="col-12">
+                <div class="g-card p-4">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-bar-chart-line-fill"></i> Comparativa Mensual vs Año Anterior</span>
+                        <span class="section-badge">YoY</span>
+                    </div>
+                    <div class="info-callout">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Las barras azules muestran el año actual; la línea gris el año anterior. Idealmente la prima actual debe superar consistentemente el año previo.
+                    </div>
+                    <div id="chart_comparativa_yoy" style="min-height:340px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         TAB 3: PRODUCTIVIDAD (antes Productividad + Comercial)
+    ═══════════════════════════════════════ -->
+    <div class="tab-content d-none" id="tab-productividad">
+        <div class="row g-4">
+            <!-- Ranking ejecutivos con YoY -->
+            <div class="col-12">
+                <div class="g-card p-4">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-trophy-fill"></i> Ranking de Productividad por Ejecutivo</span>
+                        <span class="section-badge">Prima & Crecimiento YoY</span>
+                    </div>
+                    <div id="chart_ejecutivos_rank" style="min-height:400px;"></div>
+                </div>
+            </div>
+            <!-- Tabla detallada con columnas de crecimiento -->
+            <div class="col-12">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-person-lines-fill"></i> Tabla de Desempeño Comercial</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="rank-table" id="tbl_ejecutivos">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Ejecutivo</th>
+                                    <th>Prima Actual (USD)</th>
+                                    <th>Pólizas</th>
+                                    <th>Prima Año Ant.</th>
+                                    <th>Crecimiento $</th>
+                                    <th>YoY %</th>
+                                    <th>Participación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_ejecutivos">
+                                <tr><td colspan="8" class="text-center text-muted py-3">Cargando datos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Eficiencia operativa -->
+            <div class="col-lg-5">
+                <div class="g-card p-4 h-100 d-flex flex-column">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-speedometer2"></i> Eficiencia Operativa Global</span>
+                    </div>
+                    <div id="chart_gauge_prod" style="min-height:260px;"></div>
+                    <hr class="subtle-divider">
+                    <div class="metric-grid">
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="prod_mejor_ejecutivo" style="font-size:1rem;">—</div>
+                            <div class="metric-mini-label">Mejor Ejecutivo</div>
+                        </div>
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="prod_promedio">$0.00</div>
+                            <div class="metric-mini-label">Prima Prom./Ejec.</div>
+                        </div>
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="prod_total_ejec">0</div>
+                            <div class="metric-mini-label">Ejecutivos Activos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Donut distribución por ejecutivo -->
+            <div class="col-lg-7">
+                <div class="g-card p-4 h-100">
+                    <div class="section-head">
+                        <span class="section-title"><i class="bi bi-pie-chart"></i> Participación por Ejecutivo</span>
+                    </div>
+                    <div id="chart_exec_donut" style="min-height:360px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /dash-wrap -->
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+'use strict';
+
+/* ──────────────────────────────
+   CONFIGURACIÓN GLOBAL
+────────────────────────────── */
+const COLORS = {
+    primary:   '#4f46e5',
+    secondary: '#7c3aed',
+    success:   '#10b981',
+    warning:   '#f59e0b',
+    info:      '#0ea5e9',
+    danger:    '#ef4444',
+    muted:     '#94a3b8',
+    palette: ['#4f46e5','#7c3aed','#ec4899','#f43f5e','#f59e0b','#10b981','#0ea5e9','#06b6d4','#84cc16','#a855f7']
+};
+const MESES_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+/* Formato con 2 decimales siempre */
+const fmt    = v => '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = v => Number(v || 0).toFixed(2) + '%';
+const fmtK   = v => { v = Number(v||0); return v >= 1000000 ? '$' + (v/1000000).toFixed(2) + 'M' : v >= 1000 ? '$' + (v/1000).toFixed(2) + 'K' : '$' + v.toFixed(2); };
+const fmtNum = v => Number(v || 0).toFixed(2);
+
+let charts = {};
+let _lastData = null;
+
+/* ──────────────────────────────
+   COMMON CHART BASE OPTIONS
+────────────────────────────── */
+const BASE = {
+    chart: {
+        background: 'transparent',
+        foreColor: '#64748b',
+        fontFamily: 'Outfit, Inter, sans-serif',
+        toolbar: { show: false },
+        animations: { enabled: true, easing: 'easeinout', speed: 700 }
+    },
+    theme: { mode: 'light' },
+    grid: { borderColor: 'rgba(0,0,0,0.04)', strokeDashArray: 4, padding: { left: 8, right: 8 } },
+    tooltip: {
+        theme: 'light',
+        style: { fontSize: '13px', fontFamily: 'Outfit, sans-serif' }
+    }
+};
+
+/* ──────────────────────────────
+   INIT ALL CHARTS
+────────────────────────────── */
+function initCharts() {
+
+    // 1. Tendencia mensual – MIXED (bar = año actual + line = año anterior)
+    charts.tendencia = new ApexCharts(document.querySelector('#chart_tendencia'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'bar', height: 340, stacked: false },
+        series: [
+            { name: 'Prima Pagada Actual ($)',   type: 'column', data: [] },
+            { name: 'Año Anterior ($)',           type: 'line',   data: [] }
+        ],
+        colors: [COLORS.primary, COLORS.muted],
+        plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
+        xaxis: { categories: MESES_SHORT },
+        yaxis: { labels: { formatter: fmtK } },
+        stroke: { width: [0, 2], curve: 'smooth' },
+        markers: { size: [0, 4], strokeColors: '#fff', strokeWidth: 2 },
+        fill: { opacity: [1, 0.7] },
+        dataLabels: { enabled: false },
+        legend: { position: 'top', fontSize: '12px', fontWeight: 600 }
+    });
+    charts.tendencia.render();
+
+    // 2. Distribución por Ramo – Donut
+    charts.ramos = new ApexCharts(document.querySelector('#chart_ramos'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'donut', height: 280 },
+        series: [], labels: [],
+        colors: COLORS.palette,
+        plotOptions: { pie: { donut: { size: '72%', labels: { show: true,
+            total: { show: true, label: 'TOTAL', fontSize: '12px', fontWeight: 800,
+                formatter: w => fmtK(w.globals.seriesTotals.reduce((a,b)=>a+b,0)) }
+        }}}},
+        stroke: { show: true, width: 2, colors: ['#fff'] },
+        legend: { position: 'bottom', fontSize: '12px', fontWeight: 600 }
+    });
+    charts.ramos.render();
+
+    // 3. Desempeño por aseguradora
+    charts.aseguradoras = new ApexCharts(document.querySelector('#chart_aseguradoras'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'bar', height: 340 },
+        series: [{ name: 'Prima Generada ($)', data: [] }],
+        plotOptions: { bar: { horizontal: true, borderRadius: 8, barHeight: '55%',
+            dataLabels: { position: 'right' }
+        }},
+        colors: ['#818cf8'],
+        xaxis: { labels: { formatter: fmtK } },
+        dataLabels: { enabled: true, formatter: fmtK, style: { fontSize: '11px', fontWeight: 700, colors: ['#334155'] }, offsetX: 6 }
+    });
+    charts.aseguradoras.render();
+
+    // 4. Heatmap por mes y ramo
+    charts.heatmap = new ApexCharts(document.querySelector('#chart_heatmap'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'heatmap', height: 260 },
+        series: [],
+        colors: [COLORS.primary],
+        plotOptions: { heatmap: { shadeIntensity: 0.9, radius: 6,
+            colorScale: { ranges: [
+                { from: 0,     to: 0,         color: '#f1f5f9', name: 'Sin actividad' },
+                { from: 1,     to: 999,        color: '#c7d2fe', name: 'Bajo' },
+                { from: 1000,  to: 9999,       color: '#818cf8', name: 'Medio' },
+                { from: 10000, to: 999999999,  color: COLORS.primary, name: 'Alto' }
+            ]}
+        }},
+        dataLabels: { enabled: false },
+        xaxis: { categories: MESES_SHORT },
+        tooltip: { y: { formatter: fmtK } }
+    });
+    charts.heatmap.render();
+
+    // 5. Treemap (movido a Panorama General)
+    charts.treemap = new ApexCharts(document.querySelector('#chart_treemap'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'treemap', height: 360 },
+        series: [{ data: [] }],
+        colors: COLORS.palette,
+        plotOptions: { treemap: { distributed: true, enableShades: true, shadeIntensity: 0.5 } },
+        tooltip: { y: { formatter: fmtK } }
+    });
+    charts.treemap.render();
+
+    // 6. Distribución Tipo de Venta (movido a Panorama General)
+    charts.tipo_venta = new ApexCharts(document.querySelector('#chart_tipo_venta'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'donut', height: 280 },
+        series: [], labels: [],
+        colors: ['#06b6d4', COLORS.primary, '#3b82f6', '#8b5cf6', '#f59e0b'],
+        plotOptions: { pie: { donut: { size: '68%' }}},
+        legend: { position: 'bottom', fontSize: '12px', fontWeight: 600 }
+    });
+    charts.tipo_venta.render();
+
+    // 7. Pareto (concentración de prima)
+    charts.pareto = new ApexCharts(document.querySelector('#chart_pareto'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'bar', height: 300 },
+        series: [
+            { name: 'Prima ($)', type: 'column', data: [] },
+            { name: 'Acumulado %', type: 'line', data: [] }
+        ],
+        colors: [COLORS.primary, COLORS.warning],
+        xaxis: { categories: [] },
+        yaxis: [
+            { labels: { formatter: fmtK } },
+            { opposite: true, labels: { formatter: v => v.toFixed(0) + '%' } }
+        ],
+        stroke: { width: [0, 2] },
+        markers: { size: [0, 4] },
+        plotOptions: { bar: { borderRadius: 5 } },
+        dataLabels: { enabled: false },
+        legend: { position: 'top' }
+    });
+    charts.pareto.render();
+
+    // 8. Comparativa YoY mensual (tab Cartera)
+    charts.comparativa_yoy = new ApexCharts(document.querySelector('#chart_comparativa_yoy'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'bar', height: 340, stacked: false },
+        series: [
+            { name: 'Prima Actual ($)',   type: 'column', data: [] },
+            { name: 'Año Anterior ($)',   type: 'line',   data: [] }
+        ],
+        colors: [COLORS.secondary, COLORS.muted],
+        plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
+        xaxis: { categories: MESES_SHORT },
+        yaxis: { labels: { formatter: fmtK } },
+        stroke: { width: [0, 2.5], curve: 'smooth' },
+        markers: { size: [0, 4] },
+        fill: { opacity: [1, .7] },
+        dataLabels: { enabled: false },
+        legend: { position: 'top', fontWeight: 600 }
+    });
+    charts.comparativa_yoy.render();
+
+    // 9. Gauge productividad
+    charts.gauge_prod = new ApexCharts(document.querySelector('#chart_gauge_prod'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'radialBar', height: 260 },
+        series: [0],
+        plotOptions: { radialBar: {
+            startAngle: -120, endAngle: 120,
+            hollow: { size: '60%' },
+            track: { background: '#f1f5f9', strokeWidth: '100%' },
+            dataLabels: {
+                name: { show: true, color: '#64748b', fontWeight: 700, fontSize: '11px' },
+                value: { fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', offsetY: 8,
+                    formatter: v => v.toFixed(2) + '%' }
+            }
+        }},
+        fill: { type: 'gradient', gradient: { shade: 'light', type: 'horizontal',
+            gradientToColors: [COLORS.secondary], stops: [0, 100] } },
+        labels: ['EFICIENCIA'],
+        colors: [COLORS.primary]
+    });
+    charts.gauge_prod.render();
+
+    // 10. Ranking ejecutivos (horizontal bar)
+    charts.ejecutivos_rank = new ApexCharts(document.querySelector('#chart_ejecutivos_rank'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'bar', height: 400 },
+        series: [
+            { name: 'Prima Actual ($)',    data: [] },
+            { name: 'Año Anterior ($)',    data: [] }
+        ],
+        plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '45%',
+            dataLabels: { position: 'right' }
+        }},
+        colors: [COLORS.secondary, COLORS.muted],
+        xaxis: { categories: [], labels: { formatter: fmtK } },
+        dataLabels: { enabled: true, formatter: fmtK, style: { fontSize: '10px', fontWeight: 700, colors: ['#334155'] }, offsetX: 6 },
+        legend: { position: 'top', fontWeight: 600 }
+    });
+    charts.ejecutivos_rank.render();
+
+    // 11. Donut distribución ejecutivos
+    charts.exec_donut = new ApexCharts(document.querySelector('#chart_exec_donut'), {
+        ...BASE,
+        chart: { ...BASE.chart, type: 'donut', height: 360 },
+        series: [], labels: [],
+        colors: COLORS.palette,
+        plotOptions: { pie: { donut: { size: '65%', labels: { show: true,
+            total: { show: true, label: 'TOTAL', fontSize: '12px', fontWeight: 800,
+                formatter: w => fmtK(w.globals.seriesTotals.reduce((a,b)=>a+b,0)) }
+        }}}},
+        legend: { position: 'bottom', fontSize: '11px', fontWeight: 600 }
+    });
+    charts.exec_donut.render();
+}
+
+/* ──────────────────────────────
+   LOAD DATA (API call)
+────────────────────────────── */
+function loadData() {
+    const filters = {
+        ano:          document.getElementById('filter_ano').value,
+        mes:          document.getElementById('filter_mes').value,
+        compania_id:  document.getElementById('filter_compania').value,
+        ramo:         document.getElementById('filter_ramo').value,
+        ejecutivo_id: document.getElementById('filter_ejecutivo').value
+    };
+
+    const btn = document.getElementById('btn_update');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cargando...';
+
+    const params = new URLSearchParams(filters);
+    fetch('/api/dashboard-data?' + params)
+        .then(r => r.json())
+        .then(data => {
+            _lastData = data;
+            updateUI(data);
+            document.getElementById('ts_update').textContent = new Date().toLocaleTimeString('es-VE');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sincronizar Datos';
+        })
+        .catch(() => {
+            alert('Error al sincronizar datos del servidor');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sincronizar Datos';
+        });
+}
+
+/* ──────────────────────────────
+   UPDATE UI
+────────────────────────────── */
+function updateUI(data) {
+    if (!data || !data.kpis) return;
+    const kpi = data.kpis;
+
+    /* ─── KPI Strip ─── */
+    document.getElementById('val_facturacion').textContent  = fmtK(kpi.facturacion);
+    document.getElementById('val_polizas').textContent      = Number(kpi.polizas_pagadas || 0).toLocaleString();
+    document.getElementById('val_eficiencia').textContent   = fmtPct(kpi.eficiencia);
+    document.getElementById('kpi_eficiencia_fill').style.width = Math.min(100, kpi.eficiencia || 0) + '%';
+
+    const ext = kpi.recaudacion_externa || { cantidad: 0, monto: 0 };
+    document.getElementById('val_recaud_ext').textContent      = fmtK(ext.monto);
+    document.getElementById('val_recaud_ext_cant').textContent = ext.cantidad + ' cuota(s) de otros períodos';
+
+    const growth = Number(kpi.crecimiento || 0);
+    const pillEl = document.getElementById('pill_crecimiento');
+    document.getElementById('val_crecimiento_fact').textContent = (growth >= 0 ? '+' : '') + growth.toFixed(2) + '%';
+    pillEl.className = 'trend-pill ' + (growth >= 0 ? 'trend-up' : (growth < -0.01 ? 'trend-down' : 'trend-flat'));
+    pillEl.querySelector('i').className = 'bi ' + (growth >= 0 ? 'bi-graph-up-arrow' : 'bi-graph-down-arrow');
+
+    /* ─── Gauge Productividad ─── */
+    charts.gauge_prod.updateSeries([kpi.eficiencia || 0]);
+
+    /* ─── Chart 1: Tendencia mensual MIXED ─── */
+    const tendData = Array.from({length:12}, (_,i) => {
+        const m = (data.tendencia_mensual || []).find(x => x.mes === i+1);
+        return m ? Number(m.total || 0) : 0;
+    });
+    const tendDataAnt = Array.from({length:12}, (_,i) => {
+        const m = (data.tendencia_mensual_anterior || []).find(x => x.mes === i+1);
+        return m ? Number(m.total || 0) : 0;
+    });
+    charts.tendencia.updateSeries([
+        { name: 'Prima Pagada Actual ($)', type: 'column', data: tendData },
+        { name: 'Año Anterior ($)',        type: 'line',   data: tendDataAnt }
+    ]);
+
+    /* ─── Chart 2: Distribución por Ramo ─── */
+    const ramoData   = data.ventas_ramo || [];
+    const ramoTotals = ramoData.map(i => Number(i.total || 0));
+    const ramoLabels = ramoData.map(i => i.Ramo || 'Sin Ramo');
+    charts.ramos.updateSeries(ramoTotals);
+    charts.ramos.updateOptions({ labels: ramoLabels });
+
+    const totalRamo = ramoTotals.reduce((a,b) => a+b, 0) || 1;
+    document.getElementById('ramos_legend_detail').innerHTML = ramoData.slice(0,5).map((r,i) => `
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div style="width:10px;height:10px;border-radius:3px;background:${COLORS.palette[i]};flex-shrink:0;"></div>
+            <span style="font-size:.8rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.Ramo||'Sin Ramo'}</span>
+            <span style="font-size:.8rem;font-weight:800;color:var(--primary);">${((Number(r.total||0)/totalRamo)*100).toFixed(2)}%</span>
+        </div>`).join('');
+
+    /* ─── Chart 3: Aseguradoras ─── */
+    const asegData = data.top_aseguradoras || [];
+    charts.aseguradoras.updateSeries([{ data: asegData.map(i => Number(i.total||0)) }]);
+    charts.aseguradoras.updateOptions({ xaxis: { categories: asegData.map(i => i.compania || 'N/A') }});
+
+    /* ─── Chart 4: Heatmap ─── */
+    const heatSeries = ramoData.slice(0,6).map(r => ({
+        name: (r.Ramo||'Sin Ramo').substring(0,12),
+        data: MESES_SHORT.map((_,mi) => {
+            const w = tendData[mi] || 0;
+            const total = tendData.reduce((a,b) => a+b, 0) || 1;
+            return Math.round((w/total) * Number(r.total||0));
+        })
+    }));
+    if (heatSeries.length > 0) {
+        charts.heatmap.updateSeries(heatSeries);
+        charts.heatmap.updateOptions({ xaxis: { categories: MESES_SHORT }});
+    }
+
+    /* ─── Chart 5: Treemap ─── */
+    if (data.treemap && data.treemap.length > 0) {
+        charts.treemap.updateSeries([{ data: data.treemap }]);
+    }
+
+    /* ─── Chart 6: Distribución Tipo de Venta ─── */
+    const tipoData = data.ventas_tipo || [];
+    const tipoLabels = tipoData.map(i => i.nombre_tipo || i.Tipo_venta || 'N/A');
+    charts.tipo_venta.updateSeries(tipoData.map(i => Number(i.total||0)));
+    charts.tipo_venta.updateOptions({ labels: tipoLabels });
+
+    // Leyenda detallada tipo venta
+    const totalTipo = tipoData.reduce((a,b) => a+Number(b.total||0), 0) || 1;
+    document.getElementById('tipo_venta_legend').innerHTML = tipoData.slice(0,5).map((t,i) => `
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div style="width:10px;height:10px;border-radius:3px;background:${['#06b6d4',COLORS.primary,'#3b82f6','#8b5cf6','#f59e0b'][i]||COLORS.palette[i]};flex-shrink:0;"></div>
+            <span style="font-size:.8rem;font-weight:600;flex:1;">${t.nombre_tipo||t.Tipo_venta||'N/A'}</span>
+            <span style="font-size:.8rem;font-weight:800;color:var(--primary);">${((Number(t.total||0)/totalTipo)*100).toFixed(2)}%</span>
+        </div>`).join('');
+
+    /* ─── Chart 7: Pareto ─── */
+    const sortedRamos = [...ramoData].sort((a,b) => Number(b.total||0) - Number(a.total||0));
+    let cum = 0;
+    const paretoAcum = sortedRamos.map(r => {
+        cum += Number(r.total||0);
+        return Number(((cum/totalRamo)*100).toFixed(2));
+    });
+    charts.pareto.updateSeries([
+        { name: 'Prima ($)',   type: 'column', data: sortedRamos.map(r => Number(r.total||0)) },
+        { name: 'Acumulado %', type: 'line',   data: paretoAcum }
+    ]);
+    charts.pareto.updateOptions({ xaxis: { categories: sortedRamos.map(r => (r.Ramo||'N/A').substring(0,10)) }});
+
+    /* ─── Barras de progreso por ramo ─── */
+    document.getElementById('ramos_progress_container').innerHTML = ramoData.map((r,i) => `
+        <div class="prog-bar-wrap">
+            <div class="prog-label">
+                <span>${r.Ramo||'Sin Ramo'}</span>
+                <span style="color:var(--primary);font-weight:800;">${fmtK(r.total)} · ${((Number(r.total||0)/totalRamo)*100).toFixed(2)}%</span>
+            </div>
+            <div class="prog-track">
+                <div class="prog-fill" style="width:${((Number(r.total||0)/totalRamo)*100).toFixed(2)}%;background:${COLORS.palette[i%COLORS.palette.length]};"></div>
+            </div>
+        </div>`).join('');
+
+    /* ─── Chart 8: Comparativa YoY (tab Cartera) ─── */
+    charts.comparativa_yoy.updateSeries([
+        { name: 'Prima Actual ($)',  type: 'column', data: tendData },
+        { name: 'Año Anterior ($)', type: 'line',   data: tendDataAnt }
+    ]);
+
+    /* ─── Ejecutivos Ranking con YoY ─── */
+    const ejecs = data.top_ejecutivos || [];
+    charts.ejecutivos_rank.updateSeries([
+        { name: 'Prima Actual ($)',  data: ejecs.map(i => Number(i.total||0)) },
+        { name: 'Año Anterior ($)', data: ejecs.map(i => Number(i.total_anterior||0)) }
+    ]);
+    charts.ejecutivos_rank.updateOptions({ xaxis: { categories: ejecs.map(i => i.Ejecutivo||'N/A') }});
+
+    // Donut ejecutivos
+    charts.exec_donut.updateSeries(ejecs.map(i => Number(i.total||0)));
+    charts.exec_donut.updateOptions({ labels: ejecs.map(i => i.Ejecutivo||'N/A') });
+
+    // Tabla ejecutivos con columnas YoY
+    const totalEjec = ejecs.reduce((a,b) => a + Number(b.total||0), 0) || 1;
+    document.getElementById('tbody_ejecutivos').innerHTML = ejecs.slice(0,10).map((e,i) => {
+        const pos = i+1;
+        const cls = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
+        const pct = ((Number(e.total||0)/totalEjec)*100).toFixed(2);
+        const crec_prima = Number(e.crecimiento_prima || 0);
+        const yoy = Number(e.yoy_pct || 0);
+        const yoyClass = yoy >= 0 ? 'yoy-pos' : 'yoy-neg';
+        const yoyIcon = yoy >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+        return `<tr>
+            <td><span class="rank-pos ${cls}">${pos}</span></td>
+            <td style="font-weight:600;">${e.Ejecutivo||'N/A'}</td>
+            <td style="font-weight:800;color:var(--primary);">${fmtK(e.total)}</td>
+            <td>${Number(e.polizas||0)}</td>
+            <td>${fmtK(e.total_anterior)}</td>
+            <td class="${yoyClass}">
+                <i class="bi ${yoyIcon}"></i> ${crec_prima >= 0 ? '+' : ''}${fmtK(crec_prima)}
+            </td>
+            <td class="${yoyClass}">
+                <i class="bi ${yoyIcon}"></i> ${yoy >= 0 ? '+' : ''}${yoy.toFixed(2)}%
+            </td>
+            <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="prog-track" style="flex:1;height:6px;">
+                        <div class="prog-fill" style="width:${pct}%;background:${COLORS.palette[i%10]};"></div>
+                    </div>
+                    <span style="font-size:.75rem;font-weight:700;color:var(--primary);min-width:36px;">${pct}%</span>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    if (ejecs.length > 0) {
+        document.getElementById('prod_mejor_ejecutivo').textContent = ejecs[0].Ejecutivo || '—';
+        document.getElementById('prod_promedio').textContent = fmtK(totalEjec / (ejecs.length || 1));
+        document.getElementById('prod_total_ejec').textContent = ejecs.length;
+    }
+}
+
+/* ──────────────────────────────
+   TAB SWITCH
+────────────────────────────── */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('d-none'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.remove('d-none');
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+    });
+});
+
+/* ──────────────────────────────
+   BOOT
+────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+
+    // Load initial server-side data
+    const raw = document.getElementById('initial-data-holder').dataset.initial;
+    try {
+        const initial = JSON.parse(raw || '{}');
+        if (initial && initial.kpis) {
+            _lastData = initial;
+            updateUI(initial);
+            document.getElementById('ts_update').textContent = new Date().toLocaleTimeString('es-VE');
+        }
+    } catch(e) { console.warn('Initial data parse error', e); }
+
+    document.getElementById('btn_update').addEventListener('click', loadData);
+});
+</script>
+{% endblock %}

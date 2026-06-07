@@ -1,0 +1,323 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Lista de Siniestro{% endblock %}
+<!--Inicio del block-->
+{% block body %}
+
+<div class="alert alert-info alert-dismissible d-flex align-items-center mb-3" role="alert">
+  <i class="bx bx-info-circle me-2 fs-5"></i>
+  <div>
+    <strong>Gestión de siniestros</strong><br>
+    Registrá y hacé seguimiento de todos los siniestros: <strong>Carta Aval</strong> (autorización para atención médica), <strong>Reembolso</strong> (gastos médicos pagados por el asegurado) y <strong>Siniestro Automotriz</strong> (daños a vehículos).
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0">LISTA DE SINIESTROS</h3>
+    </div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-2">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="search_cod_siniestro" class="form-control" placeholder="Cod Siniestro...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="input-group">
+                <select class="form-select" id="filtro_cedula">
+                    <option value="V">V</option>
+                    <option value="J">J</option>
+                    <option value="M">M</option>
+                    <option value="E">E</option>
+                </select>
+                <input type="search" id="search_cedula" class="form-control" placeholder="Cédula">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="filtro_tipo">
+                <option value="">Tipo Siniestro</option>
+                <option value="reembolso">Reembolso</option>
+                <option value="carta aval">Carta Aval</option>
+                <option value="siniestro auto">Siniestro Auto</option>
+            </select>
+        </div>
+        <div class="col-md-2" id="div_estado_container">
+            <select class="form-select" id="filtro_estado">
+                <option selected disabled value="">Estado</option>
+                <option value="en proceso">en proceso</option>
+                <option value="declinado">declinado</option>
+                <option value="aprobado">aprobado</option>
+                <option value="reportado">reportado</option>
+                <option value="deducible">deducible</option>
+                <option value="pagado">pagado</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select id="monthpicker" class="form-select" multiple>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <input type="number" id="yearpicker" class="form-control" placeholder="Año" min="2000" max="2099">
+            <button type="button" id="filtrar" class="btn btn-primary">Filtrar</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-filtros">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+
+
+    <div class="row justify-content-center mb-2">
+        <div class="table-responsive text-nowrap table-hover">
+            <table table-hover id="siniestro" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Poliza</th>
+                        <th>Tipo siniestro</th>
+                        <th>Fecha inicio</th>
+                        <th>Nombre</th>
+                        <th>Compañia</th>
+                        <th>Cod Siniestro</th>
+                        <th>Estado siniestro</th>
+                        <th>Monto</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for siniestro in siniestros %}
+                    <tr id="siniestro_{{ siniestro.cod_poliza }}">
+                        <td>{{ siniestro.Cod_poliza }}</td>
+                        <td>{{ siniestro.tipo_siniestro }}</td>
+                        <td>{{ siniestro.fecha_inicio }}</td>
+                        <td>{{ siniestro.nombre_asegurado }} {{ siniestro.apellido_asegurado }}</td>
+                        <td>{{ siniestro.nombre_compania }}</td>
+                        <td>{{ siniestro.codigo_siniestro }}</td>
+                        <td>{{ siniestro.estado_siniestro }}</td>
+                        <td>{{ siniestro.monto }}</td>
+                        <td width="10px">
+                            <a href="#" title="Ver Detalles" type="button" class="btn btn-info btn-sm"
+                                data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top"
+                                data-bs-html="true" title="<span>Ver detalles</span>"
+                                data-codigo="{{ siniestro.codigo }}"
+                                data-url-base="/detalles-{{ siniestro.tipo_siniestro }}/">
+                                <i class="bi bi-eye"></i>
+                                Ver detalles
+                            </a>
+                            <a href="#" title="Editar" type="button" class="btn btn-info btn-sm"
+                                data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top"
+                                data-bs-html="true" title="<span> Editar </span>" data-codigo="{{ siniestro.codigo }}"
+                                data-url-base="/editar-{{ siniestro.tipo_siniestro }}/">
+                                <i class="bi bi-pencil-square"></i>
+                                Editar
+                            </a>
+                            <a href="javascript:void(0)" class="btn btn-danger btn-sm btn-eliminar-siniestro"
+                                data-id="{{ siniestro.codigo }}" data-tipo="{{ siniestro.tipo_siniestro }}"
+                                data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top"
+                                data-bs-html="true" title="<span>Eliminar siniestro </span>">
+                                <i class="bi bi-trash3"></i>
+                                Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+<script>
+    function GenerarUrl() {
+        let enlaces = document.querySelectorAll('a[data-codigo]');
+        enlaces.forEach(enlace => {
+            const codigo = enlace.dataset.codigo;
+            let urlBase = enlace.dataset.urlBase;
+            if (urlBase == "/detalles-Carta Aval/") { urlBase = "/detalles-Carta_Aval/"; } else if (urlBase == "/detalles-Siniestro Auto/") { urlBase = "/detalle-SiniestroA/"; }
+            const ter = 1;
+            const url = `${urlBase}${codigo}/${ter}`; // Construye la URL completa
+            enlace.href = url;
+            console.log(url);
+        });
+    }
+    GenerarUrl();
+
+    function GenerarUrl2() {
+        let enlaces = document.querySelectorAll('a[data-codigo]');
+        enlaces.forEach(enlace => {
+            const codigo = enlace.dataset.codigo;
+            let urlBase = enlace.dataset.urlBase;
+            if (urlBase == "/detalles-Carta Aval/") { urlBase = "/detalles-Carta_Aval/"; } else if (urlBase == "/detalles-Siniestro Auto/") { urlBase = "/detalle-SiniestroA/"; }
+            const ter = 1;
+            const url = `${urlBase}${codigo}/${ter}`; // Construye la URL completa
+            enlace.href = url;
+            console.log(url);
+        });
+    }
+
+
+
+    $(document).ready(function () {
+        $("#filtrar").click(function () {
+            const tipoCedula = $("#filtro_cedula").val();
+            const cedula = $("#search_cedula").val();
+            const estadoSiniestro = $("#filtro_estado").val();
+
+            const $monthpicker = $("#monthpicker");
+            let mesesSeleccionados = $monthpicker.val();
+
+            if (mesesSeleccionados === null || mesesSeleccionados === undefined) {
+                mesesSeleccionados = [];
+            } else if (!Array.isArray(mesesSeleccionados)) {
+                mesesSeleccionados = [mesesSeleccionados];
+            }
+            console.log("Valor final de mesesSeleccionados (después de asegurar que es array):", mesesSeleccionados);
+
+            const anioSeleccionado = $("#yearpicker").val();
+            const tipoSiniestro = $("#filtro_tipo").val();
+            console.log("Año seleccionado:", anioSeleccionado);
+            console.log("Tipo siniestro seleccionado:", tipoSiniestro);
+
+            // Objeto con los datos a enviar
+            const requestData = {
+                tipo_cedula: cedula ? tipoCedula : '',
+                cedula: cedula,
+                estado_siniestro: estadoSiniestro,
+                meses: mesesSeleccionados, // Esto ya es un array
+                anio: anioSeleccionado,
+                tipo_siniestro: tipoSiniestro
+            };
+
+            $.ajax({
+                url: "/filtrar-siniestros",
+                type: "POST",
+                // --- CAMBIOS AQUÍ para enviar JSON ---
+                contentType: "application/json", // Indica que el cuerpo de la solicitud es JSON
+                data: JSON.stringify(requestData), // Convierte el objeto JavaScript a una cadena JSON
+                // --- FIN DE CAMBIOS ---
+                success: function (response) {
+                    $("#siniestro tbody").empty();
+                    if (response && response.data && Array.isArray(response.data)) {
+                        response.data.forEach(registro => {
+                            let nuevaFila = $("<tr>");
+                            $("<td>").text(registro.Cod_poliza).appendTo(nuevaFila);
+                            $("<td>").text(registro.tipo_siniestro).appendTo(nuevaFila);
+                            $("<td>").text(registro.fecha_inicio).appendTo(nuevaFila);
+                            $("<td>").text(registro.nombre_asegurado + ' ' + registro.apellido_asegurado).appendTo(nuevaFila);
+                            $("<td>").text(registro.nombre_compania).appendTo(nuevaFila);
+                            $("<td>").text(registro.codigo_siniestro).appendTo(nuevaFila);
+                            $("<td>").text(registro.estado_siniestro).appendTo(nuevaFila);
+                            $("<td>").text(registro.monto).appendTo(nuevaFila);
+
+                            let accionesCell = $("<td>");
+                            let botonDetalles = $("<a>", {
+                                href: "#", title: "Ver Detalles", type: "button", class: "btn btn-info btn-sm",
+                                "data-bs-toggle": "tooltip", "data-bs-offset": "0,4", "data-bs-placement": "top", "data-bs-html": "true",
+                                title: "<span>Ver detalles</span>", "data-codigo": registro.codigo, "data-url-base": `/detalles-${registro.tipo_siniestro}/`,
+                                html: '<i class="bi bi-eye"></i> Ver detalles'
+                            });
+                            let botonEditar = $("<a>", {
+                                href: "#", title: "Editar", type: "button", class: "btn btn-info btn-sm",
+                                "data-bs-toggle": "tooltip", "data-bs-offset": "0,4", "data-bs-placement": "top", "data-bs-html": "true",
+                                title: "<span> Editar </span>", "data-codigo": registro.codigo, "data-url-base": `/editar-${registro.tipo_siniestro}/`,
+                                html: '<i class="bi bi-pencil-square"></i> Editar'
+                            });
+                            let botonEliminar = $("<a>", {
+                                href: "javascript:void(0)", class: "btn btn-danger btn-sm btn-eliminar-siniestro",
+                                "data-id": registro.codigo, "data-tipo": registro.tipo_siniestro,
+                                "data-bs-toggle": "tooltip", "data-bs-offset": "0,4", "data-bs-placement": "top", "data-bs-html": "true",
+                                title: "<span>Eliminar siniestro </span>", html: '<i class="bi bi-trash3"></i> Eliminar'
+                            });
+
+                            botonDetalles.appendTo(accionesCell);
+                            botonEditar.appendTo(accionesCell);
+                            botonEliminar.appendTo(accionesCell);
+                            accionesCell.appendTo(nuevaFila);
+
+                            $("#siniestro tbody").append(nuevaFila);
+                        });
+                        if (typeof GenerarUrl2 === 'function') {
+                            GenerarUrl2();
+                        } else {
+                            console.warn("La función GenerarUrl2() no está definida.");
+                        }
+                    } else {
+                        console.error("La respuesta del servidor no tiene el formato esperado.");
+                    }
+                },
+                error: function (error) {
+                    console.error("Error en la solicitud AJAX:", error);
+                }
+            });
+        });
+
+        $('#btn-borrar-filtros').click(function () {
+            window.location.href = '/lista-de-siniestros';
+        });
+
+        // Buscador en tiempo real por Cod Siniestro
+        $("#search_cod_siniestro").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#siniestro tbody tr").filter(function () {
+                // El Cod Siniestro está en la sexta columna (índice 5)
+                $(this).toggle($(this).find("td:eq(5)").text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        // Función para eliminar siniestro
+        $(document).on('click', '.btn-eliminar-siniestro', function (e) {
+            e.preventDefault();
+            const btn = $(this);
+            const id = btn.data('id');
+            const tipo = btn.data('tipo');
+            const fila = btn.closest('tr');
+
+            if (confirm('¿Estás seguro de que deseas eliminar este siniestro? Esta acción no se puede deshacer.')) {
+                $.ajax({
+                    url: '/eliminar-siniestro',
+                    type: 'POST',
+                    data: { id: id, tipo: tipo },
+                    success: function (response) {
+                        if (response.success) {
+                            fila.fadeOut(400, function () {
+                                $(this).remove();
+                            });
+                            alert(response.message || 'Siniestro eliminado correctamente.');
+                        } else {
+                            alert('Error: ' + (response.message || 'No se pudo eliminar el siniestro.'));
+                        }
+                    },
+                    error: function () {
+                        alert('Ocurrió un error al intentar eliminar el siniestro.');
+                    }
+                });
+            }
+        });
+    });
+
+
+</script>
+{% endblock %}

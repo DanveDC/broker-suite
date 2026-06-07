@@ -1,0 +1,77 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Completar Datos del Asegurado{% endblock %}
+
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-12">
+            <h3 class="text-center mt-5 mb-3">Completar Datos de Riesgo para {{ asegurado.nombres_asegurado }}</h3>
+            <p class="text-center">Por favor, complete la información faltante para continuar con la renovación.</p>
+            <hr />
+        </div>
+    </div>
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-8">
+            <form method="POST" action="{{ url_for('guardar_datos_adicionales_asegurado') }}">
+                <input type="hidden" name="id_asegurado" value="{{ asegurado.CI }}">
+                <input type="hidden" name="next_url" value="{{ next_url }}">
+                
+                <div class="mb-3">
+                    <label for="profesion" class="form-label">Profesión</label>
+                    <select class="form-select" id="profesion" name="profesion" required>
+                        <option value="">Seleccione una profesion</option>
+                        <option value="Profesion BR" {% if asegurado.profesion == 'Profesion BR' %}selected{% endif %}>Profesion BR</option>
+                        <option value="Profesion MR" {% if asegurado.profesion == 'Profesion MR' %}selected{% endif %}>Profesion MR</option>
+                        <option value="Profesion AR" {% if asegurado.profesion == 'Profesion AR' %}selected{% endif %}>Profesion AR</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="localidad" class="form-label">Localidad</label>
+                    <select class="form-select" id="localidad" name="localidad" required>
+                        <option value="">Seleccione una localidad</option>
+                        <option value="Amazonas" {% if asegurado.localidad == 'Amazonas' %}selected{% endif %}>Amazonas</option>
+                        <option value="Anzoátegui" {% if asegurado.localidad == 'Anzoátegui' %}selected{% endif %}>Anzoátegui</option>
+                        <option value="Apure" {% if asegurado.localidad == 'Apure' %}selected{% endif %}>Apure</option>
+                        <option value="Aragua" {% if asegurado.localidad == 'Aragua' %}selected{% endif %}>Aragua</option>
+                        <option value="Barinas" {% if asegurado.localidad == 'Barinas' %}selected{% endif %}>Barinas</option>
+                        <option value="Bolívar" {% if asegurado.localidad == 'Bolívar' %}selected{% endif %}>Bolívar</option>
+                        <option value="Carabobo" {% if asegurado.localidad == 'Carabobo' %}selected{% endif %}>Carabobo</option>
+                        <option value="Cojedes" {% if asegurado.localidad == 'Cojedes' %}selected{% endif %}>Cojedes</option>
+                        <option value="Delta Amacuro" {% if asegurado.localidad == 'Delta Amacuro' %}selected{% endif %}>Delta Amacuro</option>
+                        <option value="Dependencias Federales" {% if asegurado.localidad == 'Dependencias Federales' %}selected{% endif %}>Dependencias Federales</option>
+                        <option value="Distrito Capital" {% if asegurado.localidad == 'Distrito Capital' %}selected{% endif %}>Distrito Capital</option>
+                        <option value="Falcón" {% if asegurado.localidad == 'Falcón' %}selected{% endif %}>Falcón</option>
+                        <option value="Guárico" {% if asegurado.localidad == 'Guárico' %}selected{% endif %}>Guárico</option>
+                        <option value="La Guaira" {% if asegurado.localidad == 'La Guaira' %}selected{% endif %}>La Guaira</option>
+                        <option value="Lara" {% if asegurado.localidad == 'Lara' %}selected{% endif %}>Lara</option>
+                        <option value="Mérida" {% if asegurado.localidad == 'Mérida' %}selected{% endif %}>Mérida</option>
+                        <option value="Miranda" {% if asegurado.localidad == 'Miranda' %}selected{% endif %}>Miranda</option>
+                        <option value="Monagas" {% if asegurado.localidad == 'Monagas' %}selected{% endif %}>Monagas</option>
+                        <option value="Nueva Esparta" {% if asegurado.localidad == 'Nueva Esparta' %}selected{% endif %}>Nueva Esparta</option>
+                        <option value="Portuguesa" {% if asegurado.localidad == 'Portuguesa' %}selected{% endif %}>Portuguesa</option>
+                        <option value="Sucre" {% if asegurado.localidad == 'Sucre' %}selected{% endif %}>Sucre</option>
+                        <option value="Táchira" {% if asegurado.localidad == 'Táchira' %}selected{% endif %}>Táchira</option>
+                        <option value="Trujillo" {% if asegurado.localidad == 'Trujillo' %}selected{% endif %}>Trujillo</option>
+                        <option value="Yaracuy" {% if asegurado.localidad == 'Yaracuy' %}selected{% endif %}>Yaracuy</option>
+                        <option value="Zulia" {% if asegurado.localidad == 'Zulia' %}selected{% endif %}>Zulia</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="canal" class="form-label">Canal</label>
+                    <select class="form-select" id="canal" name="canal" required>
+                        <option value="">Seleccione un canal</option>
+                        <option value="Cara a cara" {% if asegurado.canal == 'Cara a cara' %}selected{% endif %}>Cara a Cara/convencional</option>
+                        <option value="Internet" {% if asegurado.canal == 'Internet' %}selected{% endif %}>Internet</option>
+                        <option value="Correos con dominios privados" {% if asegurado.canal == 'Correos con dominios privados' %}selected{% endif %}>Correos con dominios privados</option>
+                        <option value="Correos con dominios publicos" {% if asegurado.canal == 'Correos con dominios publicos' %}selected{% endif %}>Correos con dominios publicos</option>
+                    </select>
+                </div>
+
+                <div class="mb-3 mt-4 text-center">
+                    <button type="submit" class="btn rounded-pill btn-primary">Guardar y Continuar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% for pago in pagos %}
+<tr id="pago_row_{{ pago.cod_pago }}"
+    data-details='{"compania": "{{ pago.Nombre_compania }}", "cod_pago": "{{ pago.cod_pago }}", "estado": "{{ pago.estado }}", "cod_renovacion": "{{ pago.Cod_renovacion }}"}'>
+    <td>{{ pago.nro_cuota if pago.nro_cuota is not none else '-' }}</td>
+    <td>{{ pago.Nombre_asegurado }} {{ pago.Apellido_asegurado }}</td>
+    <td>{{ pago.Cod_poliza }}</td>
+    <td>{{ pago.CI }}</td>
+    <td>{{ pago.moneda }}</td>
+    <td>{{ pago.recibo or '-' }}</td>
+    <td>{{ pago.fecha }}</td>
+    <td>{{ pago.monto }}</td>
+    <td>{{ pago.estado }}</td>
+    <td>
+        {% if pago.estado != 'PAGADO' %}
+        <button class="btn btn-primary btn-sm pagar-btn" data-pago-id="{{ pago.cod_pago }}" data-bs-toggle="modal"
+            data-bs-target="#pagoModal">
+            Pagar
+        </button>
+        {% else %}
+        <button class="btn btn-warning btn-sm pagar-btn" data-pago-id="{{ pago.cod_pago }}" data-bs-toggle="modal"
+            data-bs-target="#pagoModal" title="Editar pago realizado">
+            Editar
+        </button>
+        {% endif %}
+        <button class="dropdown-btn btn btn-sm btn-secondary" data-pago-id="{{ pago.cod_pago }}">
+            <i class="bi bi-chevron-down"></i>
+        </button>
+    </td>
+</tr>
+{% endfor %}

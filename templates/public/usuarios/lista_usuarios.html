@@ -1,0 +1,96 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Crud - Python 🐍 | Lista de Usuarios{% endblock %}
+<!---->
+{% block body %} {% if (resp_usuariosBD) %}
+
+<div class="card content_consignaciones" style="border-radius: 0px !important">
+  <section id="respuestaFiltroMes">
+    <div class="col-md-10 mx-auto">
+      <h2 class="text-center mt-5 mb-5">
+        Lista de Usuarios Creados
+        <hr />
+      </h2>
+      <a href="{{ url_for('registrar_usuario') }}" class="btn btn-primary mb-3">Crear Nuevo Usuario</a>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+      <div class="table-responsive text-nowrap">
+        <table class="table table-hover" style="width: 100%;">
+          <thead>
+            <tr style="background-color: #ddd">
+              <th>Usuario</th>
+              <th>Email</th>
+              <th>Fecha de creaci&oacute;n</th>
+              <th>Permisos</th>
+              <th>Accci&oacute;n</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for usuario in resp_usuariosBD %}
+            <tr>
+              <td>{{ usuario.name_surname}}</td>
+              <td>{{ usuario.email_user}}</td>
+              <td>{{ usuario.created_user}}</td>
+              <td>{{ usuario.permisos}}</td>
+              <td>
+                {% set can_delete = false %}
+                {% if session['id'] != usuario.id %}
+                {% if session['permisos'] == 'dev' %}
+                {% set can_delete = true %}
+                {% elif session['permisos'] == 'Administracion' or session['permisos'] == 'Gerencia' %}
+                {% if usuario.permisos in ['Operaciones', 'Ventas'] %}
+                {% set can_delete = true %}
+                {% endif %}
+                {% endif %}
+                {% endif %}
+
+                {% if can_delete %}
+                <button class="btn rounded-pill btn-danger" onclick="eliminarUsuario('{{ usuario.id }}');">
+                  <i class="bi bi-trash3"></i>
+                  Eliminar
+                </button>
+                {% else %}
+                <span class="badge bg-label-secondary">Sin permisos</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">LISTA DE USUARIOS</h3>
+  </div>
+  <div class="card-body">
+    <div class="container mt-3 mb-3" style="width: 100% !important">
+      <div class="row justify-content-md-center mb-2">
+        <div class="col-12">
+          <h2 class="text-center">No hay usuarios 😭</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<!--Fin del Block-->
+{% endblock %}
+
+<!--Script Custom-->
+{% block customJS %}
+<script>
+  function eliminarUsuario(id) {
+    if (confirm("¿Estas seguro que deseas eliminar el Usuario?")) {
+      let url = `/borrar-usuario/${id}`;
+      if (url) {
+        window.location.href = url;
+      }
+    }
+  }
+</script>
+{% endblock %}

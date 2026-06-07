@@ -1,0 +1,188 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %} Registrar Renovacion {% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">REGISTRAR RENOVACION</h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-renovacion"
+        autocomplete="off" enctype="multipart/form-data">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Prima" class="form-label">
+                Prima
+              </label>
+              <input type="text" name="prima" id="prima" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="frecuencia" class="form-label">
+                Frecuencia
+              </label>
+              <select class="form-select" name="Frecuencia" aria-label="Default select example">
+                <option selected>Seleccione</option>
+                <option value="2">Mensual</option>
+                <option value="6">Bimensual</option>
+                <option value="3">Trimestral</option>
+                <option value="5">Cuatrimestral</option>
+                <option value="4">Semestral</option>
+                <option value="1">Anual</option>
+                <option value="10">Mensual (10 pagos)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Cobertura" class="form-label">
+                Cobertura
+              </label>
+              <input type="text" name="Cobertura" class="form-control" required />
+            </div>
+
+            <input type="hidden" id="vencimiento" name="Fvencimiento" value="{{ fecha_vencimiento }}">
+            <input type="hidden" id="poliza" name="poliza">
+
+          </div>
+
+
+          <div class="mb-3 mt-4 text-center">
+            <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+              Guardar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario'); // Reemplaza 'tuFormulario' con el ID real de tu formulario
+
+
+  formulario.addEventListener('submit', function () {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+
+  });
+
+</script>
+<script>
+  const fecha = document.getElementById("vencimiento");
+  const vencimiento = JSON.parse('{{ fecha_vencimiento | tojson }}');
+  console.log(vencimiento);
+  const cod = document.getElementById("poliza");
+  const poliza = JSON.parse('{{ cod_poliza | tojson }}');
+  fecha.value = vencimiento;
+  console.log(fecha.value);
+  cod.value = poliza;
+
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const primaInput = document.getElementById('prima');
+    const frecuenciaSelect = document.querySelector('select[name="Frecuencia"]');
+    const compania = "{{ contrato.compania | default('') }}";
+    let rawValue = '0';
+
+    function checkMercantilPayments() {
+        const frecuencia = frecuenciaSelect.value;
+        const comp = compania || '';
+        
+        if (comp.toUpperCase().includes('MERCANTIL') && frecuencia === '2') {
+            if (confirm('Esta póliza de Mercantil, ¿desea realizarla con 10 o 12 pagos?\n\nAceptar = 10 pagos\nCancelar = 12 pagos (Mensual estándar)')) {
+                frecuenciaSelect.value = '10';
+            } else {
+                frecuenciaSelect.value = '2';
+            }
+        }
+    }
+
+    frecuenciaSelect.addEventListener('change', function() {
+        if (this.dataset.manuallyChanging) return;
+        this.dataset.manuallyChanging = 'true';
+        checkMercantilPayments();
+        delete this.dataset.manuallyChanging;
+    });
+
+    // Validar inicialmente al cargar por si hay un valor preseteado
+    checkMercantilPayments();
+
+    const formatRawValue = () => {
+      // Rellena el valor para asegurar que tenga al menos 3 dígitos (para los decimales)
+      const paddedValue = rawValue.padStart(3, '0');
+      const integerPart = paddedValue.slice(0, -2);
+      const decimalPart = paddedValue.slice(-2);
+
+      // Formatea la parte entera con puntos como separadores de miles
+      const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+
+      return `${formattedInteger},${decimalPart}`;
+    };
+
+    primaInput.addEventListener('focus', (e) => {
+      e.target.value = formatRawValue();
+      // Selecciona el texto para que el usuario pueda sobrescribirlo al empezar a escribir
+      setTimeout(() => e.target.select(), 0);
+    });
+
+    primaInput.addEventListener('blur', (e) => {
+      // Si el valor es 0,00 al perder el foco, limpia el campo
+      if (rawValue === '0') {
+        e.target.value = '';
+      } else {
+        e.target.value = formatRawValue();
+      }
+    });
+
+    primaInput.addEventListener('keydown', (e) => {
+      // Previene la acción por defecto para tener control total
+      e.preventDefault();
+
+      if (e.key >= '0' && e.key <= '9') {
+        // Si el valor es '0', lo reemplaza, si no, añade el dígito
+        if (rawValue === '0') {
+          rawValue = e.key;
+        } else {
+          rawValue += e.key;
+        }
+      } else if (e.key === 'Backspace') {
+        // Maneja el retroceso
+        rawValue = rawValue.slice(0, -1);
+        if (rawValue === '') {
+          rawValue = '0';
+        }
+      } else if (e.key === 'Delete') {
+        // Maneja la tecla suprimir para reiniciar el valor
+        rawValue = '0';
+      } else if (e.key === '.') {
+        // Ignora el punto, como se solicitó
+        return;
+      }
+
+      // Actualiza el valor del campo con el formato correcto
+      primaInput.value = formatRawValue();
+    });
+  });
+</script>
+{% endblock %}

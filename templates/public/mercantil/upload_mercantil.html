@@ -1,0 +1,123 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Carga Masiva Pólizas | App Seguros{% endblock %}
+
+{% block customCSS %}
+<style>
+    .upload-area {
+        border: 2px dashed var(--primary-light);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .upload-area:hover {
+        background: rgba(255, 255, 255, 0.8);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .file-icon {
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    #file-name {
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <a href="{{ url_for('inicio') }}" class="text-secondary me-3">
+                        <i class="bi bi-arrow-left-circle fs-4"></i>
+                    </a>
+                    <h5 class="card-title mb-0 fw-bold">Carga Masiva - Pólizas</h5>
+                </div>
+            </div>
+            <div class="card-body p-4 p-lg-5">
+                <div class="text-center mb-5">
+                    <div class="display-6 fw-bold mb-2">Importar Matriz</div>
+                    <p class="text-muted">Arrastre su archivo Excel o haga clic para seleccionar. Se procesarán
+                        asegurados, pólizas, ramos y pagos.</p>
+                    <div class="mt-3">
+                        <a href="{{ url_for('descargar_plantilla', tipo='mercantil') }}"
+                            class="btn btn-outline-success btn-sm rounded-pill">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Descargar Plantilla
+                        </a>
+                    </div>
+
+                </div>
+
+                <form action="{{ url_for('view_upload_mercantil') }}" method="POST" enctype="multipart/form-data"
+                    id="upload-form">
+                    <div class="upload-area p-5 text-center mb-4"
+                        onclick="document.getElementById('file-input').click()">
+                        <input type="file" name="file" id="file-input" class="d-none" accept=".xlsx, .xls"
+                            onchange="updateFileName(this)">
+                        <div class="file-icon mb-3">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <h4 class="fw-bold" id="file-label">Seleccionar archivo Excel</h4>
+                        <p class="text-muted small mb-0" id="file-name">Formato permitido: .xlsx, .xls</p>
+                    </div>
+
+                    <div class="notes-container p-3 rounded mb-4" style="background: var(--bg-main);">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i> Instrucciones</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>El archivo debe contener las columnas de la Matriz Madre.</li>
+                            <li>Se agruparán registros por número de póliza.</li>
+                            <li>Podrá revisar los datos antes de la inserción final.</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"
+                                aria-hidden="true"></span>
+                            <span class="btn-text">Subir y Previsualizar</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const fileLabel = document.getElementById('file-label');
+        const fileName = document.getElementById('file-name');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (input.files.length > 0) {
+            fileLabel.innerText = "Archivo seleccionado";
+            fileName.innerText = input.files[0].name;
+            submitBtn.disabled = false;
+        } else {
+            fileLabel.innerText = "Seleccionar archivo Excel";
+            fileName.innerText = "Formato permitido: .xlsx, .xls";
+            submitBtn.disabled = true;
+        }
+    }
+
+    document.getElementById('upload-form').addEventListener('submit', function () {
+        const btn = document.getElementById('submit-btn');
+        const spinner = btn.querySelector('.spinner-border');
+        const text = btn.querySelector('.btn-text');
+
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        text.innerText = 'Procesando...';
+    });
+</script>
+{% endblock %}

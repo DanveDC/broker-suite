@@ -1,0 +1,597 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Gestionar Configuración de Comisiones{% endblock %}
+
+{% block customCSS %}
+<link href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<style>
+    .perc-val {
+        background-color: #f8fbff !important;
+        border: 2px solid #dee2e6 !important;
+        font-weight: bold;
+        color: #0d6efd;
+        text-align: center;
+    }
+
+    .perc-val:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+
+    .input-group-text {
+        background-color: #e9ecef;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-12 mb-4">
+            <h3 class="text-center mt-5 mb-3">
+                <a href="{{ url_for('inicio1') }}"><i class="bi bi-arrow-left-circle"></i></a>
+                Gestionar Configuración de Comisiones
+            </h3>
+            <hr />
+        </div>
+
+        <div class="col-md-11 mx-auto">
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addRuleModal">
+                Agregar Nueva Regla
+            </button>
+            <div class="table-responsive text-nowrap table-hover">
+                <table id="comisionesConfigTable" class="table table-striped table-bordered" cellspacing="0"
+                    width="100%">
+                    <thead>
+                        <tr>
+                            <th>Compañía</th>
+                            <th>Ramo</th>
+                            <th>Subramo</th>
+                            <th>Producto</th>
+                            <th>Tipo Ejecutivo</th>
+                            <th>Ejecutivo Específico</th>
+                            <th>Porcentajes</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in comisiones_config %}
+                        <tr>
+                            <td>{{ rule.compania }}</td>
+                            <td>{{ rule.ramo }}</td>
+                            <td>{{ rule.subramo if rule.subramo is not none else '' }}</td>
+                            <td>{{ rule.producto }}</td>
+                            <td>{{ rule.tipo_ejecutivo }}</td>
+                            <td>
+                                {% if rule.NombreEjecutivo %}
+                                {{ rule.NombreEjecutivo }} {{ rule.ApellidoEjecutivo }}
+                                {% else %}
+                                {{ rule.cod_ejecutivo if rule.cod_ejecutivo else 'N/A' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set parts = rule.porcentajes.split(',') %}
+                                {% if parts|length >= 2 %}
+                                <span class="badge bg-info text-dark">E: {{ (parts[0]|float * 100)|round(1) }}%</span>
+                                <span class="badge bg-secondary">R: {{ (parts[1]|float * 100)|round(1) }}%</span>
+                                {% else %}
+                                {{ rule.porcentajes }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-warning btn-sm edit-btn" data-id="{{ rule.id }}"
+                                    data-compania="{{ rule.compania }}" data-ramo="{{ rule.ramo }}"
+                                    data-subramo="{{ rule.subramo if rule.subramo is not none else '' }}"
+                                    data-producto="{{ rule.producto }}" data-tipo_ejecutivo="{{ rule.tipo_ejecutivo }}"
+                                    data-cod_ejecutivo="{{ rule.cod_ejecutivo if rule.cod_ejecutivo else '' }}"
+                                    data-porcentajes="{{ rule.porcentajes }}" data-bs-toggle="modal"
+                                    data-bs-target="#editRuleModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a href="{{ url_for('delete_comision_config', id=rule.id) }}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('¿Estás seguro de que quieres eliminar esta regla?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Rule Modal -->
+<div class="modal fade" id="addRuleModal" tabindex="-1" aria-labelledby="addRuleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addRuleModalLabel">Agregar Nueva Regla de Comisión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('add_comision_config') }}" method="post">
+                    <div class="mb-3">
+                        <label for="compania" class="form-label">Compañía</label>
+                        <select class="form-select select2-search mb-2" id="compania" name="compania" required
+                            onchange="handleOtro(this, 'otro_compania')" data-placeholder="Compañía">
+                            <option value="">-- Seleccionar --</option>
+                            {% for c in company %}
+                            <option value="{{ c.Nombre }}">{{ c.Nombre }}</option>
+                            {% endfor %}
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="otro_compania" name="otro_compania"
+                            style="display: none;" placeholder="Escriba el nombre de la compañía">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ramo" class="form-label">Ramo</label>
+                        <select class="form-select select2-search mb-2" id="ramo" name="ramo" required
+                            onchange="handleOtro(this, 'otro_ramo'); updateSubRamoOptions('compania', 'ramo', 'subramo', 'producto')"
+                            data-placeholder="Ramo">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Persona">Persona</option>
+                            <option value="Auto">Auto</option>
+                            <option value="Patrimonial">Patrimonial</option>
+                            <option value="Fianza">Fianzas</option>
+                            <option value="Viaje">Viaje</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="otro_ramo" name="otro_ramo" style="display: none;"
+                            placeholder="Escriba el nombre del ramo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="subramo" class="form-label">Subramo</label>
+                        <select class="form-select select2-search mb-2" id="subramo" name="subramo"
+                            onchange="handleOtro(this, 'otro_subramo'); updateProductoOptions('compania', 'ramo', 'subramo', 'producto')"
+                            data-placeholder="Subramo">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="otro_subramo" name="otro_subramo"
+                            style="display: none;" placeholder="Escriba el nombre del subramo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="producto" class="form-label">Producto</label>
+                        <select class="form-select select2-search mb-2" id="producto" name="producto" required
+                            onchange="handleOtro(this, 'otro_producto')" data-placeholder="Producto">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="otro_producto" name="otro_producto"
+                            style="display: none;" placeholder="Escriba el nombre del producto">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo_ejecutivo" class="form-label">Tipo Ejecutivo</label>
+                        <select class="form-select" id="tipo_ejecutivo" name="tipo_ejecutivo" required
+                            onchange="toggleAgentSelect(this, 'agentContainer')">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Agente">Agente</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Referidor">Referidor</option>
+                            <option value="Particular">Particular</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="agentContainer" style="display: none;">
+                        <label for="cod_ejecutivo" class="form-label">Asignar Agente Específico</label>
+                        <select class="form-select select2-search" id="cod_ejecutivo" name="cod_ejecutivo"
+                            data-placeholder="Ninguno (Regla General)">
+                            <option value="">-- Ninguno (Regla General) --</option>
+                            {% for ejecutivo in ejecutivos %}
+                            <option value="{{ ejecutivo.cod_ejecutivo }}">{{ ejecutivo.Nombre }} {{ ejecutivo.Apellido
+                                }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Seleccione el agente de la base de datos para esta regla
+                            particular.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Emisión (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control perc-val" id="perc_emision" min="0" max="100"
+                                    step="0.1" value="0" placeholder="Ej: 15"
+                                    oninput="syncSimplePercentages('perc_emision', 'perc_renovacion', 'porcentajes')">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Renovación (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control perc-val" id="perc_renovacion" min="0"
+                                    max="100" step="0.1" value="0" placeholder="Ej: 10"
+                                    oninput="syncSimplePercentages('perc_emision', 'perc_renovacion', 'porcentajes')">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="porcentajes" name="porcentajes" value="0.000,0.000" required>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Rule Modal -->
+<div class="modal fade" id="editRuleModal" tabindex="-1" aria-labelledby="editRuleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRuleModalLabel">Editar Regla de Comisión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('edit_comision_config') }}" method="post">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="mb-3">
+                        <label for="edit_compania" class="form-label">Compañía</label>
+                        <select class="form-select select2-search mb-2" id="edit_compania" name="compania" required
+                            onchange="handleOtro(this, 'edit_otro_compania')" data-placeholder="Compañía">
+                            <option value="">-- Seleccionar --</option>
+                            {% for c in company %}
+                            <option value="{{ c.Nombre }}">{{ c.Nombre }}</option>
+                            {% endfor %}
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="edit_otro_compania" name="otro_compania"
+                            style="display: none;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_ramo" class="form-label">Ramo</label>
+                        <select class="form-select select2-search mb-2" id="edit_ramo" name="ramo" required
+                            onchange="handleOtro(this, 'edit_otro_ramo'); updateSubRamoOptions('edit_compania', 'edit_ramo', 'edit_subramo', 'edit_producto')"
+                            data-placeholder="Ramo">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Persona">Persona</option>
+                            <option value="Auto">Auto</option>
+                            <option value="Patrimonial">Patrimonial</option>
+                            <option value="Fianza">Fianzas</option>
+                            <option value="Viaje">Viaje</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="edit_otro_ramo" name="otro_ramo"
+                            style="display: none;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_subramo" class="form-label">Subramo</label>
+                        <select class="form-select select2-search mb-2" id="edit_subramo" name="subramo"
+                            onchange="handleOtro(this, 'edit_otro_subramo'); updateProductoOptions('edit_compania', 'edit_ramo', 'edit_subramo', 'edit_producto')"
+                            data-placeholder="Subramo">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="edit_otro_subramo" name="otro_subramo"
+                            style="display: none;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_producto" class="form-label">Producto</label>
+                        <select class="form-select select2-search mb-2" id="edit_producto" name="producto" required
+                            onchange="handleOtro(this, 'edit_otro_producto')" data-placeholder="Producto">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Otro">-- OTRO (Escribir) --</option>
+                        </select>
+                        <input type="text" class="form-control" id="edit_otro_producto" name="otro_producto"
+                            style="display: none;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_tipo_ejecutivo" class="form-label">Tipo Ejecutivo</label>
+                        <select class="form-select" id="edit_tipo_ejecutivo" name="tipo_ejecutivo" required
+                            onchange="toggleAgentSelect(this, 'editAgentContainer')">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Agente">Agente</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Referidor">Referidor</option>
+                            <option value="Particular">Particular</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="editAgentContainer" style="display: none;">
+                        <label for="edit_cod_ejecutivo" class="form-label">Asignar Agente Específico</label>
+                        <select class="form-select select2-search" id="edit_cod_ejecutivo" name="cod_ejecutivo"
+                            data-placeholder="Ninguno (Regla General)">
+                            <option value="">-- Ninguno (Regla General) --</option>
+                            {% for ejecutivo in ejecutivos %}
+                            <option value="{{ ejecutivo.cod_ejecutivo }}">{{ ejecutivo.Nombre }} {{ ejecutivo.Apellido
+                                }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Emisión (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control perc-val" id="edit_perc_emision" min="0"
+                                    max="100" step="0.1" value="0"
+                                    oninput="syncSimplePercentages('edit_perc_emision', 'edit_perc_renovacion', 'edit_porcentajes')">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Renovación (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control perc-val" id="edit_perc_renovacion" min="0"
+                                    max="100" step="0.1" value="0"
+                                    oninput="syncSimplePercentages('edit_perc_emision', 'edit_perc_renovacion', 'edit_porcentajes')">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="edit_porcentajes" name="porcentajes" required>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#comisionesConfigTable').DataTable({
+            language: {
+                "url": "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+            }
+        });
+
+        $('.edit-btn').on('click', function () {
+            var id = $(this).data('id');
+            var compania = $(this).data('compania');
+            var ramo = $(this).data('ramo');
+            var subramo = $(this).data('subramo');
+            var producto = $(this).data('producto');
+            var tipo_ejecutivo = $(this).data('tipo_ejecutivo');
+            var cod_ejecutivo = $(this).data('cod_ejecutivo');
+            var porcentajes = $(this).data('porcentajes');
+
+            $('#edit_id').val(id);
+
+            // Populate Emission/Renewal fields from stored string (e.g. "0.15,0.10")
+            const parts = (porcentajes || "0,0").split(',');
+            const emision = (parseFloat(parts[0] || 0) * 100).toFixed(1);
+            const renovacion = (parseFloat(parts[1] || 0) * 100).toFixed(1);
+
+            $('#edit_perc_emision').val(emision);
+            $('#edit_perc_renovacion').val(renovacion);
+            $('#edit_porcentajes').val(porcentajes);
+
+            // Set selects and handle 'Otro'
+            setSelectValueWithOtro('edit_compania', 'edit_otro_compania', compania);
+            setSelectValueWithOtro('edit_ramo', 'edit_otro_ramo', ramo);
+
+            // Cascading selects
+            updateSubRamoOptions('edit_compania', 'edit_ramo', 'edit_subramo', 'edit_producto');
+            setSelectValueWithOtro('edit_subramo', 'edit_otro_subramo', subramo);
+
+            updateProductoOptions('edit_compania', 'edit_ramo', 'edit_subramo', 'edit_producto');
+            setSelectValueWithOtro('edit_producto', 'edit_otro_producto', producto);
+
+            // Set Tipo Ejecutivo with case-insensitive match
+            if (tipo_ejecutivo) {
+                const tipoValueToMatch = tipo_ejecutivo.trim().toUpperCase();
+                const tipoSelect = document.getElementById('edit_tipo_ejecutivo');
+                for (let i = 0; i < tipoSelect.options.length; i++) {
+                    if (tipoSelect.options[i].value.toUpperCase() === tipoValueToMatch) {
+                        tipoSelect.value = tipoSelect.options[i].value;
+                        break;
+                    }
+                }
+            }
+            
+            $('#edit_cod_ejecutivo').val(cod_ejecutivo);
+            toggleAgentSelect(document.getElementById('edit_tipo_ejecutivo'), 'editAgentContainer');
+        });
+
+        window.handleOtro = function (select, inputId) {
+            const input = document.getElementById(inputId);
+            if (select.value === 'Otro') {
+                input.style.display = 'block';
+                input.setAttribute('required', 'required');
+            } else {
+                input.style.display = 'none';
+                input.removeAttribute('required');
+                input.value = '';
+            }
+        };
+
+        function setSelectValueWithOtro(selectId, inputId, value) {
+            const select = document.getElementById(selectId);
+            const input = document.getElementById(inputId);
+            if (!select) return;
+
+            const valToMatch = (value || "").trim().toUpperCase();
+            
+            // Look for case-insensitive match in options
+            let foundValue = null;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value.toUpperCase() === valToMatch) {
+                    foundValue = select.options[i].value;
+                    break;
+                }
+            }
+
+            if (foundValue) {
+                select.value = foundValue;
+                input.style.display = 'none';
+                input.removeAttribute('required');
+                input.value = '';
+            } else if (value) {
+                select.value = 'Otro';
+                input.value = value;
+                input.style.display = 'block';
+                input.setAttribute('required', 'required');
+            } else {
+                select.value = '';
+                input.style.display = 'none';
+                input.removeAttribute('required');
+            }
+            $(select).trigger('change');
+        }
+
+        window.toggleAgentSelect = function (select, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const normalizedVal = (select.value || "").trim().toUpperCase();
+            if (normalizedVal === 'PARTICULAR') {
+                container.style.display = 'block';
+                container.querySelector('select').setAttribute('required', 'required');
+            } else {
+                container.style.display = 'none';
+                container.querySelector('select').removeAttribute('required');
+                container.querySelector('select').value = '';
+            }
+        };
+
+        // Data for cascading selects
+        const base = '{{ base }}';
+        const productosI = {
+            'MERCANTIL PANAMÁ': { 'Persona': { 'SALUD': ['INTEGRAL', 'VITAL'], 'VIDA': ['VIDA A TERMINO'] } },
+            'VUMI': { 'Persona': { 'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP'] } },
+            'LA REGIONAL': { 'Persona': { 'SALUD': ['MEDICARE CLASSIC'], 'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'CONTINENTAL': { 'Viaje': { 'ANUALES MULTIVIAJES': ['CORPORATIVO'], 'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'], 'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'], 'ESTUDIANTES': ['ESTUDIANTES'] } },
+            'AFIANAUCO': { 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'AMERICAN FIDELITY': { 'Persona': { 'VIDA': ['VIDA'] } },
+            'PAN-AMERICAN': { 'Persona': { 'VIDA': ['VIDA'] } }
+        };
+        const productosN = {
+            'MERCANTIL': { 'Persona': { 'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'], 'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'], 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA/PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRUA'], 'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'] }, 'Viaje': { 'POR DIAS': ['POR DIAS'] } },
+            'ESTAR SEGUROS': { 'Persona': { 'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'], 'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'], 'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'], 'VIDA': ['VIDA TEMPORAL'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'LA INTERNACIONAL': { 'Persona': { 'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'CARACAS': { 'Persona': { 'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'BANESCO': { 'Persona': { 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] } },
+            'UNIVERSITAS': { 'Persona': { 'SALUD': ['SALUD INDIVIDUAL'], 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Mascotas': { 'MASCOTAS': ['MASCOTAS PLUS'] } },
+            'QUALITAS': { 'Persona': { 'SALUD': ['TU APOYO PREMIUM'], 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'UNISEGUROS': { 'Persona': { 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'OCEANICA': { 'Persona': { 'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'], 'VIDA': ['Temporal', 'A termino'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'PIRAMIDE': { 'Persona': { 'SALUD': ['HCM INDIVIDUAL'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] } },
+            'REAL SEGUROS': { 'Persona': { 'SALUD': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['COMBINADO EMPRESARIAL'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'] } },
+            'MAPFRE': { 'Persona': { 'SALUD': ['PROTECCIÓN SALUD'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'SEGUROS VENEZUELA': {
+                'Persona': {
+                    'SALUD': ['ORO', 'PLATA', 'BRONCE'],
+                    'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
+                    'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
+                    'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
+                    'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
+                },
+                'Auto': {
+                    'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
+                    'PERDIDA TOTAL': ['PERDIDA TOTAL'],
+                    'RCV': ['RCV']
+                }
+            }
+        };
+
+        const productos = (base === 'nacional') ? productosN : productosI;
+
+        function normalizeText(text) {
+            if (!text) return '';
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        }
+
+        function findCompany(selectedCompania, productosObj) {
+            const normalizedSelected = normalizeText(selectedCompania);
+            if (!normalizedSelected) return null;
+
+            // Intento match exacto primero
+            if (productosObj[normalizedSelected]) return normalizedSelected;
+
+            // Intento match por subcadena (si la compañía seleccionada contiene la clave o viceversa)
+            const keys = Object.keys(productosObj);
+            for (const key of keys) {
+                const normalizedKey = normalizeText(key);
+                if (normalizedSelected.includes(normalizedKey) || normalizedKey.includes(normalizedSelected)) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        window.updateSubRamoOptions = function (companiaId, ramoId, subramoId, productoId) {
+            const companiaSelect = document.getElementById(companiaId);
+            const ramoSelect = document.getElementById(ramoId);
+            const subRamoSelect = document.getElementById(subramoId);
+            const productoSelect = document.getElementById(productoId);
+
+            const isEdit = companiaId.startsWith('edit_');
+            const prefix = isEdit ? 'edit_otro_' : 'otro_';
+
+            const companiaRaw = companiaSelect.value === 'Otro' ? document.getElementById(prefix + 'compania').value : companiaSelect.value;
+            const companiaKey = findCompany(companiaRaw, productos);
+
+            const ramo = ramoSelect.value === 'Otro' ? document.getElementById(prefix + 'ramo').value : ramoSelect.value;
+
+            subRamoSelect.innerHTML = '<option value="">-- Seleccionar --</option><option value="Otro">-- OTRO (Escribir) --</option>';
+            productoSelect.innerHTML = '<option value="">-- Seleccionar --</option><option value="Otro">-- OTRO (Escribir) --</option>';
+
+            if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo]) {
+                Object.keys(productos[companiaKey][ramo]).forEach(function (subRamo) {
+                    const option = document.createElement('option');
+                    option.value = subRamo;
+                    option.text = subRamo;
+                    subRamoSelect.insertBefore(option, subRamoSelect.lastElementChild);
+                });
+                $(subRamoSelect).trigger('change');
+            }
+        };
+
+        window.updateProductoOptions = function (companiaId, ramoId, subramoId, productoId) {
+            const companiaSelect = document.getElementById(companiaId);
+            const ramoSelect = document.getElementById(ramoId);
+            const subRamoSelect = document.getElementById(subramoId);
+            const productoSelect = document.getElementById(productoId);
+
+            const isEdit = companiaId.startsWith('edit_');
+            const prefix = isEdit ? 'edit_otro_' : 'otro_';
+
+            const companiaRaw = companiaSelect.value === 'Otro' ? document.getElementById(prefix + 'compania').value : companiaSelect.value;
+            const companiaKey = findCompany(companiaRaw, productos);
+
+            const ramo = ramoSelect.value === 'Otro' ? document.getElementById(prefix + 'ramo').value : ramoSelect.value;
+            const subRamo = subRamoSelect.value === 'Otro' ? document.getElementById(prefix + 'subramo').value : subRamoSelect.value;
+
+            productoSelect.innerHTML = '<option value="">-- Seleccionar --</option><option value="Otro">-- OTRO (Escribir) --</option>';
+
+            if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo] && productos[companiaKey][ramo][subRamo]) {
+                productos[companiaKey][ramo][subRamo].forEach(function (producto) {
+                    const option = document.createElement('option');
+                    option.value = producto;
+                    option.text = producto;
+                    productoSelect.insertBefore(option, productoSelect.lastElementChild);
+                });
+                $(productoSelect).trigger('change');
+            }
+        };
+
+        window.syncSimplePercentages = function (emisionId, renovacionId, hiddenId) {
+            const emision = document.getElementById(emisionId).value || 0;
+            const renovacion = document.getElementById(renovacionId).value || 0;
+            const hidden = document.getElementById(hiddenId);
+
+            const valEmision = (parseFloat(emision) / 100).toFixed(3);
+            const valRenovacion = (parseFloat(renovacion) / 100).toFixed(3);
+
+            hidden.value = valEmision + ',' + valRenovacion;
+        };
+
+        // Reset Add Modal on close
+        $('#addRuleModal').on('hidden.bs.modal', function () {
+            const form = this.querySelector('form');
+            form.reset();
+            form.querySelectorAll('input[type="text"]').forEach(i => i.style.display = 'none');
+            form.querySelectorAll('select').forEach(s => {
+                if (s.id === 'tipo_ejecutivo') toggleAgentSelect(s, 'agentContainer');
+            });
+            $('#perc_emision').val(0);
+            $('#perc_renovacion').val(0);
+            $('#porcentajes').val('0.000,0.000');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Gestionar Comisiones{% endblock %}
+
+{% block body %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Comisiones /</span> Gestionar Comisiones</h4>
+
+    <div class="alert alert-info alert-dismissible d-flex align-items-center mb-3" role="alert">
+      <i class="bx bx-info-circle me-2 fs-5"></i>
+      <div>
+        <strong>¿Cómo funciona el módulo de comisiones?</strong><br>
+        Aquí gestionás las comisiones que las aseguradoras pagan al corredor. Podés cargar reportes de cada aseguradora, conciliar cobros con pólizas, y generar reportes por ejecutivo y período.
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-header border-bottom">
+            <h3 class="card-title text-center fw-bold mb-0">GESTIÓN DE COMISIONES</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-center mt-3">Aquí podrás gestionar la configuración de las comisiones.</p>
+            <!-- Contenido específico para la gestión de comisiones -->
+        </div>
+    </div>
+</div>
+{% endblock %}

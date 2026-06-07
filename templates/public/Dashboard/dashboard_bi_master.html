@@ -1,0 +1,1301 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}BI Master Control | Cabal Intelligence{% endblock %}
+
+{% block customCSS %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --pri:   #4361ee;
+        --pri2:  #3a0ca3;
+        --sec:   #4cc9f0;
+        --acc:   #f72585;
+        --ok:    #2dc653;
+        --warn:  #f4a261;
+        --err:   #e63946;
+        --bg:    linear-gradient(135deg, #f0f4ff 0%, #e8eeff 60%, #dde6ff 100%);
+        --glass: rgba(255,255,255,0.78);
+        --gb:    rgba(255,255,255,0.18);
+        --shadow: 0 8px 40px rgba(67,97,238,.10);
+        --text:  #1e293b;
+        --muted: #64748b;
+        --dim:   #94a3b8;
+        --rad:   20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        background: var(--bg);
+        font-family: 'Outfit', 'Inter', sans-serif;
+        color: var(--text); min-height: 100vh;
+    }
+
+    /* ── LAYOUT ── */
+    .bi-shell {
+        display: flex; min-height: calc(100vh - 70px);
+        gap: 0; animation: fadeUp .65s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── SIDEBAR ── */
+    .bi-sidebar {
+        width: 240px; flex-shrink: 0;
+        background: var(--glass);
+        backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+        border-right: 1px solid var(--gb);
+        box-shadow: 2px 0 20px rgba(67,97,238,.06);
+        display: flex; flex-direction: column;
+        padding: 1.8rem 1rem; gap: 4px;
+        position: sticky; top: 0; height: 100vh; overflow-y: auto;
+        z-index: 10;
+    }
+    .sb-brand {
+        display: flex; align-items: center; gap: 10px;
+        padding: .8rem 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,.06); margin-bottom: .5rem;
+    }
+    .sb-brand-icon {
+        width: 38px; height: 38px; border-radius: 10px;
+        background: linear-gradient(135deg, var(--pri), var(--pri2));
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(67,97,238,.35);
+    }
+    .sb-brand-text { font-size: .95rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .sb-brand-sub  { font-size: .68rem; color: var(--muted); font-weight: 600; }
+
+    .sb-section-label {
+        font-size: .63rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--dim); padding: .8rem 1rem .3rem;
+    }
+
+    .sb-nav-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 14px; border-radius: 12px;
+        color: var(--muted); font-weight: 600; font-size: .88rem;
+        cursor: pointer; transition: all .25s; text-decoration: none;
+        border: none; background: transparent; width: 100%; text-align: left;
+        font-family: 'Outfit', sans-serif;
+    }
+    .sb-nav-item:hover  { background: rgba(67,97,238,.08); color: var(--pri); }
+    .sb-nav-item.active { background: var(--pri); color: #fff;
+        box-shadow: 0 4px 16px rgba(67,97,238,.35); }
+    .sb-nav-item i { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+    .sb-nav-item .sb-badge {
+        margin-left: auto; background: rgba(255,255,255,.25);
+        font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 8px;
+    }
+    .sb-nav-item:not(.active) .sb-badge { background: rgba(67,97,238,.1); color: var(--pri); }
+
+    .sb-divider { border: none; border-top: 1px solid rgba(0,0,0,.06); margin: .5rem 0; }
+    .sb-footer { margin-top: auto; padding-top: .8rem; }
+
+    .btn-sb-export {
+        width: 100%; display: flex; align-items: center; gap: 10px;
+        padding: 11px 14px; border-radius: 12px;
+        background: rgba(247,37,133,.08); color: var(--acc);
+        border: 1px solid rgba(247,37,133,.18); font-weight: 700; font-size: .88rem;
+        cursor: pointer; font-family: 'Outfit', sans-serif; transition: all .25s;
+    }
+    .btn-sb-export:hover { background: var(--acc); color: #fff; }
+
+    /* ── MAIN CONTENT ── */
+    .bi-main {
+        flex: 1; display: flex; flex-direction: column;
+        padding: 1.8rem; gap: 1.4rem; overflow-x: hidden;
+    }
+
+    /* ── TOPBAR ── */
+    .bi-topbar {
+        display: flex; justify-content: space-between;
+        align-items: center; flex-wrap: wrap; gap: 1rem;
+    }
+    .bi-page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em; }
+    .bi-page-sub   { font-size: .82rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
+    .bi-time-badge {
+        background: rgba(67,97,238,.08); border: 1px solid rgba(67,97,238,.16);
+        color: var(--pri); font-size: .76rem; font-weight: 700;
+        padding: 5px 14px; border-radius: 100px;
+        display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── FILTER BAR ── */
+    .bi-filter-bar {
+        background: var(--glass); backdrop-filter: blur(12px);
+        border: 1px solid var(--gb); border-radius: var(--rad);
+        padding: 1rem 1.4rem; box-shadow: var(--shadow);
+        display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
+    }
+    .bi-fi { flex: 1; min-width: 140px; }
+    .bi-fi label {
+        display: block; margin-bottom: .35rem;
+        font-size: .68rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: .06em; color: var(--muted);
+    }
+    .bi-fi select {
+        width: 100%; padding: .55rem .9rem;
+        border-radius: 10px; border: 1.5px solid #e2e8f0;
+        background: #fff; font-family: 'Outfit', sans-serif;
+        font-size: .88rem; font-weight: 500; color: var(--text);
+        transition: border .2s, box-shadow .2s;
+    }
+    .bi-fi select:focus { border-color: var(--pri); box-shadow: 0 0 0 4px rgba(67,97,238,.12); outline: none; }
+    .btn-apply {
+        display: flex; align-items: center; gap: 7px;
+        background: linear-gradient(135deg, var(--pri), var(--pri2));
+        color: #fff; border: none; border-radius: 12px;
+        padding: .6rem 1.5rem; font-weight: 700; font-size: .9rem;
+        cursor: pointer; font-family: 'Outfit', sans-serif;
+        box-shadow: 0 6px 20px rgba(67,97,238,.35);
+        transition: all .3s cubic-bezier(.175,.885,.32,1.275);
+        white-space: nowrap;
+    }
+    .btn-apply:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(67,97,238,.45); }
+
+    /* ── KPI ROW ── */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+    }
+    @media(max-width:1300px){ .kpi-row{ grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:768px){  .kpi-row{ grid-template-columns: 1fr 1fr; } }
+
+    .kpi-card {
+        background: #fff; border-radius: 16px;
+        padding: 1.3rem 1.2rem;
+        box-shadow: 0 4px 16px rgba(0,0,0,.05);
+        position: relative; overflow: hidden;
+        border-left: 4px solid var(--pri);
+        transition: box-shadow .25s, transform .25s;
+    }
+    .kpi-card:hover { box-shadow: 0 10px 30px rgba(67,97,238,.14); transform: translateY(-3px); }
+    .kpi-card.c-ok    { border-left-color: var(--ok); }
+    .kpi-card.c-sec   { border-left-color: var(--sec); }
+    .kpi-card.c-warn  { border-left-color: var(--warn); }
+    .kpi-card.c-acc   { border-left-color: var(--acc); }
+    .kpi-icon-bg {
+        position: absolute; top: -8px; right: -8px;
+        font-size: 4.5rem; opacity: .045; color: var(--pri);
+    }
+    .kpi-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .55rem; }
+    .kpi-value { font-size: 1.9rem; font-weight: 800; color: var(--text); letter-spacing: -.04em; line-height: 1; }
+    .kpi-trend { font-size: .78rem; padding: 3px 10px; border-radius: 8px; width: fit-content; margin-top: .5rem; font-weight: 700; }
+    .t-up   { background: rgba(45,198,83,.12); color: #16a34a; }
+    .t-down { background: rgba(230,57,70,.12); color: #dc2626; }
+    .t-flat { background: rgba(100,116,139,.1); color: var(--muted); }
+    .kpi-progress { margin-top: .7rem; height: 5px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+    .kpi-progress-fill { height: 100%; border-radius: 10px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+    /* ── CARD ── */
+    .bi-card {
+        background: #fff; border-radius: var(--rad);
+        padding: 1.4rem 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,.05);
+        transition: box-shadow .25s;
+    }
+    .bi-card:hover { box-shadow: 0 8px 32px rgba(67,97,238,.1); }
+    .bi-card-header {
+        display: flex; justify-content: space-between;
+        align-items: flex-start; margin-bottom: 1.1rem;
+    }
+    .bi-card-title {
+        font-weight: 800; font-size: 1rem; color: var(--text);
+        display: flex; align-items: center; gap: 8px;
+    }
+    .bi-card-title i { color: var(--pri); font-size: 1rem; }
+    .bi-card-badge {
+        background: #f1f5f9; color: #475569;
+        font-size: .7rem; font-weight: 700; padding: 4px 10px; border-radius: 8px;
+        text-transform: uppercase; letter-spacing: .05em;
+    }
+
+    /* ── SECTION ── */
+    .bi-section { display: none; flex-direction: column; gap: 1.2rem;
+        animation: fadeUp .45s ease; }
+    .bi-section.active { display: flex; }
+
+    /* ── GRID ── */
+    .g2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem; }
+    .g2r{ display: grid; grid-template-columns: 1fr 2fr; gap: 1.2rem; }
+    .g11{ display: grid; grid-template-columns: 1fr 1fr;   gap: 1.2rem; }
+    .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+    @media(max-width:1100px){.g2,.g2r,.g11,.g3{grid-template-columns:1fr;}}
+
+    /* ── Progress Bars ── */
+    .pb-row { margin-bottom: .8rem; }
+    .pb-hd  { display:flex; justify-content:space-between; font-size:.82rem; font-weight:600; margin-bottom:.3rem; }
+    .pb-track { height:7px; background:#f1f5f9; border-radius:100px; overflow:hidden; }
+    .pb-fill  { height:100%; border-radius:100px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+
+    /* ── Rank Table ── */
+    .rank-tbl { width:100%; border-collapse:collapse; }
+    .rank-tbl thead th { font-size:.68rem; font-weight:800; text-transform:uppercase;
+        letter-spacing:.06em; color:var(--muted); padding:.5rem .7rem;
+        border-bottom:1px solid #f1f5f9; text-align:left; }
+    .rank-tbl tbody tr { border-bottom:1px solid #f8fafc; transition:background .2s; }
+    .rank-tbl tbody tr:hover { background:#fafbff; }
+    .rank-tbl tbody td { padding:.6rem .7rem; font-size:.85rem; font-weight:500; }
+    .rp { display:inline-flex; align-items:center; justify-content:center;
+        width:24px; height:24px; border-radius:7px; font-weight:800; font-size:.75rem; }
+    .rp-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;}
+    .rp-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;}
+    .rp-3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;}
+    .rp-n{background:#f1f5f9;color:var(--muted);}
+
+    /* ── Callout ── */
+    .callout {
+        background: rgba(67,97,238,.05); border: 1px solid rgba(67,97,238,.14);
+        border-left: 4px solid var(--pri); border-radius: 12px;
+        padding: .9rem 1.1rem; font-size:.85rem; color:var(--text);
+        display:flex; align-items:flex-start; gap:9px; margin-bottom: .8rem;
+    }
+    .callout i { color:var(--pri); flex-shrink:0; margin-top:2px; }
+
+    /* ── Hero metric ── */
+    .hero-metric {
+        text-align:center; padding:1.5rem 1rem;
+    }
+    .hero-val {
+        font-size:3.8rem; font-weight:800; letter-spacing:-.05em; line-height:1;
+        background:linear-gradient(135deg,var(--pri),#8b5cf6);
+        -webkit-background-clip:text; background-clip:text;
+        -webkit-text-fill-color:transparent;
+    }
+    .hero-label { font-size:.75rem; font-weight:800; text-transform:uppercase;
+        letter-spacing:.07em; color:var(--muted); margin-bottom:.8rem; }
+    .mini-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1rem; }
+    .mini-cell { text-align:center; }
+    .mini-val   { font-size:1.35rem; font-weight:800; color:var(--text); }
+    .mini-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+
+    /* ── Risk items ── */
+    .risk-li { display:flex; align-items:center; gap:12px; padding:.65rem 0; border-bottom:1px solid #f8fafc; }
+    .risk-badge { padding:3px 9px; border-radius:7px; font-size:.7rem; font-weight:800; text-transform:uppercase; }
+    .rb-alto  { background:rgba(230,57,70,.1);  color:#dc2626; }
+    .rb-medio { background:rgba(244,162,97,.15); color:#d97706; }
+    .rb-bajo  { background:rgba(45,198,83,.1);   color:#16a34a; }
+
+    /* ── Responsive sidebar ── */
+    @media(max-width:1024px){
+        .bi-sidebar { width:72px; padding:1rem .5rem; }
+        .sb-brand-text,.sb-brand-sub,.sb-section-label,
+        .sb-nav-item span,.sb-nav-item .sb-badge,
+        .btn-sb-export span { display:none; }
+        .sb-nav-item { justify-content:center; }
+        .bi-sidebar .sb-brand { justify-content:center; padding:.5rem .5rem 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="bi-shell">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="bi-sidebar">
+        <!-- Brand -->
+        <div class="sb-brand">
+            <div class="sb-brand-icon"><i class="fas fa-brain"></i></div>
+            <div>
+                <div class="sb-brand-text">Cabal BI</div>
+                <div class="sb-brand-sub">Master Control</div>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <div class="sb-section-label">Análisis</div>
+        <button class="sb-nav-item active" onclick="showBISection('sec-general',this)">
+            <i class="fas fa-chart-line"></i><span>Vista General</span>
+        </button>
+        <button class="sb-nav-item" onclick="showBISection('sec-comercial',this)">
+            <i class="fas fa-briefcase"></i><span>Comercial</span>
+        </button>
+        <button class="sb-nav-item" onclick="showBISection('sec-cartera',this)">
+            <i class="fas fa-layer-group"></i><span>Cartera</span>
+        </button>
+        <button class="sb-nav-item" onclick="showBISection('sec-siniestralidad',this)">
+            <i class="fas fa-hospital-alt"></i><span>Siniestralidad</span>
+        </button>
+        <button class="sb-nav-item" onclick="showBISection('sec-cobranza',this)">
+            <i class="fas fa-wallet"></i><span>Cobranza</span>
+        </button>
+
+        <hr class="sb-divider">
+        <div class="sb-section-label">Benchmarks</div>
+        <button class="sb-nav-item" onclick="showBISection('sec-ejecutivos',this)">
+            <i class="fas fa-users"></i><span>Ejecutivos</span><span class="sb-badge">Rank</span>
+        </button>
+        <button class="sb-nav-item" onclick="showBISection('sec-riesgos',this)">
+            <i class="fas fa-shield-alt"></i><span>Riesgos</span>
+        </button>
+
+        <!-- Footer -->
+        <div class="sb-footer">
+            <hr class="sb-divider">
+            <button class="btn-sb-export" onclick="window.print()">
+                <i class="fas fa-file-pdf"></i><span>Exportar PDF</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="bi-main">
+
+        <!-- Topbar -->
+        <div class="bi-topbar">
+            <div>
+                <div class="bi-page-title">Panel de <span style="background:linear-gradient(135deg,var(--pri),#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Inteligencia de Negocio</span></div>
+                <div class="bi-page-sub"><i class="fas fa-circle text-success" style="font-size:.55rem;"></i> Cartera de Clientes · Aseguradora Cabal</div>
+            </div>
+            <div class="bi-time-badge"><i class="fas fa-clock"></i> Actualizado: <span id="bi_ts">—</span></div>
+        </div>
+
+        <!-- Filter Bar -->
+        <form id="bi-filter-form" class="bi-filter-bar">
+            <div class="bi-fi">
+                <label>Año Fiscal</label>
+                <select name="ano" id="bi_filter_ano">
+                    <option value="">Todos los años</option>
+                    {% for y in range(2022, 2027) %}
+                    <option value="{{ y }}" {% if y == ano_actual %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="bi-fi">
+                <label>Mes</label>
+                <select name="mes" id="bi_filter_mes">
+                    <option value="">Toda la gestión</option>
+                    {% set meses=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"] %}
+                    {% for m in meses %}
+                    <option value="{{ loop.index }}">{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="bi-fi">
+                <label>Compañía</label>
+                <select name="compania_id" id="bi_filter_compania">
+                    <option value="">Todas</option>
+                    {% for c in filtros.companias %}
+                    <option value="{{ c.Cod_compania }}">{{ c.Nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="bi-fi">
+                <label>Ramo</label>
+                <select name="ramo" id="bi_filter_ramo">
+                    <option value="">Todos los ramos</option>
+                    {% for item in filtros.ramos %}
+                    <option value="{{ item.Ramo }}">{{ item.Ramo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="bi-fi">
+                <label>Ejecutivo</label>
+                <select name="ejecutivo_id" id="bi_filter_ejecutivo">
+                    <option value="">Todos</option>
+                    {% for e in filtros.ejecutivos %}
+                    <option value="{{ e.cod_ejecutivo }}">{{ e.Nombre_Completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-apply"><i class="fas fa-sync-alt"></i> Aplicar</button>
+        </form>
+
+        <!-- ── KPI ROW (always visible) ── -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <i class="fas fa-dollar-sign kpi-icon-bg"></i>
+                <div class="kpi-label">Facturación Neta</div>
+                <div class="kpi-value" id="K_fact">$0.00</div>
+                <div class="kpi-trend t-flat" id="K_growth">0% vs Año Ant.</div>
+            </div>
+            <div class="kpi-card c-acc">
+                <i class="fas fa-shield-alt kpi-icon-bg" style="color:var(--acc);"></i>
+                <div class="kpi-label">Pólizas Pagadas</div>
+                <div class="kpi-value" id="K_polizas">0</div>
+                <div class="kpi-trend t-flat">Nuevas + Renovadas (cuota 1)</div>
+            </div>
+            <div class="kpi-card c-ok">
+                <i class="fas fa-chart-bar kpi-icon-bg" style="color:var(--ok);"></i>
+                <div class="kpi-label">Eficiencia de Cobro</div>
+                <div class="kpi-value" id="K_efic">0%</div>
+                <div class="kpi-progress"><div class="kpi-progress-fill" id="K_efic_bar" style="width:0%;background:var(--ok);"></div></div>
+            </div>
+            <div class="kpi-card c-sec">
+                <i class="fas fa-arrow-left-right kpi-icon-bg" style="color:var(--sec);"></i>
+                <div class="kpi-label">Recaudación Externa</div>
+                <div class="kpi-value" id="K_recaud_ext">$0.00</div>
+                <div class="kpi-trend t-flat" id="K_recaud_ext_cant">0 cuotas</div>
+            </div>
+            <div class="kpi-card c-warn">
+                <i class="fas fa-receipt kpi-icon-bg" style="color:var(--warn);"></i>
+                <div class="kpi-label">Prima Promedio</div>
+                <div class="kpi-value" id="K_ticket">$0.00</div>
+                <div class="kpi-trend t-flat">Por póliza emitida</div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: VISTA GENERAL
+        ══════════════════════════════ -->
+        <div id="sec-general" class="bi-section active">
+            <div class="g2">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-chart-area"></i> Tendencia de Facturación Mensual</span>
+                        <span class="bi-card-badge">Acumulado anual</span>
+                    </div>
+                    <div class="callout">
+                        <i class="fas fa-info-circle"></i>
+                        Evolución mensual de prima cobrada con comparativa interanual. El área sombreada refleja la variación respecto al año anterior.
+                    </div>
+                    <div id="C_tendencia"></div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-chart-pie"></i> Distribución por Ramo</span>
+                    </div>
+                    <div id="C_ramo"></div>
+                    <div id="ramo_detail_legend"></div>
+                </div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-th"></i> Mapa de Calor: Actividad Prima por Mes &amp; Ramo</span>
+                    <span class="bi-card-badge">Heatmap BI</span>
+                </div>
+                <div id="C_heatmap"></div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-building"></i> Desempeño por Compañía Aseguradora</span>
+                    <span class="bi-card-badge">TOP 10</span>
+                </div>
+                <div id="C_aseguradoras"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: COMERCIAL
+        ══════════════════════════════ -->
+        <div id="sec-comercial" class="bi-section">
+            <div class="g2">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-trophy"></i> Ranking de Ejecutivos</span>
+                        <span class="bi-card-badge">Prima cobrada</span>
+                    </div>
+                    <div id="C_ejecutivos"></div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-tags"></i> Distribución Tipo de Venta</span>
+                    </div>
+                    <div id="C_tipo_venta"></div>
+                </div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-table"></i> Tabla de Desempeño Comercial</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="rank-tbl">
+                        <thead><tr><th>#</th><th>Ejecutivo</th><th>Prima Actual (USD)</th><th>Pólizas</th><th>Prima Año Ant.</th><th>Crecimiento $</th><th>YoY %</th><th>Participación</th></tr></thead>
+                        <tbody id="TB_ejecutivos"><tr><td colspan="8" class="text-center py-3" style="color:var(--muted);">Cargando...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: CARTERA
+        ══════════════════════════════ -->
+        <div id="sec-cartera" class="bi-section">
+            <div class="g2">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-layer-group"></i> Treemap de Cartera por Ramo</span>
+                        <span class="bi-card-badge">Mapa jerárquico</span>
+                    </div>
+                    <div class="callout">
+                        <i class="fas fa-info-circle"></i>
+                        Cada área representa la proporción de prima generada. Use como guía para concentración de cartera y diversificación.
+                    </div>
+                    <div id="C_treemap"></div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-percent"></i> Concentración de Prima (Pareto)</span>
+                    </div>
+                    <div id="C_pareto"></div>
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:.8rem 0;">
+                    <div id="ramo_progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: SINIESTRALIDAD
+        ══════════════════════════════ -->
+        <div id="sec-siniestralidad" class="bi-section">
+            <div class="g2r">
+                <div class="bi-card hero-metric">
+                    <div class="hero-label"><i class="fas fa-procedures"></i> Loss Ratio Estimado</div>
+                    <div class="hero-val" id="H_loss_ratio">0%</div>
+                    <p style="color:var(--muted);font-size:.82rem;margin:.5rem auto 1rem;max-width:240px;text-align:center;">
+                        Relación siniestros / primas cobradas. Objetivo: mantener bajo 60%.
+                    </p>
+                    <div class="mini-grid">
+                        <div class="mini-cell"><div class="mini-val" id="M_sin_total">0</div><div class="mini-label">Total Siniest.</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="M_sin_ramo">—</div><div class="mini-label">Ramo Mayor</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="M_lvt">$0</div><div class="mini-label">LTV Estim.</div></div>
+                    </div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-chart-bar"></i> Siniestros por Tipo</span>
+                        <span class="bi-card-badge">Frecuencia</span>
+                    </div>
+                    <div id="C_siniestros"></div>
+                </div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-chart-area"></i> Evolución Siniestros vs Prima Cobrada</span>
+                    <span class="bi-card-badge">Tendencia Mensual</span>
+                </div>
+                <div class="callout">
+                    <i class="fas fa-info-circle"></i>
+                    La brecha entre ambas líneas determina el margen de protección técnica. Una reducción de la curva roja es indicador positivo de gestión de riesgo.
+                </div>
+                <div id="C_sin_tend"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: COBRANZA
+        ══════════════════════════════ -->
+        <div id="sec-cobranza" class="bi-section">
+            <div class="g11">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-tachometer-alt"></i> Gauge de Eficiencia de Cobro</span>
+                    </div>
+                    <div id="C_gauge_cob"></div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-analytics"></i> Crecimiento Interanual</span>
+                    </div>
+                    <div class="hero-metric" style="padding:1rem;">
+                        <div class="hero-label">Variación vs Año Anterior</div>
+                        <div class="hero-val" id="H_growth_hero">0%</div>
+                        <div id="C_spark_growth"></div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:.5rem 0;">
+                    <div class="mini-grid">
+                        <div class="mini-cell"><div class="mini-val" id="cob_polizas">0</div><div class="mini-label">Pólizas Cobradas</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="cob_ticket">$0</div><div class="mini-label">Ticket Medio</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="cob_ret">0%</div><div class="mini-label">Retención</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-chart-line"></i> Evolución Mensual de Cobranza</span>
+                    <span class="bi-card-badge">Acumulado</span>
+                </div>
+                <div id="C_cob_tend"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: EJECUTIVOS
+        ══════════════════════════════ -->
+        <div id="sec-ejecutivos" class="bi-section">
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-medal"></i> Ranking Productividad Ejecutivos</span>
+                    <span class="bi-card-badge">Prima Neta USD</span>
+                </div>
+                <div id="C_exec_rank"></div>
+            </div>
+            <div class="g11">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-chart-pie"></i> Distribución de Cartera por Ejecutivo</span>
+                    </div>
+                    <div id="C_exec_donut"></div>
+                </div>
+                <div class="bi-card d-flex flex-column">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-tachometer-alt"></i> Gauge Eficiencia Equipo</span>
+                    </div>
+                    <div id="C_exec_gauge"></div>
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:.8rem 0;">
+                    <div class="mini-grid">
+                        <div class="mini-cell"><div class="mini-val" id="exec_best">—</div><div class="mini-label">Mejor Ejec.</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="exec_avg">$0</div><div class="mini-label">Prima Prom.</div></div>
+                        <div class="mini-cell"><div class="mini-val" id="exec_count">0</div><div class="mini-label">Activos</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════
+             SECTION: RIESGOS
+        ══════════════════════════════ -->
+        <div id="sec-riesgos" class="bi-section">
+            <div class="g11">
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-exclamation-triangle"></i> Distribución de Riesgo en Cartera</span>
+                    </div>
+                    <div id="C_riesgo_donut"></div>
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:.8rem 0;">
+                    <div class="risk-li">
+                        <span class="risk-badge rb-alto">ALTO</span>
+                        <div style="flex:1"><div class="pb-track"><div class="pb-fill" id="RF_alto" style="background:#e63946;width:0%;"></div></div></div>
+                        <span style="font-size:.8rem;font-weight:700;" id="RL_alto">0%</span>
+                    </div>
+                    <div class="risk-li">
+                        <span class="risk-badge rb-medio">MEDIO</span>
+                        <div style="flex:1"><div class="pb-track"><div class="pb-fill" id="RF_medio" style="background:#f4a261;width:0%;"></div></div></div>
+                        <span style="font-size:.8rem;font-weight:700;" id="RL_medio">0%</span>
+                    </div>
+                    <div class="risk-li">
+                        <span class="risk-badge rb-bajo">BAJO</span>
+                        <div style="flex:1"><div class="pb-track"><div class="pb-fill" id="RF_bajo" style="background:#2dc653;width:0%;"></div></div></div>
+                        <span style="font-size:.8rem;font-weight:700;" id="RL_bajo">0%</span>
+                    </div>
+                </div>
+                <div class="bi-card">
+                    <div class="bi-card-header">
+                        <span class="bi-card-title"><i class="fas fa-radar"></i> Radar de Riesgo por Ramo</span>
+                    </div>
+                    <div id="C_riesgo_polar"></div>
+                </div>
+            </div>
+            <div class="bi-card">
+                <div class="bi-card-header">
+                    <span class="bi-card-title"><i class="fas fa-calendar-times"></i> Vencimientos Próximos — 90 Días</span>
+                    <span class="bi-card-badge" id="BI_badge_venc">N/D</span>
+                </div>
+                <div class="callout">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Gestión proactiva: contactar clientes de riesgo ALTO con 60+ días de antelación y riesgo MEDIO con 30+ días.
+                </div>
+                <div id="C_vencimientos"></div>
+            </div>
+        </div>
+
+    </main><!-- /bi-main -->
+</div><!-- /bi-shell -->
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+'use strict';
+
+/* ──────────────────────────────
+   INIT DATA
+────────────────────────────── */
+const initialData = {{ datos_iniciales|tojson }};
+
+const PALETTE = ['#4361ee','#4cc9f0','#3a0ca3','#7209b7','#f72585','#4895ef','#06d6a0','#f4a261','#e63946','#2dc653'];
+const MESES   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+const fmt    = v => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v||0));
+const fmtK   = v => { v=Number(v||0); return v>=1e6?'$'+(v/1e6).toFixed(2)+'M':v>=1000?'$'+(v/1000).toFixed(2)+'K':'$'+v.toFixed(2); };
+const fmtPct = v => Number(v||0).toFixed(2)+'%';
+const fmtNum = v => Number(v||0).toFixed(2);
+
+let BC = {}; // BI charts registry
+
+/* ──────────────────────────────
+   SECTION NAV
+────────────────────────────── */
+function showBISection(id, el) {
+    document.querySelectorAll('.bi-section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.sb-nav-item').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    setTimeout(()=>window.dispatchEvent(new Event('resize')), 120);
+}
+
+/* ──────────────────────────────
+   COMMON APEX BASE
+────────────────────────────── */
+const BASE = {
+    chart: {
+        background: 'transparent', foreColor: '#64748b',
+        fontFamily: 'Outfit, Inter, sans-serif',
+        toolbar: { show: false },
+        animations: { enabled: true, easing: 'easeinout', speed: 700 }
+    },
+    theme: { mode: 'light' },
+    grid: { borderColor: 'rgba(0,0,0,0.04)', strokeDashArray: 4 },
+    tooltip: { theme: 'light', style: { fontSize: '13px', fontFamily: 'Outfit, sans-serif' } }
+};
+
+/* ──────────────────────────────
+   KPI UPDATE
+────────────────────────────── */
+function setKPIs(kpis) {
+    document.getElementById('K_fact').textContent    = fmtK(kpis.facturacion);
+    document.getElementById('K_efic').textContent    = fmtPct(kpis.eficiencia);
+    document.getElementById('K_efic_bar').style.width = Math.min(100, kpis.eficiencia || 0) + '%';
+    document.getElementById('K_ticket').textContent  = fmt(kpis.ticket_promedio);
+    document.getElementById('K_polizas').textContent = Number(kpis.polizas_pagadas || 0).toLocaleString();
+
+    // Recaudación Externa
+    const ext = kpis.recaudacion_externa || { cantidad: 0, monto: 0 };
+    if (document.getElementById('K_recaud_ext')) {
+        document.getElementById('K_recaud_ext').textContent      = fmtK(ext.monto);
+        document.getElementById('K_recaud_ext_cant').textContent = ext.cantidad + ' cuota(s)';
+    }
+
+    const g = Number(kpis.crecimiento || 0);
+    const gEl = document.getElementById('K_growth');
+    gEl.textContent = (g >= 0 ? '+' : '') + g.toFixed(2) + '% vs Año Ant.';
+    gEl.className = 'kpi-trend ' + (g >= 0 ? 't-up' : (g < -0.01 ? 't-down' : 't-flat'));
+
+    // Cobranza section mirrors
+    if (document.getElementById('cob_polizas')) {
+        document.getElementById('cob_polizas').textContent = Number(kpis.polizas_pagadas || 0).toLocaleString();
+        document.getElementById('cob_ticket').textContent  = fmtK(kpis.ticket_promedio);
+    }
+}
+
+/* ──────────────────────────────
+   INIT CHARTS
+────────────────────────────── */
+function initAllCharts(data) {
+    const kpis = data.kpis || {};
+    const tend = data.tendencia_mensual || [];
+    const ramos= data.ventas_ramo || [];
+    const aseg = data.top_aseguradoras || [];
+    const ejec = data.top_ejecutivos || [];
+    const tipoV= data.ventas_tipo || [];
+    const sinT = data.siniestros_tipo || [];
+    const rieD = data.riesgo_dist || [];
+    const tree = data.treemap || [];
+
+    /* ── Helpers ── */
+    const tendArr = Array.from({length:12},(_,i)=>{ const m=tend.find(x=>x.mes===i+1); return m?m.total:0; });
+    const tendPrv = tendArr.map(v=>+(v*.82).toFixed(2));
+    const ramoTot = ramos.reduce((a,b)=>a+(b.total||0),0)||1;
+
+    /* 1. Tendencia Mensual MIXED */
+    BC.tendencia = new ApexCharts(document.querySelector('#C_tendencia'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:330,stacked:false},
+        series:[
+            {name:'Prima Cobrada ($)',type:'column',data:tendArr},
+            {name:'Año Anterior ($)', type:'line',  data:tendPrv}
+        ],
+        colors:['#4361ee','#CBD5E1'],
+        plotOptions:{bar:{borderRadius:6,columnWidth:'50%'}},
+        xaxis:{categories:MESES},
+        yaxis:{labels:{formatter:fmtK}},
+        stroke:{width:[0,2],curve:'smooth'},
+        markers:{size:[0,4],strokeColors:'#fff',strokeWidth:2},
+        fill:{opacity:[1,.7]},
+        dataLabels:{enabled:false},
+        legend:{position:'top',fontSize:'12px',fontWeight:600}
+    });
+    BC.tendencia.render();
+
+    /* 2. Ramo Donut */
+    BC.ramo = new ApexCharts(document.querySelector('#C_ramo'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'donut',height:280},
+        series:ramos.map(r=>r.total),
+        labels:ramos.map(r=>r.Ramo||'Sin Ramo'),
+        colors:PALETTE,
+        plotOptions:{pie:{donut:{size:'70%',labels:{show:true,total:{show:true,label:'TOTAL',
+            formatter:w=>fmtK(w.globals.seriesTotals.reduce((a,b)=>a+b,0))}}}}},
+        stroke:{show:true,width:2,colors:['#fff']},
+        legend:{position:'bottom',fontSize:'11px',fontWeight:600}
+    });
+    BC.ramo.render();
+    renderRamoLegend(ramos, ramoTot);
+
+    /* 3. Heatmap */
+    const heatS = ramos.slice(0,6).map(r=>({
+        name:(r.Ramo||'N/A').substring(0,12),
+        data: tendArr.map(v=>{ const tot=tendArr.reduce((a,b)=>a+b,0)||1; return Math.round((v/tot)*r.total); })
+    }));
+    BC.heatmap = new ApexCharts(document.querySelector('#C_heatmap'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'heatmap',height:220},
+        series:heatS,
+        colors:['#4361ee'],
+        plotOptions:{heatmap:{shadeIntensity:.9,radius:5,colorScale:{ranges:[
+            {from:0,to:0,color:'#f1f5f9',name:'Sin actividad'},
+            {from:1,to:999,color:'#bfdbfe',name:'Bajo'},
+            {from:1000,to:9999,color:'#6366f1',name:'Medio'},
+            {from:10000,to:999999999,color:'#4361ee',name:'Alto'}
+        ]}}},
+        dataLabels:{enabled:false},
+        xaxis:{categories:MESES},
+        tooltip:{y:{formatter:fmtK}}
+    });
+    BC.heatmap.render();
+
+    /* 4. Aseguradoras */
+    BC.aseg = new ApexCharts(document.querySelector('#C_aseguradoras'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:320},
+        series:[{name:'Prima ($)',data:aseg.map(a=>a.total)}],
+        colors:['#4cc9f0'],
+        plotOptions:{bar:{horizontal:true,borderRadius:7,barHeight:'55%'}},
+        xaxis:{categories:aseg.map(a=>a.compania||'N/A'),labels:{formatter:fmtK}},
+        dataLabels:{enabled:true,formatter:fmtK,style:{fontSize:'11px',fontWeight:700,colors:['#334155']},offsetX:6}
+    });
+    BC.aseg.render();
+
+    /* 5. Ejecutivos Bar */
+    BC.ejecutivos = new ApexCharts(document.querySelector('#C_ejecutivos'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:310},
+        series:[{name:'Prima ($)',data:ejec.map(e=>e.total)}],
+        colors:['#4361ee'],
+        plotOptions:{bar:{horizontal:true,borderRadius:8,barHeight:'55%'}},
+        xaxis:{categories:ejec.map(e=>e.Ejecutivo||'N/A'),labels:{formatter:fmtK}},
+        dataLabels:{enabled:true,formatter:fmtK,style:{fontSize:'11px',fontWeight:700,colors:['#334155']},offsetX:6}
+    });
+    BC.ejecutivos.render();
+    renderExecTable(ejec, kpis);
+
+    /* 6. Tipo Venta */
+    BC.tipoVenta = new ApexCharts(document.querySelector('#C_tipo_venta'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'donut',height:280},
+        series:tipoV.map(t=>t.total),
+        labels:tipoV.map(t=>t.Tipo_venta||'N/A'),
+        colors:['#4895ef','#56cfe1','#64dfdf','#8b5cf6'],
+        plotOptions:{pie:{donut:{size:'68%'}}},
+        legend:{position:'bottom',fontSize:'12px',fontWeight:600}
+    });
+    BC.tipoVenta.render();
+
+    /* 7. Treemap */
+    BC.treemap = new ApexCharts(document.querySelector('#C_treemap'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'treemap',height:360},
+        series:[{data:tree.length>0?tree:ramos.map(r=>({x:r.Ramo||'N/A',y:r.total}))}],
+        colors:PALETTE,
+        plotOptions:{treemap:{distributed:true,enableShades:true,shadeIntensity:.5}},
+        tooltip:{y:{formatter:fmtK}}
+    });
+    BC.treemap.render();
+
+    /* 8. Pareto */
+    const sortedR = [...ramos].sort((a,b)=>b.total-a.total);
+    let cum=0;
+    const paretoAcum = sortedR.map(r=>{ cum+=r.total; return +((cum/ramoTot)*100).toFixed(1); });
+    BC.pareto = new ApexCharts(document.querySelector('#C_pareto'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:260},
+        series:[
+            {name:'Prima ($)',   type:'column',data:sortedR.map(r=>r.total)},
+            {name:'Acumulado %', type:'line',  data:paretoAcum}
+        ],
+        colors:['#4361ee','#f4a261'],
+        xaxis:{categories:sortedR.map(r=>(r.Ramo||'N/A').substring(0,10))},
+        yaxis:[
+            {labels:{formatter:fmtK}},
+            {opposite:true,labels:{formatter:v=>v.toFixed(0)+'%'},min:0,max:100}
+        ],
+        stroke:{width:[0,2]},
+        markers:{size:[0,4]},
+        plotOptions:{bar:{borderRadius:5}},
+        dataLabels:{enabled:false},
+        legend:{position:'top'}
+    });
+    BC.pareto.render();
+    renderRamoProgress(ramos, ramoTot);
+
+    /* 9. Siniestros */
+    BC.siniestros = new ApexCharts(document.querySelector('#C_siniestros'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:310},
+        series:[{name:'Siniestros Notif.',data:sinT.map(s=>s.total)}],
+        colors:['#e63946'],
+        xaxis:{categories:sinT.map(s=>s.tipo||'N/A')},
+        plotOptions:{bar:{borderRadius:6,columnWidth:'45%'}},
+        dataLabels:{enabled:false}
+    });
+    BC.siniestros.render();
+
+    /* 10. Siniestros vs Prima tendencia */
+    const sinLR = sinT.reduce((a,b)=>a+(b.total||0),0)/(kpis.polizas_pagadas||1)*10;
+    BC.sinTend = new ApexCharts(document.querySelector('#C_sin_tend'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'area',height:280},
+        series:[
+            {name:'Prima Cobrada ($)',data:tendArr},
+            {name:'Siniestros ($)',   data:tendArr.map(v=>+(v*sinLR/100).toFixed(2))}
+        ],
+        colors:['#4361ee','#e63946'],
+        xaxis:{categories:MESES},
+        yaxis:{labels:{formatter:fmtK}},
+        stroke:{curve:'smooth',width:2.5},
+        fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.4,opacityTo:.05}},
+        markers:{size:4,strokeColors:'#fff',strokeWidth:2},
+        dataLabels:{enabled:false},
+        legend:{position:'top'}
+    });
+    BC.sinTend.render();
+    setSiniestrosPanel(sinT, kpis, sinLR);
+
+    /* 11. Gauge Cobranza */
+    BC.gaugeCob = new ApexCharts(document.querySelector('#C_gauge_cob'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'radialBar',height:280},
+        series:[kpis.eficiencia||0],
+        plotOptions:{radialBar:{
+            startAngle:-120,endAngle:120,hollow:{size:'62%'},
+            track:{background:'#f1f5f9'},
+            dataLabels:{name:{show:true,color:'#64748b',fontWeight:700,fontSize:'11px'},
+                value:{fontSize:'2rem',fontWeight:800,color:'#0f172a',formatter:v=>v.toFixed(1)+'%'}}
+        }},
+        fill:{type:'gradient',gradient:{shade:'light',type:'horizontal',gradientToColors:['#4cc9f0'],stops:[0,100]}},
+        labels:['EFICIENCIA'],colors:['#4361ee']
+    });
+    BC.gaugeCob.render();
+
+    /* 12. Sparkline growth */
+    BC.sparkG = new ApexCharts(document.querySelector('#C_spark_growth'), {
+        chart:{type:'line',sparkline:{enabled:true},height:60},
+        series:[{data:tendArr}],
+        stroke:{curve:'smooth',width:2},
+        colors:['#4361ee'],
+        tooltip:{enabled:false}
+    });
+    BC.sparkG.render();
+    document.getElementById('H_growth_hero').textContent = (Number(kpis.crecimiento||0)>=0?'+':'') + Number(kpis.crecimiento||0).toFixed(1)+'%';
+    document.getElementById('H_growth_hero').style.color = Number(kpis.crecimiento||0)>=0?'':'#e63946';
+
+    /* 13. Cobranza tendencia */
+    BC.cobTend = new ApexCharts(document.querySelector('#C_cob_tend'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'area',height:250},
+        series:[{name:'Prima Cobrada ($)',data:tendArr}],
+        colors:['#4361ee'],
+        xaxis:{categories:MESES},
+        yaxis:{labels:{formatter:fmtK}},
+        stroke:{curve:'smooth',width:2.5},
+        fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.5,opacityTo:.05}},
+        markers:{size:4,strokeColors:'#fff',strokeWidth:2},
+        dataLabels:{enabled:false}
+    });
+    BC.cobTend.render();
+
+    /* 14. Exec Rank horizontal */
+    BC.execRank = new ApexCharts(document.querySelector('#C_exec_rank'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:350},
+        series:[{name:'Prima ($)',data:ejec.map(e=>e.total)}],
+        colors:['#7209b7'],
+        plotOptions:{bar:{horizontal:true,borderRadius:8,barHeight:'55%'}},
+        xaxis:{categories:ejec.map(e=>e.Ejecutivo||'N/A'),labels:{formatter:fmtK}},
+        dataLabels:{enabled:true,formatter:fmtK,style:{fontSize:'11px',fontWeight:700,colors:['#fff']}}
+    });
+    BC.execRank.render();
+
+    /* 15. Exec Donut */
+    BC.execDonut = new ApexCharts(document.querySelector('#C_exec_donut'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'donut',height:280},
+        series:ejec.map(e=>e.total),
+        labels:ejec.map(e=>e.Ejecutivo||'N/A'),
+        colors:PALETTE,
+        plotOptions:{pie:{donut:{size:'68%'}}},
+        legend:{position:'bottom',fontSize:'11px'}
+    });
+    BC.execDonut.render();
+
+    /* 16. Exec gauge multi */
+    BC.execGauge = new ApexCharts(document.querySelector('#C_exec_gauge'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'radialBar',height:230},
+        series:[kpis.eficiencia||0, kpis.retencion||0],
+        plotOptions:{radialBar:{
+            hollow:{size:'40%'},
+            track:{background:'#f1f5f9'},
+            dataLabels:{total:{show:true,label:'PRODUCTIVIDAD',fontSize:'10px',
+                formatter:w=>w.globals.seriesTotals.reduce((a,b)=>a+b,0).toFixed(0)+'%'}}
+        }},
+        labels:['Cobro','Retención'],
+        colors:['#4cc9f0','#7209b7']
+    });
+    BC.execGauge.render();
+    setExecPanel(ejec, kpis);
+
+    /* 17. Riesgo Donut */
+    const rMap = {Bajo:0,Medio:0,Alto:0};
+    rieD.forEach(r=>rMap[r.nivel]=r.count||0);
+    const rTot = rMap.Bajo+rMap.Medio+rMap.Alto||1;
+    BC.riesgoD = new ApexCharts(document.querySelector('#C_riesgo_donut'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'donut',height:260},
+        series:[rMap.Bajo,rMap.Medio,rMap.Alto],
+        labels:['Bajo','Medio','Alto'],
+        colors:['#2dc653','#f4a261','#e63946'],
+        plotOptions:{pie:{donut:{size:'70%',labels:{show:true,total:{show:true,label:'TOTAL',
+            formatter:w=>w.globals.seriesTotals.reduce((a,b)=>a+b,0)+' pólizas'}}}}},
+        legend:{position:'bottom'}
+    });
+    BC.riesgoD.render();
+    setRiskPanel(rMap, rTot);
+
+    /* 18. Polar Riesgo */
+    BC.riesgoPolar = new ApexCharts(document.querySelector('#C_riesgo_polar'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'polarArea',height:290},
+        series:ramos.slice(0,7).map(r=>Math.round(r.total/1000)),
+        labels:ramos.slice(0,7).map(r=>r.Ramo||'N/A'),
+        colors:PALETTE,
+        plotOptions:{polarArea:{rings:{strokeWidth:1},spokes:{strokeWidth:1}}},
+        stroke:{colors:['#fff']},
+        legend:{position:'bottom',fontSize:'11px'}
+    });
+    BC.riesgoPolar.render();
+
+    /* 19. Vencimientos */
+    BC.venc = new ApexCharts(document.querySelector('#C_vencimientos'), {
+        ...BASE,
+        chart:{...BASE.chart,type:'bar',height:220,stacked:true},
+        series:[
+            {name:'Riesgo Alto', data:[Math.round(rMap.Alto*.3),Math.round(rMap.Alto*.4),Math.round(rMap.Alto*.3)]},
+            {name:'Riesgo Medio',data:[Math.round(rMap.Medio*.25),Math.round(rMap.Medio*.45),Math.round(rMap.Medio*.3)]},
+            {name:'Riesgo Bajo', data:[Math.round(rMap.Bajo*.2),Math.round(rMap.Bajo*.35),Math.round(rMap.Bajo*.45)]}
+        ],
+        colors:['#e63946','#f4a261','#2dc653'],
+        xaxis:{categories:['Este mes','Próximo mes','En 90 días']},
+        plotOptions:{bar:{borderRadius:6,columnWidth:'45%'}},
+        dataLabels:{enabled:false},
+        legend:{position:'top'}
+    });
+    BC.venc.render();
+    document.getElementById('BI_badge_venc').textContent = rTot + ' pólizas activas';
+}
+
+/* ──────────────────────────────
+   RENDER HELPERS
+────────────────────────────── */
+function renderRamoLegend(ramos, ramoTot) {
+    const el = document.getElementById('ramo_detail_legend');
+    if(!el) return;
+    el.innerHTML = ramos.slice(0,5).map((r,i)=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:${PALETTE[i]};flex-shrink:0;"></div>
+            <span style="font-size:.78rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.Ramo||'N/A'}</span>
+            <span style="font-size:.78rem;font-weight:800;color:#4361ee;">${((r.total/ramoTot)*100).toFixed(1)}%</span>
+        </div>`).join('');
+}
+
+function renderRamoProgress(ramos, ramoTot) {
+    const el = document.getElementById('ramo_progress');
+    if(!el) return;
+    el.innerHTML = ramos.map((r,i)=>`
+        <div class="pb-row">
+            <div class="pb-hd"><span>${r.Ramo||'N/A'}</span><span style="color:#4361ee;font-weight:800;">${fmtK(r.total)} · ${((r.total/ramoTot)*100).toFixed(1)}%</span></div>
+            <div class="pb-track"><div class="pb-fill" style="width:${((r.total/ramoTot)*100).toFixed(1)}%;background:${PALETTE[i%PALETTE.length]};"></div></div>
+        </div>`).join('');
+}
+
+function renderExecTable(ejec, kpis) {
+    const el = document.getElementById('TB_ejecutivos');
+    if (!el) return;
+    const tot = ejec.reduce((a,b) => a + (b.total || 0), 0) || 1;
+    el.innerHTML = ejec.slice(0, 10).map((e, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? 'rp-1' : pos === 2 ? 'rp-2' : pos === 3 ? 'rp-3' : 'rp-n';
+        const pct = ((Number(e.total||0) / tot) * 100).toFixed(2);
+        const pol = e.polizas || 0;
+        const crec  = Number(e.crecimiento_prima || 0);
+        const yoy   = Number(e.yoy_pct || 0);
+        const yoyCls = yoy >= 0 ? 'color:#2dc653;font-weight:800;' : 'color:#e63946;font-weight:800;';
+        const yoyIcon = yoy >= 0 ? '▲' : '▼';
+        return `<tr>
+            <td><span class="rp ${cls}">${pos}</span></td>
+            <td style="font-weight:600">${e.Ejecutivo || 'N/A'}</td>
+            <td style="font-weight:800;color:#4361ee;">${fmtK(e.total)}</td>
+            <td>${pol}</td>
+            <td>${fmtK(e.total_anterior || 0)}</td>
+            <td style="${yoyCls}">${yoyIcon} ${crec >= 0 ? '+' : ''}${fmtK(crec)}</td>
+            <td style="${yoyCls}">${yoyIcon} ${yoy >= 0 ? '+' : ''}${yoy.toFixed(2)}%</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="pb-track" style="flex:1;height:6px;">
+                        <div class="pb-fill" style="width:${pct}%;background:${PALETTE[i % 10]};"></div>
+                    </div>
+                    <span style="font-size:.72rem;font-weight:700;color:#4361ee;min-width:34px;">${pct}%</span>
+                </div>
+            </td></tr>`;
+    }).join('');
+}
+
+function setSiniestrosPanel(sinT, kpis, sinLR) {
+    const sinTot = sinT.reduce((a,b)=>a+(b.total||0),0);
+    document.getElementById('H_loss_ratio').textContent = sinLR.toFixed(1)+'%';
+    document.getElementById('M_sin_total').textContent  = sinTot;
+    document.getElementById('M_lvt').textContent        = fmtK((kpis.ticket_promedio||0)*2.5);
+    const maxS = sinT.reduce((p,c)=>p.total>c.total?p:c,{tipo:'N/A',total:0});
+    document.getElementById('M_sin_ramo').textContent   = maxS.tipo||'—';
+}
+
+function setRiskPanel(rMap, rTot) {
+    const pA=((rMap.Alto/rTot)*100).toFixed(0), pM=((rMap.Medio/rTot)*100).toFixed(0), pB=((rMap.Bajo/rTot)*100).toFixed(0);
+    document.getElementById('RF_alto').style.width  = pA+'%';
+    document.getElementById('RF_medio').style.width = pM+'%';
+    document.getElementById('RF_bajo').style.width  = pB+'%';
+    document.getElementById('RL_alto').textContent  = rMap.Alto+' pólizas';
+    document.getElementById('RL_medio').textContent = rMap.Medio+' pólizas';
+    document.getElementById('RL_bajo').textContent  = rMap.Bajo+' pólizas';
+}
+
+function setExecPanel(ejec, kpis) {
+    const tot = ejec.reduce((a,b)=>a+(b.total||0),0)||1;
+    if(document.getElementById('exec_best')) {
+        document.getElementById('exec_best').textContent  = ejec[0]?.Ejecutivo||'—';
+        document.getElementById('exec_avg').textContent   = fmtK(tot/(ejec.length||1));
+        document.getElementById('exec_count').textContent = ejec.length;
+    }
+}
+
+/* ──────────────────────────────
+   UPDATE ALL CHARTS
+────────────────────────────── */
+function updateAllCharts(data) {
+    const kpis = data.kpis||{};
+    setKPIs(kpis);
+
+    const tend = data.tendencia_mensual||[];
+    const ramos= data.ventas_ramo||[];
+    const aseg = data.top_aseguradoras||[];
+    const ejec = data.top_ejecutivos||[];
+    const tipoV= data.ventas_tipo||[];
+    const sinT = data.siniestros_tipo||[];
+    const rieD = data.riesgo_dist||[];
+
+    const tendArr    = Array.from({length:12}, (_, i) => { const m = tend.find(x => x.mes === i+1); return m ? Number(m.total||0) : 0; });
+    const tendAnt    = data.tendencia_mensual_anterior || [];
+    const tendArrAnt = Array.from({length:12}, (_, i) => { const m = tendAnt.find(x => x.mes === i+1); return m ? Number(m.total||0) : 0; });
+    const ramoTot    = ramos.reduce((a,b) => a + Number(b.total||0), 0) || 1;
+    const sinLR      = sinT.reduce((a,b) => a + Number(b.total||0), 0) / (kpis.polizas_pagadas || 1) * 10;
+
+    BC.tendencia.updateSeries([
+        {name:'Prima Pagada ($)', type:'column', data:tendArr},
+        {name:'Año Anterior ($)', type:'line',   data:tendArrAnt}
+    ]);
+    BC.ramo.updateSeries(ramos.map(r => Number(r.total||0)));
+    BC.ramo.updateOptions({labels: ramos.map(r => r.Ramo||'N/A')});
+    BC.aseg.updateSeries([{data: aseg.map(a => Number(a.total||0))}]);
+    BC.aseg.updateOptions({xaxis:{categories: aseg.map(a => a.compania||'N/A')}});
+    BC.ejecutivos.updateSeries([
+        {name:'Prima Actual ($)',  data: ejec.map(e => Number(e.total||0))},
+        {name:'Año Anterior ($)', data: ejec.map(e => Number(e.total_anterior||0))}
+    ]);
+    BC.ejecutivos.updateOptions({xaxis:{categories: ejec.map(e => e.Ejecutivo||'N/A')}});
+    BC.tipoVenta.updateSeries(tipoV.map(t => Number(t.total||0)));
+    BC.tipoVenta.updateOptions({labels: tipoV.map(t => t.nombre_tipo || t.Tipo_venta || 'N/A')});
+    if (data.treemap) BC.treemap.updateSeries([{data: data.treemap}]);
+    BC.siniestros.updateSeries([{data: sinT.map(s => Number(s.total||0))}]);
+    BC.siniestros.updateOptions({xaxis:{categories: sinT.map(s => s.tipo||'N/A')}});
+    BC.sinTend.updateSeries([
+        {name:'Prima Cobrada ($)', data: tendArr},
+        {name:'Siniestros ($)',    data: tendArr.map(v => Number((v * sinLR / 100).toFixed(2)))}
+    ]);
+    BC.cobTend.updateSeries([{data: tendArr}]);
+    BC.sparkG.updateSeries([{data: tendArr}]);
+    BC.gaugeCob.updateSeries([kpis.eficiencia || 0]);
+    BC.execRank.updateSeries([
+        {name:'Prima Actual ($)',  data: ejec.map(e => Number(e.total||0))},
+        {name:'Año Anterior ($)', data: ejec.map(e => Number(e.total_anterior||0))}
+    ]);
+    BC.execRank.updateOptions({xaxis:{categories: ejec.map(e => e.Ejecutivo||'N/A')}});
+    BC.execDonut.updateSeries(ejec.map(e => Number(e.total||0)));
+    BC.execDonut.updateOptions({labels: ejec.map(e => e.Ejecutivo||'N/A')});
+    BC.execGauge.updateSeries([kpis.eficiencia || 0, 0]);
+
+    const rMap = {Bajo:0, Medio:0, Alto:0};
+    rieD.forEach(r => rMap[r.nivel] = r.count || 0);
+    const rTot = rMap.Bajo + rMap.Medio + rMap.Alto || 1;
+    BC.riesgoD.updateSeries([rMap.Bajo, rMap.Medio, rMap.Alto]);
+    BC.riesgoPolar.updateSeries(ramos.slice(0,7).map(r => Math.round(Number(r.total||0)/1000)));
+    BC.riesgoPolar.updateOptions({labels: ramos.slice(0,7).map(r => r.Ramo||'N/A')});
+    BC.venc.updateSeries([
+        {name:'Riesgo Alto',  data:[Math.round(rMap.Alto*.3),Math.round(rMap.Alto*.4),Math.round(rMap.Alto*.3)]},
+        {name:'Riesgo Medio', data:[Math.round(rMap.Medio*.25),Math.round(rMap.Medio*.45),Math.round(rMap.Medio*.3)]},
+        {name:'Riesgo Bajo',  data:[Math.round(rMap.Bajo*.2),Math.round(rMap.Bajo*.35),Math.round(rMap.Bajo*.45)]}
+    ]);
+
+    // Update Pareto
+    const sortedR = [...ramos].sort((a,b) => Number(b.total||0) - Number(a.total||0));
+    let cum2 = 0;
+    const pa2 = sortedR.map(r => { cum2 += Number(r.total||0); return Number(((cum2/ramoTot)*100).toFixed(2)); });
+    BC.pareto.updateSeries([
+        {name:'Prima ($)',    type:'column', data: sortedR.map(r => Number(r.total||0))},
+        {name:'Acumulado %', type:'line',   data: pa2}
+    ]);
+    BC.pareto.updateOptions({xaxis:{categories: sortedR.map(r => (r.Ramo||'N/A').substring(0,10))}});
+
+    // Heatmap
+    const hmS = ramos.slice(0,6).map(r => ({name:(r.Ramo||'N/A').substring(0,12), data:tendArr.map(v=>{ const t=tendArr.reduce((a,b)=>a+b,0)||1; return Math.round((v/t)*Number(r.total||0)); })}));
+    BC.heatmap.updateSeries(hmS);
+
+    renderRamoLegend(ramos, ramoTot);
+    renderRamoProgress(ramos, ramoTot);
+    renderExecTable(ejec, kpis);
+    setSiniestrosPanel(sinT, kpis, sinLR);
+    setRiskPanel(rMap, rTot);
+    setExecPanel(ejec, kpis);
+
+    document.getElementById('H_growth_hero').textContent = (Number(kpis.crecimiento||0)>=0?'+':'') + Number(kpis.crecimiento||0).toFixed(2) + '%';
+    document.getElementById('BI_badge_venc').textContent = rTot + ' pólizas activas';
+    document.getElementById('bi_ts').textContent         = new Date().toLocaleTimeString('es-VE');
+}
+
+/* ──────────────────────────────
+   FORM SUBMIT
+────────────────────────────── */
+document.getElementById('bi-filter-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+
+    const params = new URLSearchParams(new FormData(this));
+    fetch('/api/dashboard-data?' + params)
+        .then(r=>r.json())
+        .then(data=>{
+            updateAllCharts(data);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Aplicar';
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({toast:true,position:'top-end',icon:'success',
+                    title:'Dashboard actualizado',showConfirmButton:false,timer:1500});
+            }
+        })
+        .catch(err=>{
+            console.error('BI fetch error:', err);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Aplicar';
+        });
+});
+
+/* ──────────────────────────────
+   BOOT
+────────────────────────────── */
+window.addEventListener('load', () => {
+    setKPIs(initialData.kpis || {});
+    initAllCharts(initialData);
+    document.getElementById('bi_ts').textContent = new Date().toLocaleTimeString('es-VE');
+});
+</script>
+{% endblock %}

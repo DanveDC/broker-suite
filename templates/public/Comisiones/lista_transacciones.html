@@ -1,0 +1,224 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Transacciones de Comisiones{% endblock %}
+
+{% block customCSS %}
+<style>
+    .card-start {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .table-premium thead th {
+        background-color: #f8f9fc;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05rem;
+        font-weight: 700;
+        color: #4e73df;
+        border-top: none;
+    }
+
+    .modal-lg-custom {
+        max-width: 90%;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="card card-start">
+    <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="bi bi-wallet2"></i> Historial de Bloques de Comisiones
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-premium">
+                <thead>
+                    <tr>
+                        <th>Compañía</th>
+                        <th>Fecha Carga</th>
+                        <th>Nro Egreso</th>
+                        <th>Referencia Bancaria</th>
+                        <th>Fecha Movimiento</th>
+                        <th>Cant. Pagos</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bloque in bloques %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-secondary">{{ bloque.compania or 'N/A' }}</span>
+                        </td>
+                        <td>{{ bloque.fecha_creacion }}</td>
+                        <td>{{ bloque.numero_egreso }}</td>
+                        <td>{{ bloque.referencia_bancaria }}</td>
+                        <td>{{ bloque.fecha_movimiento }}</td>
+                        <td>{{ bloque.cantidad_pagos }}</td>
+                        <td>
+                            {% if bloque.moneda_bloque in ['DOLARES', '$'] or (bloque.total_usd > 0) %}
+                            {{ "{:,.2f}".format(bloque.total_usd) }} $
+                            {% else %}
+                            {{ "{:,.2f}".format(bloque.total_bs) }} Bs
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info btn-detalle" data-id="{{ bloque.id_bloque }}"
+                                data-referencia="{{ bloque.referencia_bancaria }}">
+                                <i class="bi bi-eye"></i> Ver Detalle
+                            </button>
+                            {% if session['permisos'] == 'dev' or session['permisos'] == 'Administracion' %}
+                            <button class="btn btn-sm btn-danger btn-eliminar" data-id="{{ bloque.id_bloque }}">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No hay transacciones registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div class="modal fade" id="modalDetalleBloque" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg-custom modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Referencia: <span id="modal-bloque-ref" class="fw-bold text-primary"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped" id="tabla-detalles">
+                        <thead>
+                            <tr>
+                                <th>Recibo</th>
+                                <th>Descripción</th>
+                                <th>Póliza</th>
+                                <th>Asegurado</th>
+                                <th>Ejecutivo</th>
+                                <th>Monto Pagado ($)</th>
+                                <th>Monto Bs</th>
+                                <th>Tasa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS fill -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block customJS %}
+<script>
+    document.querySelectorAll('.btn-detalle').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const id = this.dataset.id;
+            const ref = this.dataset.referencia;
+            document.getElementById('modal-bloque-ref').textContent = ref;
+            const tbody = document.querySelector('#tabla-detalles tbody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">Cargando...</td></tr>';
+
+            const modal = new bootstrap.Modal(document.getElementById('modalDetalleBloque'));
+            modal.show();
+
+            try {
+                const response = await fetch(`/api/comisiones/transacciones/${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    tbody.innerHTML = '';
+                    let totalUsd = 0;
+                    let totalBs = 0;
+
+                    data.detalles.forEach(d => {
+                        const m_usd = parseFloat(d.monto_d) || 0;
+                        const m_bs = parseFloat(d.monto_bs) || 0;
+                        totalUsd += m_usd;
+                        totalBs += m_bs;
+
+                        const row = `
+                            <tr>
+                                <td class="small fw-bold">${d.recibo}</td>
+                                <td class="small text-muted">${d.descripcion || '-'}</td>
+                                <td class="small">${d.cod_poliza || '-'}</td>
+                                <td class="small text-truncate" style="max-width: 150px;">${d.asegurado}</td>
+                                <td class="small">${d.ejecutivo}</td>
+                                <td class="text-end">${(m_usd > 0 || m_usd < 0) ? m_usd.toFixed(2) + ' $' : '-'}</td>
+                                <td class="text-end fw-bold text-success">${(m_bs > 0 || m_bs < 0) ? m_bs.toFixed(2) + ' Bs' : '-'}</td>
+                                <td class="text-end small">${d.tasa ? parseFloat(d.tasa).toFixed(2) : '-'}</td>
+                            </tr>
+                        `;
+                        tbody.insertAdjacentHTML('beforeend', row);
+                    });
+
+                    // Añadir fila de totales
+                    const footerRow = `
+                        <tr class="table-dark">
+                            <td colspan="5" class="text-end fw-bold">TOTALES:</td>
+                            <td class="text-end fw-bold">${totalUsd !== 0 ? totalUsd.toFixed(2) + ' $' : '-'}</td>
+                            <td class="text-end fw-bold">${totalBs !== 0 ? totalBs.toFixed(2) + ' Bs' : '-'}</td>
+                            <td></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', footerRow);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar detalles</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error de conexión</td></tr>';
+            }
+        });
+    });
+
+    // Evento para Eliminar Bloque
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const id = this.dataset.id;
+            if (!confirm(`¿Estás seguro de que deseas eliminar la transacción #${id}? Se borrarán todos los registros de comisiones asociados y el bloque de pago. Los pagos volverán a aparecer como 'pendientes' para ser cargados nuevamente.`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                const response = await fetch(`/comisiones/eliminar-bloque/${id}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error de conexión');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+            }
+        });
+    });
+</script>
+{% endblock %}

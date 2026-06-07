@@ -1,0 +1,37 @@
+<script src="{{ url_for('static', filename ='assets/vendor/libs/jquery/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/vendor/libs/popper/popper.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/vendor/js/bootstrap.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/vendor/js/menu.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/js/main.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script src="{{ url_for('static', filename ='assets/customJS/home.js') }}"></script>
+<script src="{{ url_for('static', filename ='assets/customJS/buscador.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.select2-search').each(function () {
+            var placeholder = $(this).data('placeholder') || "Selecciona una opción";
+            var allowTags = $(this).data('tags') || false;
+            $(this).select2({
+                placeholder: placeholder,
+                allowClear: true,
+                width: '100%',
+                tags: allowTags
+            });
+        });
+    });
+</script>
+
+<script>
+    // Initialize all tooltips globally
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>

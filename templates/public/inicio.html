@@ -1,0 +1,46 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %} INICIO {% endblock %}
+
+{% block customCSS %}
+<style>
+  body {
+    background-image: linear-gradient(rgba(248, 250, 252, 0.8), rgba(248, 250, 252, 0.8)), url('/static/assets/img/PANTALLA INTERFAZ.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .welcome-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    margin-top: 5rem;
+    padding: 3rem;
+    text-align: center;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="welcome-card card">
+    <h1 class="display-4 fw-bold text-primary mb-3">Bienvenido a Cabal</h1>
+    <p class="lead text-muted mb-4">Sistema Integral de Gestión de Seguros</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="/lista-de-polizas" class="btn btn-primary btn-lg">
+        <i class="bi bi-file-text-fill me-2"></i> Ver Pólizas
+      </a>
+      <a href="/registrar-poliza" class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i> Registrar Nueva
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+{% block customJS %}
+<script src="{{ url_for('static', filename='assets/customJS/file.js') }}"></script>
+{% endblock %}

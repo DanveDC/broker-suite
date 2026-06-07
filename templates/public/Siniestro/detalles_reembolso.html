@@ -1,0 +1,309 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Detalles de Reembolso{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+
+{% endblock %}
+
+{% block body %}
+
+{% if detalle_reembolso %} <div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0">
+            <a href="#" id="back" class="text-secondary me-2">
+                <i class="bi bi-arrow-left-circle"></i>
+            </a>
+            INFORMACIÓN DEL REEMBOLSO
+        </h3>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-10">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Código Póliza</label><br />
+                        {{ detalle_reembolso.Cod_poliza }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Diagnóstico</label><br />
+                        {{ detalle_reembolso.Diagnostico }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Status</label><br />
+                        {{ detalle_reembolso.Estado }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha Ocurrencia</label><br />
+                        {{ detalle_reembolso.Fecha_ocurrencia }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha Notificación</label><br />
+                        {{ detalle_reembolso.Fecha_noti }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha Máxima</label><br />
+                        {{ detalle_reembolso.Fecha_max }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Moneda</label><br />
+                        {{ detalle_reembolso.Moneda }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Monto Solicitado</label><br />
+                        {{ detalle_reembolso.Monto_solicitado }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Monto Pagado</label><br />
+                        {{ detalle_reembolso.Monto_pagado }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha Pago</label><br />
+                        {{ detalle_reembolso.Fecha_pago }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Monto en Dólares</label><br />
+                        {{ detalle_reembolso.monto_dolares }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label><br />
+                        {{ detalle_reembolso.Correo }}
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Cod Siniestro</label><br />
+                        {{ detalle_reembolso.codigo_siniestro }}
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="notes-container">
+    <div class="sidebar">
+        <button class="add-note-button">+</button>
+        <ul class="note-list" id="noteList">
+
+        </ul>
+    </div>
+    <div class="note-content" id="noteContent">
+        <h2>Nueva Nota</h2>
+        <div class="mb-3">
+            <label for="newNoteTitle" class="form-label">Título de la nota</label>
+            <input type="text" class="form-control" id="newNoteTitle" placeholder="Título de la nueva nota">
+        </div>
+        <div class="mb-3">
+            <label for="newNoteText" class="form-label">Contenido de la nota</label>
+            <textarea class="form-control" id="newNoteText" rows="4"
+                placeholder="Escribe aquí tu nueva nota"></textarea>
+        </div>
+        <button class="btn btn-primary" id="saveNewNote">Guardar Nota</button>
+    </div>
+</div>
+
+
+
+{% else %}
+<h2 class="text-center">No existe el reembolso
+    <hr />
+</h2>
+{% endif %}
+
+{% endblock %}
+
+{% block customJS %}
+
+<script>
+
+    const cod = JSON.parse('{{ where | tojson }}');
+    const siniestro = JSON.parse('{{ detalle_reembolso | tojson }}');
+
+    const enlaceDetalles = document.getElementById('back');
+    if (cod == 1) { enlaceDetalles.href = "/lista-de-siniestros"; }
+    else { enlaceDetalles.href = "/detalles-poliza/" + siniestro.Cod_poliza; }
+
+</script>
+
+
+<script>
+    const notas = JSON.parse('{{ notas | tojson }}');
+    const noteListElement = document.getElementById('noteList');
+    const noteContentElement = document.getElementById('noteContent');
+    const addNoteButton = document.querySelector('.add-note-button');
+
+    let activeNoteId = null; // Inicialmente ninguna nota activa
+
+    function displayNote(noteId) {
+        const note = notas.find(n => n.idnota_Reembolso === noteId);
+        if (note) {
+            const fechaObj = new Date(note.fecha);
+
+            // Opciones para formatear la fecha (día, mes, año)
+            const opcionesFecha = { year: 'numeric', month: 'short', day: 'numeric' };
+
+            // Formatear la fecha al formato deseado (ej: 18 May 2025)
+            const fechaFormateada = fechaObj.toLocaleDateString('es-VE', opcionesFecha); // 'es-VE' para formato venezolano
+
+            noteContentElement.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <h2>${note.titulo}</h2>
+                <span style="font-size: 0.9em; color: #777;">${fechaFormateada}</span>
+            </div>
+            <p>${note.Observaciones}</p>
+        `;
+        } else {
+            noteContentElement.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="bi bi-list-ul" style="font-size: 2em; color: #aaa;"></i>
+                    <p class="mt-2 text-muted">La lista de notas está vacía.</p>
+                    <p class="text-muted">Para agregar una, pulse el botón <span class="badge bg-secondary">+</span>.</p>
+                </div>
+            `;
+        }
+    }
+
+    function setActiveNote(noteId) {
+        const noteItems = noteListElement.querySelectorAll('.note-item');
+        noteItems.forEach(item => {
+            item.classList.remove('active');
+            if (parseInt(item.dataset.noteId) === noteId) {
+                item.classList.add('active');
+            }
+        });
+        activeNoteId = noteId;
+        displayNote(activeNoteId);
+    }
+
+    function addNewNoteToUI(newNote) {
+        const listItem = document.createElement('li');
+        listItem.classList.add('note-item');
+        listItem.dataset.noteId = newNote.idnota_Reembolso;
+        listItem.textContent = newNote.titulo;
+        listItem.addEventListener('click', () => {
+            console.log(newNote.idnota_Reembolso);
+            setActiveNote(newNote.idnota_Reembolso);
+        });
+        noteListElement.appendChild(listItem);
+    }
+
+    // Llenar la lista de notas dinámicamente
+    notas.forEach(note => {
+        addNewNoteToUI(note);
+    });
+
+    // Mostrar la primera nota al cargar la página si existen notas
+
+    if (notas.length > 0) {
+        setActiveNote(notas[0].idnota_Reembolso);
+    } else {
+        noteContentElement.innerHTML = `
+                <div class="text-center p-4"> 
+                    <p class="mt-2 text-muted">La lista de notas está vacía.</p>
+                    <p class="text-muted">Para agregar una, pulse el botón <span class="badge bg-secondary">+</span>.</p>
+                </div>
+            `;
+    }
+
+
+    // Lógica para el botón de "Agregar Nota"
+    addNoteButton.addEventListener('click', () => {
+        noteContentElement.innerHTML = `
+            <h2>Nueva Nota</h2>
+            <div class="mb-3">
+                <label for="newNoteTitle" class="form-label">Título de la nota</label>
+                <input type="text" class="form-control" id="newNoteTitle" placeholder="Título de la nueva nota">
+            </div>
+            <div class="mb-3">
+                <label for="newNoteText" class="form-label">Contenido de la nota</label>
+                <textarea class="form-control" id="newNoteText" rows="4" placeholder="Escribe aquí tu nueva nota"></textarea>
+            </div>
+            <button class="btn btn-primary" id="saveNewNote">Guardar Nota</button>
+        `;
+
+        const saveNewNoteButton = document.getElementById('saveNewNote');
+        const newNoteTextarea = document.getElementById('newNoteText');
+        const newNoteTitleInput = document.getElementById('newNoteTitle');
+
+        saveNewNoteButton.addEventListener('click', function () {
+            const button = this; // 'this' referencia al botón
+            const originalText = button.textContent;
+            const newNoteContent = newNoteTextarea.value;
+            const newNoteTitle = newNoteTitleInput.value.trim() === "" ? `Nota ${notas.length + 1}` : newNoteTitleInput.value;
+
+            if (newNoteContent.trim() !== "") {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando...';
+
+                const newNoteId = notas.length > 0 ? Math.max(...notas.map(n => n.idnota_Reembolso)) + 1 : 1;
+                const newNoteToSend = {
+                    tipo: 2,
+                    Cod_CartaAval: siniestro.cod_reembolso,
+                    idnota_cartaAval: newNoteId,
+                    titulo: newNoteTitle,
+                    Observaciones: newNoteContent
+                };
+
+                // Enviar la nueva nota al backend por AJAX
+                fetch('/guardar_nota', { // Reemplaza '/guardar_nota' con la URL de tu backend
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newNoteToSend)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        if (data.success) {
+                            // Si el backend guarda la nota exitosamente, actualizar la UI
+                            notas.push(data.nota); // data.nota debería ser la nota guardada con su ID de base de datos
+                            addNewNoteToUI(data.nota);
+                            setActiveNote(data.nota.idnota_Reembolso);
+                        } else {
+                            alert('Error al guardar la nota.');
+                        }
+                    })
+                    .catch(error => {
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        console.error('Error al enviar la nota al backend:', error);
+                        alert('Error de conexión al guardar la nota.');
+                    });
+            } else {
+                alert('Por favor, escribe algo en la nota antes de guardar.');
+            }
+        });
+    });
+
+    // Mostrar la primera nota al cargar la página si existen notas
+    if (notas.length > 0 && activeNoteId) {
+        displayNote(activeNoteId);
+        setActiveNote(activeNoteId);
+    }
+</script>
+
+{% endblock %}

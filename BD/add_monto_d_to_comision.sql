@@ -1,0 +1,2 @@
+ALTER TABLE comision
+ADD COLUMN monto_d FLOAT;

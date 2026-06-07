@@ -1,0 +1,982 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Reporte Sudaseg | Cabal{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --pri:   #4f46e5;
+    --pri2:  #7c3aed;
+    --ok:    #10b981;
+    --warn:  #f59e0b;
+    --err:   #ef4444;
+    --bg:    linear-gradient(135deg,#f0f4ff 0%,#e8eeff 60%,#dde6ff 100%);
+    --glass: rgba(255,255,255,0.85);
+    --gb:    rgba(255,255,255,0.45);
+    --shadow: 0 8px 32px rgba(79,70,229,0.09);
+    --rad:   20px;
+    --text:  #1e293b;
+    --muted: #64748b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: 'Outfit','Segoe UI',sans-serif; }
+
+/* ── PAGE WRAP ── */
+.sudaseg-wrap {
+    padding: 1.8rem;
+    animation: fadeUp .6s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── GLASS CARD ── */
+.g-card {
+    background: var(--glass);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--gb);
+    border-radius: var(--rad);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow .3s, transform .3s;
+}
+.g-card:hover { box-shadow: 0 16px 48px rgba(79,70,229,.14); transform: translateY(-3px); }
+.g-card::before {
+    content:'';position:absolute;inset:0;border-radius:var(--rad);
+    padding:1px;
+    background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.1));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+
+/* ── HEADER ── */
+.page-header {
+    display:flex;justify-content:space-between;align-items:flex-start;
+    flex-wrap:wrap;gap:1rem;margin-bottom:1.8rem;
+}
+.page-title { font-size:1.6rem;font-weight:800;letter-spacing:-.03em;color:var(--text);margin:0; }
+.page-sub   { font-size:.83rem;color:var(--muted);font-weight:500;margin:.2rem 0 0; }
+.text-grad  { background:linear-gradient(135deg,var(--pri),#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+    background:rgba(255,255,255,.65);
+    backdrop-filter:blur(12px);
+    border:1px solid var(--gb);
+    border-radius:18px;
+    padding:1.1rem 1.4rem;
+    display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;
+    margin-bottom:1.8rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.04);
+}
+.filter-group { flex:1;min-width:150px; }
+.filter-label { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:.35rem; }
+.f-select {
+    width:100%;background:#fff;border:1.5px solid #e2e8f0;
+    color:var(--text);border-radius:12px;padding:.55rem 1rem;
+    font-size:.88rem;font-weight:500;cursor:pointer;
+    transition:all .25s;font-family:'Outfit',sans-serif;
+}
+.f-select:focus { border-color:var(--pri);box-shadow:0 0 0 4px rgba(79,70,229,.12);outline:none; }
+.btn-consult {
+    display:flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,var(--pri),var(--pri2));
+    color:#fff;border:none;border-radius:14px;
+    padding:.62rem 1.6rem;font-weight:700;font-size:.92rem;
+    cursor:pointer;white-space:nowrap;
+    box-shadow:0 6px 20px rgba(79,70,229,.35);
+    transition:all .3s cubic-bezier(.175,.885,.32,1.275);
+    font-family:'Outfit',sans-serif;
+}
+.btn-consult:hover { transform:translateY(-2px);box-shadow:0 12px 28px rgba(79,70,229,.45); }
+
+/* ── ACTION BUTTONS ── */
+.btn-preview {
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(79,70,229,.08);color:var(--pri);
+    border:1.5px solid rgba(79,70,229,.2);border-radius:12px;
+    padding:.5rem 1.2rem;font-weight:700;font-size:.86rem;
+    cursor:pointer;transition:all .25s;font-family:'Outfit',sans-serif;
+}
+.btn-preview:hover { background:var(--pri);color:#fff; }
+.btn-download {
+    display:inline-flex;align-items:center;gap:7px;
+    background:linear-gradient(135deg,#10b981,#059669);
+    color:#fff;border:none;border-radius:12px;
+    padding:.5rem 1.5rem;font-weight:700;font-size:.86rem;
+    cursor:pointer;transition:all .25s;text-decoration:none;
+    box-shadow:0 4px 16px rgba(16,185,129,.3);
+}
+.btn-download:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.4);color:#fff; }
+
+/* ── VIEW TABS ── */
+.view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:14px;padding:.3rem;margin-bottom:1.4rem; }
+.view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--muted); }
+.view-tab.active { background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;box-shadow:0 4px 16px rgba(79,70,229,.3); }
+.view-tab:not(.active):hover { background:rgba(79,70,229,.07);color:var(--pri); }
+.view-pane { display:none; }
+.view-pane.active { display:block; }
+
+/* ── KPI STRIP ── */
+.kpi-strip { display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.8rem; }
+@media(max-width:1100px){ .kpi-strip{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){  .kpi-strip{grid-template-columns:1fr}            }
+
+.kpi-item {
+    padding:1.2rem 1.3rem;
+    cursor:default;
+}
+.kpi-accent { position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0; }
+.kpi-ico { position:absolute;bottom:-12px;right:-12px;font-size:4.5rem;opacity:.045; }
+.kpi-lbl { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.55rem; }
+.kpi-val { font-size:1.8rem;font-weight:800;letter-spacing:-.04em;color:#0f172a;line-height:1; }
+.kpi-sub { font-size:.75rem;color:var(--muted);font-weight:500;margin-top:.4rem; }
+
+/* ── MAIN TABLE ── */
+.table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04); }
+.tbl-header { padding:1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.05); }
+.tbl-title  { font-size:.95rem;font-weight:800;color:var(--text); }
+.tbl-badge  { background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em; }
+
+.tbl-sudaseg { width:100%;border-collapse:collapse; }
+.tbl-sudaseg thead th {
+    background:rgba(79,70,229,.06);
+    font-size:.68rem;font-weight:800;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--muted);
+    padding:.75rem 1rem;border-bottom:1px solid rgba(79,70,229,.1);
+    white-space:nowrap;
+}
+.tbl-sudaseg tbody tr {
+    border-bottom:1px solid rgba(0,0,0,.04);
+    transition:background .18s;
+}
+.tbl-sudaseg tbody tr:hover { background:rgba(79,70,229,.03); }
+.tbl-sudaseg tbody td { padding:.7rem 1rem;font-size:.86rem;font-weight:500;vertical-align:middle; }
+.tbl-sudaseg tbody tr:last-child { border-bottom:none; }
+
+/* Cell styles */
+.aseg-chip {
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(79,70,229,.07);color:var(--pri);
+    border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700;
+    max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.date-badge {
+    background:rgba(14,165,233,.07);color:#0369a1;
+    border-radius:8px;padding:3px 9px;font-size:.78rem;font-weight:700;
+    white-space:nowrap;display:inline-block;
+}
+.recibo-badge {
+    background:#f1f5f9;color:#334155;
+    border-radius:8px;padding:3px 9px;font-size:.78rem;font-weight:700;
+    font-family:'Courier New',monospace;
+}
+.poliza-txt { font-weight:700;font-size:.82rem;color:#1e293b; }
+.amount-pos { font-weight:800;color:#059669; }
+.amount-zero { font-weight:600;color:var(--muted); }
+.estado-badge {
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:8px;
+}
+.estado-ok   { background:rgba(16,185,129,.1);color:#059669; }
+.estado-pend { background:rgba(245,158,11,.1);color:#b45309; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align:center;padding:4rem 2rem; }
+.empty-icon  { font-size:4rem;color:#cbd5e1;margin-bottom:1rem; }
+.empty-msg   { color:var(--muted);font-weight:500; }
+
+/* ══════════════════════════════════════════════
+   EXCEL PREVIEW MODAL
+══════════════════════════════════════════════ */
+.modal-excel .modal-content {
+    border:none;border-radius:18px;
+    box-shadow:0 24px 80px rgba(0,0,0,.22);
+    overflow:hidden;
+}
+.modal-excel .modal-header {
+    background:linear-gradient(135deg,#1d6f42,#217346);
+    color:#fff;padding:1rem 1.4rem;border:none;
+}
+.modal-excel .modal-header .btn-close { filter:invert(1) brightness(2); }
+.excel-title { font-size:1rem;font-weight:800;margin:0; }
+.excel-subtitle { font-size:.75rem;opacity:.8;margin:.15rem 0 0; }
+
+/* Ribbon bar simulado */
+.excel-ribbon {
+    background:#f3f3f3;border-bottom:1px solid #d4d4d4;
+    padding:.4rem 1rem;display:flex;align-items:center;gap:1rem;
+}
+.excel-ribbon-tab {
+    font-size:.75rem;font-weight:700;color:#444;padding:3px 10px;border-radius:4px;cursor:pointer;
+}
+.excel-ribbon-tab.active { background:#fff;box-shadow:0 0 0 1px #ccc;color:#1d6f42; }
+
+/* Formula bar */
+.excel-formula-bar {
+    background:#fff;border-bottom:1px solid #ddd;
+    padding:.35rem .8rem;display:flex;align-items:center;gap:.6rem;
+    font-size:.76rem;color:#333;
+}
+.excel-cell-ref {
+    background:#fff;border:1px solid #bbb;border-radius:3px;
+    padding:2px 8px;font-size:.75rem;font-weight:600;min-width:60px;color:#333;
+}
+.excel-fx { color:#666;font-size:.85rem; }
+.excel-formula-val { flex:1;color:#333; }
+
+/* Sheet area */
+.excel-sheet-wrap {
+    overflow:auto;max-height:56vh;
+    cursor:grab;
+}
+.excel-sheet-wrap:active { cursor:grabbing; }
+
+/* Excel table */
+.excel-tbl { border-collapse:collapse;min-width:100%;font-family:'Calibri','Segoe UI',sans-serif;font-size:.78rem; }
+
+/* Row numbers */
+.excel-row-num {
+    background:#f3f3f3;border:1px solid #d0d0d0;
+    color:#888;text-align:center;font-size:.68rem;font-weight:600;
+    padding:2px 6px;min-width:36px;user-select:none;
+    position:sticky;left:0;z-index:2;
+}
+
+/* Col headers */
+.excel-col-hdr {
+    background:#f3f3f3;border:1px solid #d0d0d0;
+    color:#555;text-align:center;font-size:.7rem;font-weight:700;
+    padding:3px 8px;white-space:nowrap;
+    position:sticky;top:0;z-index:3;
+}
+.excel-row-num.corner { z-index:4;position:sticky;top:0;left:0; }
+
+/* Title row (merged style) */
+.excel-title-row td {
+    background:#1d6f42;color:#fff;font-weight:800;font-size:.85rem;
+    padding:.5rem 1rem;border:1px solid #145a32;letter-spacing:.02em;
+}
+/* Period row */
+.excel-period-row td {
+    background:#217346;color:#e8f5e9;font-size:.75rem;font-weight:600;
+    padding:.3rem 1rem;border:1px solid #1a5e36;
+}
+/* Header row */
+.excel-hdr-row td {
+    background:#4f81bd;color:#fff;font-weight:700;font-size:.72rem;
+    padding:.45rem .7rem;border:1px solid #385d8a;white-space:nowrap;
+    text-align:center;
+}
+/* Data rows */
+.excel-data-row td {
+    background:#fff;color:#0f172a;font-size:.73rem;
+    padding:.35rem .7rem;border:1px solid #d9d9d9;
+    white-space:nowrap;
+}
+.excel-data-row:nth-child(even) td { background:#f5fbf7; }
+.excel-data-row td.num { text-align:right;font-weight:600;color:#1a472a; }
+.excel-data-row td.ctr { text-align:center; }
+/* Totals row */
+.excel-total-row td {
+    background:#d6e4f0;color:#1e3a5f;font-weight:800;font-size:.75rem;
+    padding:.45rem .7rem;border:1px solid #aac4db;
+}
+.excel-total-row td.num { text-align:right; }
+.excel-total-row td.lbl { font-weight:800; }
+
+/* Modal footer */
+.modal-excel .modal-footer {
+    background:#f8f8f8;border-top:1px solid #e2e2e2;padding:.75rem 1.2rem;
+}
+
+.summary-chips {
+    display:flex;gap:.6rem;flex-wrap:wrap;padding:.6rem 1rem;
+    background:rgba(29,111,66,.04);border-bottom:1px solid rgba(29,111,66,.1);
+}
+.s-chip {
+    display:inline-flex;align-items:center;gap:5px;
+    background:#fff;border:1px solid #e2e8f0;border-radius:8px;
+    padding:4px 12px;font-size:.75rem;font-weight:700;color:#334155;
+}
+.s-chip i { color:#1d6f42; }
+
+/* Sheet tab bar */
+.excel-tab-bar {
+    background:#f3f3f3;border-top:1px solid #d0d0d0;
+    padding:.3rem .8rem;display:flex;align-items:center;gap:4px;
+}
+.excel-sheet-tab {
+    font-size:.72rem;font-weight:600;padding:3px 14px;
+    border:1px solid #bbb;border-bottom:none;border-radius:4px 4px 0 0;
+    cursor:pointer;
+}
+.excel-sheet-tab.active { background:#fff;color:#1d6f42;font-weight:800;border-color:#999; }
+.excel-sheet-tab:not(.active) { background:#e8e8e8;color:#666; }
+
+/* Scrollbar excel */
+.excel-sheet-wrap::-webkit-scrollbar { height:10px;width:10px; }
+.excel-sheet-wrap::-webkit-scrollbar-track { background:#f1f1f1; }
+.excel-sheet-wrap::-webkit-scrollbar-thumb { background:#bbb;border-radius:6px;border:2px solid #f1f1f1; }
+.excel-sheet-wrap::-webkit-scrollbar-thumb:hover { background:#999; }
+
+/* ── CHART SECTION ── */
+.chart-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.4rem; }
+@media(max-width:900px){ .chart-grid{grid-template-columns:1fr} }
+.chart-card { padding:1.3rem 1.4rem; }
+.chart-card-title { font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:1rem; }
+.chart-full { grid-column:1/-1; }
+
+/* ── COLUMN SEARCH ROW ── */
+.col-search-row input { width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:3px 7px;font-size:.73rem;font-family:'Outfit',sans-serif; }
+.col-search-row input:focus { outline:none;border-color:var(--pri); }
+
+/* ── PDF PREVIEW MODAL ── */
+.modal-pdf .modal-content { border:none;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden; }
+.modal-pdf .modal-header { background:linear-gradient(135deg,#b91c1c,#dc2626);color:#fff;padding:1rem 1.4rem;border:none; }
+.modal-pdf .modal-header .btn-close { filter:invert(1) brightness(2); }
+.pdf-page { background:#fff;width:100%;max-width:760px;margin:1.2rem auto;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:2rem 2.2rem;font-family:'Times New Roman',serif; }
+.pdf-logo-row { display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e293b;padding-bottom:.8rem;margin-bottom:1rem; }
+.pdf-org-name { font-size:1.1rem;font-weight:700;color:#0f172a; }
+.pdf-report-title { font-size:1.4rem;font-weight:700;color:#0f172a;text-align:center;margin:.5rem 0 .3rem; }
+.pdf-period { text-align:center;color:#475569;font-size:.85rem;margin-bottom:1.2rem; }
+.pdf-kpis { display:flex;gap:1rem;justify-content:center;margin-bottom:1.2rem; }
+.pdf-kpi { border:1px solid #cbd5e1;border-radius:6px;padding:.5rem 1.2rem;text-align:center; }
+.pdf-kpi-val { font-size:1.1rem;font-weight:700;color:#0f172a; }
+.pdf-kpi-lbl { font-size:.68rem;color:#64748b;text-transform:uppercase; }
+.pdf-tbl { width:100%;border-collapse:collapse;font-size:.7rem;margin-bottom:1rem; }
+.pdf-tbl th { background:#1e293b;color:#fff;padding:5px 7px;text-align:left; }
+.pdf-tbl td { padding:4px 7px;border-bottom:1px solid #e2e8f0; }
+.pdf-tbl tr:nth-child(even) td { background:#f8fafc; }
+.pdf-tbl tr.total-row td { background:#f1f5f9;font-weight:700;border-top:2px solid #1e293b; }
+.pdf-footer { text-align:center;font-size:.65rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:.6rem;margin-top:.5rem; }
+.pdf-preview-wrap { overflow:auto;max-height:62vh;background:#e5e7eb;padding:.5rem; }
+
+/* DataTable overrides */
+#tblSudaseg_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--pri)!important; color:#fff!important; border:none!important; border-radius:8px!important;
+}
+#tblSudaseg_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(79,70,229,.1)!important; color:var(--pri)!important; border:none!important; border-radius:8px!important;
+}
+#tblSudaseg_wrapper .dataTables_info { font-size:.8rem; color:var(--muted); }
+#tblSudaseg_wrapper { padding:.5rem 1rem 1rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="sudaseg-wrap">
+
+    <!-- ══ PAGE HEADER ══ -->
+    <div class="page-header">
+        <div>
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.3rem;">
+                <i class="bi bi-house me-1"></i> Reportes
+            </div>
+            <h1 class="page-title">Reporte <span class="text-grad">Sudaseg</span></h1>
+            <p class="page-sub">Generación y consulta de reporte mensual de comisiones</p>
+        </div>
+        {% if datos %}
+        <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
+            <button class="btn-preview" data-bs-toggle="modal" data-bs-target="#modalExcelPreview">
+                <i class="bi bi-file-earmark-excel"></i> Previsualizar Excel
+            </button>
+            <button class="btn-preview" style="background:rgba(220,38,38,.08);color:#dc2626;border-color:rgba(220,38,38,.2);" data-bs-toggle="modal" data-bs-target="#modalPdfPreview">
+                <i class="bi bi-file-earmark-pdf"></i> Previsualizar PDF
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══ FILTER BAR ══ -->
+    <form method="GET" action="{{ url_for('reporte_sudaseg') }}" class="filter-bar">
+        <div class="filter-group">
+            <label class="filter-label">Mes</label>
+            <select class="f-select" id="mes" name="mes" required>
+                <option value="">— Mes —</option>
+                {% set meses_nombres = {'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'} %}
+                {% for m_id, m_name in meses_nombres.items() %}
+                <option value="{{ m_id }}" {% if mes==m_id %}selected{% endif %}>{{ m_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Año</label>
+            <select class="f-select" id="ano" name="ano" required>
+                {% for y in range(2023, 2030) %}
+                <option value="{{ y }}" {% if ano==y|string %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-consult"><i class="bi bi-search"></i> Consultar</button>
+    </form>
+
+    {% if mes and ano %}
+    <!-- VIEW TABS -->
+    {% if datos %}
+    <div class="view-tabs">
+        <button class="view-tab active" onclick="switchTab('tabla',this)"><i class="bi bi-table me-1"></i>Tabla de Datos</button>
+        <button class="view-tab" onclick="switchTab('graficos',this)"><i class="bi bi-bar-chart me-1"></i>Gráficos</button>
+    </div>
+    {% endif %}
+
+    <!-- ══ KPI STRIP ══ -->
+    <div id="pane-tabla" class="view-pane active">
+    {% if datos %}
+    {% set total_com = datos | sum(attribute='monto_comision') %}
+    {% set total_prima = datos | sum(attribute='monto_prima') %}
+    {% set count_pagadas = datos | selectattr('fecha_pago') | list | length %}
+    <div class="kpi-strip">
+        <div class="g-card kpi-item">
+            <div class="kpi-accent" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+            <i class="bi bi-receipt kpi-ico" style="color:#4f46e5;"></i>
+            <div class="kpi-lbl">Total Registros</div>
+            <div class="kpi-val">{{ datos | length }}</div>
+            <div class="kpi-sub">Movimientos del período</div>
+        </div>
+        <div class="g-card kpi-item">
+            <div class="kpi-accent" style="background:linear-gradient(90deg,#10b981,#34d399);"></div>
+            <i class="bi bi-currency-dollar kpi-ico" style="color:#10b981;"></i>
+            <div class="kpi-lbl">Total Comisiones</div>
+            <div class="kpi-val" style="font-size:1.45rem;">${{ "{:,.2f}".format(total_com) }}</div>
+            <div class="kpi-sub">USD acumulado</div>
+        </div>
+        <div class="g-card kpi-item">
+            <div class="kpi-accent" style="background:linear-gradient(90deg,#0ea5e9,#38bdf8);"></div>
+            <i class="bi bi-shield kpi-ico" style="color:#0ea5e9;"></i>
+            <div class="kpi-lbl">Prima Total</div>
+            <div class="kpi-val" style="font-size:1.45rem;">${{ "{:,.2f}".format(total_prima) }}</div>
+            <div class="kpi-sub">Prima acumulada</div>
+        </div>
+        <div class="g-card kpi-item">
+            <div class="kpi-accent" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+            <i class="bi bi-check-circle kpi-ico" style="color:#f59e0b;"></i>
+            <div class="kpi-lbl">Comisiones Pagadas</div>
+            <div class="kpi-val">{{ count_pagadas }}</div>
+            <div class="kpi-sub">{{ datos | length - count_pagadas }} pendientes</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ══ MAIN TABLE ══ -->
+    <div class="table-wrap">
+        <div class="tbl-header">
+            <div>
+                <div class="tbl-title"><i class="bi bi-table me-2" style="color:var(--pri);"></i>Movimientos del Período</div>
+                <div style="font-size:.75rem;color:var(--muted);font-weight:500;margin-top:.2rem;">
+                    {% if mes and ano %}
+                    {% set meses_nombres2 = {'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'} %}
+                    {{ meses_nombres2.get(mes, mes) }} {{ ano }}
+                    {% endif %}
+                </div>
+            </div>
+            {% if datos %}
+            <span class="tbl-badge">{{ datos | length }} registros</span>
+            {% endif %}
+        </div>
+        <div style="padding:0 0 1rem;">
+            {% if datos %}
+            <div style="overflow-x:auto;">
+                <table class="tbl-sudaseg" id="tblSudaseg" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding-left:1.2rem;">#</th>
+                            <th>Aseguradora</th>
+                            <th>Fecha Cobro</th>
+                            <th>Nro. Recibo</th>
+                            <th>Nro. Póliza</th>
+                            <th>Prima (USD)</th>
+                            <th>Comisión (USD)</th>
+                            <th>% Com.</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr>
+                            <td style="padding-left:1.2rem;color:var(--muted);font-size:.78rem;">{{ loop.index }}</td>
+                            <td><span class="aseg-chip" title="{{ d.nombre_aseguradora }}"><i class="bi bi-building" style="font-size:.75rem;"></i> {{ d.nombre_aseguradora }}</span></td>
+                            <td><span class="date-badge"><i class="bi bi-calendar3" style="font-size:.7rem;"></i> {{ d.fecha_cobro_recibo | format_date }}</span></td>
+                            <td><span class="recibo-badge">{{ d.numero_recibo }}</span></td>
+                            <td><span class="poliza-txt">{{ d.numero_poliza }}</span></td>
+                            <td class="text-end">
+                                {% if d.monto_prima and d.monto_prima != '' %}
+                                <span style="font-weight:700;color:#334155;">${{ "{:,.2f}".format(d.monto_prima) }}</span>
+                                {% else %}
+                                <span class="amount-zero">$0.00</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if d.monto_comision and d.monto_comision != '' and d.monto_comision > 0 %}
+                                <span class="amount-pos">${{ "{:,.2f}".format(d.monto_comision) }}</span>
+                                {% else %}
+                                <span class="amount-zero">$0.00</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if d.porcentaje_commission %}
+                                <span style="background:rgba(79,70,229,.08);color:var(--pri);border-radius:6px;padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if d.fecha_pago %}
+                                <span class="estado-badge estado-ok"><i class="bi bi-check-circle-fill" style="font-size:.7rem;"></i> Pagado</span>
+                                {% else %}
+                                <span class="estado-badge estado-pend"><i class="bi bi-clock" style="font-size:.7rem;"></i> Pendiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:rgba(79,70,229,.04);border-top:2px solid rgba(79,70,229,.15);">
+                            <td colspan="5" style="padding:.8rem 1.2rem;font-size:.8rem;font-weight:800;color:var(--pri);">TOTAL</td>
+                            <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#334155;">${{ "{:,.2f}".format(total_prima) }}</td>
+                            <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#059669;">${{ "{:,.2f}".format(total_com) }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-folder2-open"></i></div>
+                <p class="empty-msg">No se encontraron movimientos para este período.</p>
+                <p style="font-size:.82rem;color:var(--muted);">Verifica el mes y año seleccionados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    </div><!-- /pane-tabla -->
+
+    <!-- ══ GRAFICOS PANE ══ -->
+    <div id="pane-graficos" class="view-pane">
+    {% if datos %}
+    {% set aseg_names = datos | map(attribute='nombre_aseguradora') | list %}
+    {% set aseg_coms  = datos | map(attribute='monto_comision') | list %}
+    <div class="chart-grid">
+        <div class="g-card chart-card">
+            <div class="chart-card-title"><i class="bi bi-pie-chart me-1"></i>Comisiones por Aseguradora</div>
+            <canvas id="chartDonut" height="220"></canvas>
+        </div>
+        <div class="g-card chart-card">
+            <div class="chart-card-title"><i class="bi bi-bar-chart me-1"></i>Top Primas por Aseguradora</div>
+            <canvas id="chartBar" height="220"></canvas>
+        </div>
+        <div class="g-card chart-card chart-full">
+            <div class="chart-card-title"><i class="bi bi-graph-up me-1"></i>Distribución de Comisiones vs Prima por Registro</div>
+            <canvas id="chartLine" height="100"></canvas>
+        </div>
+    </div>
+    {% else %}
+    <div class="g-card empty-state"><div class="empty-icon"><i class="bi bi-bar-chart"></i></div><p class="empty-msg">Sin datos para graficar.</p></div>
+    {% endif %}
+    </div><!-- /pane-graficos -->
+
+    {% else %}
+    <!-- No period selected -->
+    <div class="g-card empty-state" style="margin-top:1rem;">
+        <div class="empty-icon"><i class="bi bi-calendar2-range"></i></div>
+        <p class="empty-msg">Selecciona un mes y año para consultar el reporte.</p>
+    </div>
+    {% endif %}
+
+</div><!-- /sudaseg-wrap -->
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL PREVISUALIZACIÓN EXCEL
+══════════════════════════════════════════════ -->
+{% if datos %}
+{% set total_com2 = datos | sum(attribute='monto_comision') %}
+{% set total_prima2 = datos | sum(attribute='monto_prima') %}
+
+<div class="modal fade modal-excel" id="modalExcelPreview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width:96%;">
+        <div class="modal-content">
+
+            <!-- Header verde Excel -->
+            <div class="modal-header">
+                <div>
+                    <div class="excel-title">
+                        <i class="bi bi-file-earmark-excel me-2"></i>
+                        Sudaseg_{{ mes }}_{{ ano }}.xlsx
+                    </div>
+                    <div class="excel-subtitle">Vista previa fiel a la estructura de exportación</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Ribbon bar -->
+            <div class="excel-ribbon">
+                <span class="excel-ribbon-tab active">Inicio</span>
+                <span class="excel-ribbon-tab">Insertar</span>
+                <span class="excel-ribbon-tab">Datos</span>
+                <span class="excel-ribbon-tab">Vista</span>
+                <div style="flex:1;"></div>
+                <span style="font-size:.72rem;color:#888;">Solo lectura · {{ datos | length }} filas</span>
+            </div>
+
+            <!-- Formula bar -->
+            <div class="excel-formula-bar">
+                <div class="excel-cell-ref">A1</div>
+                <span class="excel-fx"><i class="bi bi-function"></i></span>
+                <span class="excel-formula-val">Reporte de Comisiones Sudaseg — Período: {{ mes }}/{{ ano }}</span>
+            </div>
+
+            <!-- Summary chips -->
+            <div class="summary-chips">
+                <span class="s-chip"><i class="bi bi-hash"></i> {{ datos | length }} registros</span>
+                <span class="s-chip"><i class="bi bi-currency-dollar"></i> Comisión Total: ${{ "{:,.2f}".format(total_com2) }}</span>
+                <span class="s-chip"><i class="bi bi-shield"></i> Prima Total: ${{ "{:,.2f}".format(total_prima2) }}</span>
+                <span class="s-chip"><i class="bi bi-calendar3"></i> Período: {{ mes }}/{{ ano }}</span>
+            </div>
+
+            <!-- Sheet area -->
+            <div class="modal-body p-0">
+                <div class="excel-sheet-wrap" id="excelSheetWrap">
+                    <table class="excel-tbl">
+                        <thead>
+                            <tr>
+                                <!-- corner -->
+                                <td class="excel-row-num corner"></td>
+                                <!-- col letters -->
+                                {% for letter in ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'] %}
+                                <td class="excel-col-hdr">{{ letter }}</td>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ROW 1: Title -->
+                            <tr class="excel-title-row">
+                                <td class="excel-row-num">1</td>
+                                <td colspan="16" style="background:#1d6f42;color:#fff;font-weight:800;font-size:.88rem;padding:.55rem 1rem;border:1px solid #145a32;letter-spacing:.02em;">
+                                    📊 REPORTE DE COMISIONES — SUDASEG &nbsp;·&nbsp; PERÍODO: {{ mes }}/{{ ano }}
+                                </td>
+                            </tr>
+                            <!-- ROW 2: Generated -->
+                            <tr class="excel-period-row">
+                                <td class="excel-row-num">2</td>
+                                <td colspan="16" style="background:#2e7d32;color:#c8e6c9;font-size:.72rem;font-weight:500;padding:.3rem 1rem;border:1px solid #1b5e20;">
+                                    Generado: {{ ano }}-{{ mes }}-01 &nbsp;|&nbsp; Corretora Cabal
+                                </td>
+                            </tr>
+                            <!-- ROW 3: Empty -->
+                            <tr>
+                                <td class="excel-row-num">3</td>
+                                <td colspan="16" style="background:#fff;border:1px solid #e8e8e8;height:10px;"></td>
+                            </tr>
+                            <!-- ROW 4: Headers -->
+                            <tr class="excel-hdr-row">
+                                <td class="excel-row-num">4</td>
+                                <td>Descripción</td>
+                                <td>Anexo</td>
+                                <td>Aseguradora</td>
+                                <td>RIF Asegurado</td>
+                                <td>F. Emisión</td>
+                                <td>F. Cobro</td>
+                                <td>Nro. Recibo</td>
+                                <td>Póliza / Contrato</td>
+                                <td>Monto Prima</td>
+                                <td>Monto Comisión</td>
+                                <td>% Comisión</td>
+                                <td>Ramo</td>
+                                <td>F. Depósito</td>
+                                <td>Nro. Referencia</td>
+                                <td>Cód. Banco</td>
+                                <td>F. Pago</td>
+                            </tr>
+                            <!-- DATA ROWS -->
+                            {% for d in datos %}
+                            <tr class="excel-data-row">
+                                <td class="excel-row-num">{{ loop.index + 4 }}</td>
+                                <td>{{ d.descripcion or '' }}</td>
+                                <td class="ctr">{{ d.identificador_anexo or '' }}</td>
+                                <td>{{ d.nombre_aseguradora }}</td>
+                                <td>{{ d.rif_asegurado or '' }}</td>
+                                <td class="ctr">{{ d.fecha_emision_recibo | format_date }}</td>
+                                <td class="ctr" style="color:#1565c0;font-weight:600;">{{ d.fecha_cobro_recibo | format_date }}</td>
+                                <td>{{ d.numero_recibo }}</td>
+                                <td style="font-weight:600;">{{ d.numero_poliza }}</td>
+                                <td class="num">{{ "{:,.2f}".format(d.monto_prima) if d.monto_prima != '' else '0.00' }}</td>
+                                <td class="num" style="color:#1a472a;font-weight:700;">{{ "{:,.2f}".format(d.monto_comision) if d.monto_comision != '' else '0.00' }}</td>
+                                <td class="ctr">{{ d.porcentaje_commission }}{% if d.porcentaje_commission != '' %}%{% endif %}</td>
+                                <td>{{ d.ramos or '' }}</td>
+                                <td class="ctr">{{ d.fecha_deposito_transferencia | format_date }}</td>
+                                <td>{{ d.numero_cheque_transferencia or '' }}</td>
+                                <td class="ctr">{{ d.codigo_entidad_bancaria or '' }}</td>
+                                <td class="ctr" style="color:{% if d.fecha_pago %}#1a472a{% else %}#b45309{% endif %};font-weight:600;">
+                                    {{ d.fecha_pago | format_date if d.fecha_pago else 'PENDIENTE' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <!-- TOTALS ROW -->
+                            <tr class="excel-total-row">
+                                <td class="excel-row-num">{{ datos | length + 5 }}</td>
+                                <td class="lbl" colspan="8">TOTALES</td>
+                                <td class="num">${{ "{:,.2f}".format(total_prima2) }}</td>
+                                <td class="num">${{ "{:,.2f}".format(total_com2) }}</td>
+                                <td colspan="6"></td>
+                            </tr>
+                            <!-- Footer empty rows -->
+                            {% for i in range(3) %}
+                            <tr>
+                                <td class="excel-row-num">{{ datos | length + 6 + i }}</td>
+                                <td colspan="16" style="background:#fff;border:1px solid #f0f0f0;height:18px;"></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Sheet tab bar -->
+                <div class="excel-tab-bar">
+                    <span class="excel-sheet-tab active">Sudaseg_{{ mes }}_{{ ano }}</span>
+                    <span class="excel-sheet-tab">Resumen</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <div style="flex:1;font-size:.78rem;color:#888;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Esta vista refleja la estructura exacta del archivo Excel a descargar.
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i> Cerrar
+                </button>
+                <a href="{{ url_for('descargar_excel_sudaseg', mes=mes, ano=ano) }}"
+                   class="btn btn-success btn-sm px-4">
+                    <i class="bi bi-download me-1"></i> Descargar Excel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL PREVISUALIZACIÓN PDF
+══════════════════════════════════════════════ -->
+{% if datos %}
+{% set total_com3 = datos | sum(attribute='monto_comision') %}
+{% set total_prima3 = datos | sum(attribute='monto_prima') %}
+{% set count_pag3 = datos | selectattr('fecha_pago') | list | length %}
+<div class="modal fade modal-pdf" id="modalPdfPreview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width:860px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div style="font-size:1rem;font-weight:800;"><i class="bi bi-file-earmark-pdf me-2"></i>Sudaseg_{{ mes }}_{{ ano }}.pdf</div>
+                    <div style="font-size:.75rem;opacity:.8;">Vista previa del reporte en formato PDF</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- Summary chips -->
+            <div class="summary-chips">
+                <span class="s-chip"><i class="bi bi-hash" style="color:#dc2626;"></i> {{ datos | length }} registros</span>
+                <span class="s-chip"><i class="bi bi-currency-dollar" style="color:#dc2626;"></i> Comisión: ${{ "{:,.2f}".format(total_com3) }}</span>
+                <span class="s-chip"><i class="bi bi-shield" style="color:#dc2626;"></i> Prima: ${{ "{:,.2f}".format(total_prima3) }}</span>
+                <span class="s-chip"><i class="bi bi-check-circle" style="color:#059669;"></i> {{ count_pag3 }} pagadas</span>
+            </div>
+            <div class="modal-body p-0">
+                <div class="pdf-preview-wrap">
+                    <div class="pdf-page">
+                        <!-- Header -->
+                        <div class="pdf-logo-row">
+                            <div>
+                                <div class="pdf-org-name">CORRETORA CABAL</div>
+                                <div style="font-size:.72rem;color:#64748b;">Reporte Oficial de Comisiones</div>
+                            </div>
+                            <div style="text-align:right;font-size:.7rem;color:#64748b;">
+                                <div>RIF: J-XXXXXXXXXX-X</div>
+                                <div>Generado: {{ ano }}-{{ '%02d'|format(mes|int) }}-01</div>
+                            </div>
+                        </div>
+                        <div class="pdf-report-title">REPORTE SUDASEG — COMISIONES</div>
+                        <div class="pdf-period">Período: {% set meses_pdf = {'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'} %}{{ meses_pdf.get(mes, mes) }} {{ ano }}</div>
+                        <!-- KPIs -->
+                        <div class="pdf-kpis">
+                            <div class="pdf-kpi"><div class="pdf-kpi-val">{{ datos | length }}</div><div class="pdf-kpi-lbl">Registros</div></div>
+                            <div class="pdf-kpi"><div class="pdf-kpi-val">${{ "{:,.2f}".format(total_com3) }}</div><div class="pdf-kpi-lbl">Total Comisiones</div></div>
+                            <div class="pdf-kpi"><div class="pdf-kpi-val">${{ "{:,.2f}".format(total_prima3) }}</div><div class="pdf-kpi-lbl">Total Prima</div></div>
+                            <div class="pdf-kpi"><div class="pdf-kpi-val">{{ count_pag3 }}/{{ datos | length }}</div><div class="pdf-kpi-lbl">Pagadas</div></div>
+                        </div>
+                        <!-- Table -->
+                        <table class="pdf-tbl">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Aseguradora</th><th>F. Cobro</th><th>Nro. Recibo</th>
+                                    <th>Póliza</th><th>Prima (USD)</th><th>Comisión (USD)</th><th>% Com.</th><th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in datos[:50] %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ d.nombre_aseguradora }}</td>
+                                    <td>{{ d.fecha_cobro_recibo | format_date }}</td>
+                                    <td>{{ d.numero_recibo }}</td>
+                                    <td style="font-weight:600;">{{ d.numero_poliza }}</td>
+                                    <td style="text-align:right;">${{ "{:,.2f}".format(d.monto_prima) if d.monto_prima else '0.00' }}</td>
+                                    <td style="text-align:right;font-weight:700;color:#166534;">${{ "{:,.2f}".format(d.monto_comision) if d.monto_comision else '0.00' }}</td>
+                                    <td style="text-align:center;">{{ d.porcentaje_commission }}{% if d.porcentaje_commission %}%{% endif %}</td>
+                                    <td style="text-align:center;color:{% if d.fecha_pago %}#166534{% else %}#92400e{% endif %};font-weight:600;">{% if d.fecha_pago %}Pagado{% else %}Pendiente{% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                                {% if datos | length > 50 %}
+                                <tr><td colspan="9" style="text-align:center;color:#64748b;font-style:italic;">... y {{ datos | length - 50 }} registros más (ver Excel para lista completa)</td></tr>
+                                {% endif %}
+                                <tr class="total-row">
+                                    <td colspan="5">TOTALES</td>
+                                    <td style="text-align:right;">${{ "{:,.2f}".format(total_prima3) }}</td>
+                                    <td style="text-align:right;">${{ "{:,.2f}".format(total_com3) }}</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pdf-footer">Documento generado automáticamente por el sistema de Corretora Cabal · Período {{ mes }}/{{ ano }} · Confidencial</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background:#f8f8f8;border-top:1px solid #e2e2e2;">
+                <div style="flex:1;font-size:.78rem;color:#888;"><i class="bi bi-info-circle me-1"></i>Vista previa limitada a 50 registros. El PDF descargado incluye todos los datos.</div>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x me-1"></i>Cerrar</button>
+                <a href="{{ url_for('descargar_excel_sudaseg', mes=mes, ano=ano) }}" class="btn btn-success btn-sm px-4"><i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script>
+/* ── Tab switcher ── */
+function switchTab(id, btn) {
+    document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + id).classList.add('active');
+    btn.classList.add('active');
+    if (id === 'graficos') initCharts();
+}
+
+$(document).ready(function() {
+    /* ── DataTable con búsqueda por columna ── */
+    if ($('#tblSudaseg').length) {
+        const tbl = $('#tblSudaseg').DataTable({
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+            pageLength: 20,
+            lengthMenu: [10,20,50,100],
+            ordering: true,
+            order: [[2,'desc']],
+            columnDefs: [{ orderable: false, targets: [0,8] }],
+            dom: '<"d-flex justify-content-between align-items-center px-3 pt-3 pb-1"<"d-flex align-items-center gap-2"l><"d-flex align-items-center gap-2"f>>rt<"d-flex justify-content-between align-items-center px-3 pt-2 pb-3"<"small"i><p>>',
+            initComplete: function() {
+                const inp = $(this.api().table().container()).find('input[type=search]');
+                inp.attr('placeholder','Buscar aseguradora, póliza, recibo…')
+                   .css({'border-radius':'10px','border':'1.5px solid #e2e8f0','padding':'.45rem .9rem','font-size':'.86rem'});
+                /* Column search row */
+                this.api().columns().every(function(i) {
+                    if ([0,7,8].includes(i)) return;
+                    const col = this;
+                    const th = $(col.header());
+                    const inp2 = $('<input type="text" placeholder="Filtrar...">').appendTo(
+                        $('<th></th>').appendTo($('#tblSudaseg thead .col-search-row'))
+                    );
+                    inp2.on('input', function() { col.search(this.value).draw(); });
+                });
+            }
+        });
+        /* Insert col search row */
+        $('#tblSudaseg thead').append('<tr class="col-search-row"><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>');
+    }
+
+    /* ── Draggable Excel sheet ── */
+    const sheet = document.getElementById('excelSheetWrap');
+    if (sheet) {
+        let isDown=false, startX, startY, scrollLeft, scrollTop;
+        sheet.addEventListener('mousedown', e => { isDown=true; sheet.style.cursor='grabbing'; startX=e.pageX-sheet.offsetLeft; startY=e.pageY-sheet.offsetTop; scrollLeft=sheet.scrollLeft; scrollTop=sheet.scrollTop; });
+        sheet.addEventListener('mouseleave', () => { isDown=false; sheet.style.cursor='grab'; });
+        sheet.addEventListener('mouseup',    () => { isDown=false; sheet.style.cursor='grab'; });
+        sheet.addEventListener('mousemove', e => { if(!isDown) return; e.preventDefault(); sheet.scrollLeft=scrollLeft-(e.pageX-sheet.offsetLeft-startX)*1.5; sheet.scrollTop=scrollTop-(e.pageY-sheet.offsetTop-startY)*1.5; });
+    }
+
+    /* ── Active cell en excel preview ── */
+    document.querySelectorAll('.excel-data-row td:not(.excel-row-num)').forEach(td => {
+        td.addEventListener('click', function() {
+            document.querySelectorAll('.excel-tbl td.cell-selected').forEach(c => c.classList.remove('cell-selected'));
+            this.classList.add('cell-selected');
+            const fb = document.querySelector('.excel-formula-val');
+            if (fb) fb.textContent = this.textContent.trim() || '(vacío)';
+        });
+    });
+});
+
+/* ── Charts (lazy init) ── */
+let chartsInited = false;
+function initCharts() {
+    if (chartsInited) return;
+    chartsInited = true;
+
+    const rawData = JSON.parse('{{ datos | tojson | safe }}');
+    if (!rawData || !rawData.length) return;
+
+    /* Agrupar por aseguradora */
+    const byAseg = {};
+    rawData.forEach(d => {
+        const k = d.nombre_aseguradora || 'Sin nombre';
+        if (!byAseg[k]) byAseg[k] = { com: 0, prima: 0, n: 0 };
+        byAseg[k].com   += parseFloat(d.monto_comision) || 0;
+        byAseg[k].prima += parseFloat(d.monto_prima)   || 0;
+        byAseg[k].n++;
+    });
+    const labels = Object.keys(byAseg);
+    const colors = ['#4f46e5','#7c3aed','#0ea5e9','#10b981','#f59e0b','#ef4444','#06b6d4','#84cc16','#ec4899','#f97316'];
+
+    /* Donut: comisiones por aseguradora */
+    const ctxD = document.getElementById('chartDonut');
+    if (ctxD) new Chart(ctxD, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: labels.map(k => byAseg[k].com.toFixed(2)), backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+        options: { responsive:true, plugins: { legend: { position:'bottom', labels:{font:{family:'Outfit'},boxWidth:12} }, tooltip: { callbacks: { label: ctx => ` $${parseFloat(ctx.raw).toLocaleString('en-US',{minimumFractionDigits:2})}` } } } }
+    });
+
+    /* Bar: primas por aseguradora (top 8) */
+    const sorted = labels.slice().sort((a,b) => byAseg[b].prima - byAseg[a].prima).slice(0,8);
+    const ctxB = document.getElementById('chartBar');
+    if (ctxB) new Chart(ctxB, {
+        type: 'bar',
+        data: { labels: sorted, datasets: [{ label:'Prima (USD)', data: sorted.map(k => byAseg[k].prima.toFixed(2)), backgroundColor: colors, borderRadius: 8 }] },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales: { y:{ ticks:{ callback: v => '$'+Number(v).toLocaleString() } }, x:{ ticks:{font:{size:10,family:'Outfit'}} } } }
+    });
+
+    /* Line: comisión vs prima por registro (primeros 40) */
+    const slice = rawData.slice(0,40);
+    const ctxL = document.getElementById('chartLine');
+    if (ctxL) new Chart(ctxL, {
+        type: 'line',
+        data: {
+            labels: slice.map((d,i) => d.numero_poliza || `#${i+1}`),
+            datasets: [
+                { label:'Comisión', data: slice.map(d => parseFloat(d.monto_comision)||0), borderColor:'#4f46e5', backgroundColor:'rgba(79,70,229,.1)', fill:true, tension:.35, pointRadius:3 },
+                { label:'Prima',    data: slice.map(d => parseFloat(d.monto_prima)||0),    borderColor:'#10b981', backgroundColor:'rgba(16,185,129,.07)', fill:true, tension:.35, pointRadius:3 }
+            ]
+        },
+        options: { responsive:true, interaction:{mode:'index',intersect:false}, plugins:{legend:{labels:{font:{family:'Outfit'},boxWidth:12}}}, scales:{ y:{ticks:{callback: v => '$'+Number(v).toLocaleString()}}, x:{ticks:{maxRotation:45,font:{size:9}}} } }
+    });
+}
+</script>
+<style>
+.excel-tbl td.cell-selected { outline:2px solid #4f81bd !important; outline-offset:-2px; background:rgba(79,129,189,.08) !important; }
+</style>
+{% endblock %}

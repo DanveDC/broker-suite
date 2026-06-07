@@ -1,0 +1,1051 @@
+:root {
+  /* Premium Palette */
+  --primary-gradient: linear-gradient(135deg, #a855f7 0%, #800080 100%);
+  --secondary-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  --bg-main: #f8fafc;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+}
+
+.app-brand-mini img {
+  width: 32px;
+  height: auto;
+}
+
+.app-brand-full img {
+  width: 140px;
+  height: auto;
+}
+
+body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-main);
+  font-family: 'Open Sans', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Premium Cards */
+.card {
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--card-shadow) !important;
+  background: white !important;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* DataTables & Tables Re-styling */
+.table {
+  border-collapse: separate !important;
+  border-spacing: 0 8px !important;
+}
+
+.table thead th {
+  background: #f1f5f9 !important;
+  color: var(--text-muted) !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  padding: 1rem !important;
+  border: none !important;
+}
+
+.table tbody tr {
+  background: white !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.table tbody tr td {
+  padding: 1rem !important;
+  vertical-align: middle !important;
+  border-top: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.table tbody tr td:first-child {
+  border-left: 1px solid #f1f5f9 !important;
+  border-top-left-radius: var(--radius-md) !important;
+  border-bottom-left-radius: var(--radius-md) !important;
+}
+
+.table tbody tr td:last-child {
+  border-right: 1px solid #f1f5f9 !important;
+  border-top-right-radius: var(--radius-md) !important;
+  border-bottom-right-radius: var(--radius-md) !important;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc !important;
+  transform: scale(1.002);
+}
+
+/* DataTables Overrides */
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 30px !important;
+  padding: 8px 20px !important;
+  background: #fff !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  border-radius: 50% !important;
+  border: none !important;
+  margin: 0 4px !important;
+  background: #fff !important;
+  color: var(--text-main) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+}
+
+/* Premium Buttons */
+.btn-primary {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  border-radius: 30px !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4) !important;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+/* Existing Custom Specific Rules */
+.comisiones-zoom-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.comisiones-zoom-table {
+  transform: scale(0.84);
+  transform-origin: top left;
+  min-width: 1800px;
+  display: inline-block;
+}
+
+/* Zoom solo para la tabla de comisiones */
+
+/* Mostrar el logo mini solo cuando la sidebar está colapsada */
+.app-brand-mini {
+  display: none !important;
+}
+
+.app-brand-full {
+  display: inline !important;
+}
+
+.layout-menu.menu-vertical:not(:hover) .app-brand-mini {
+  display: inline !important;
+}
+
+.layout-menu.menu-vertical:not(:hover) .app-brand-full {
+  display: none !important;
+}
+
+.layout-menu.menu-vertical:hover .app-brand-mini {
+  display: none !important;
+}
+
+.layout-menu.menu-vertical:hover .app-brand-full {
+  display: inline !important;
+}
+
+/* Force all main layout containers to have no left margin or padding */
+.container,
+.container-xxl,
+.content-wrapper,
+.layout-page,
+body,
+html,
+main {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Remove any left offset from rows and columns */
+.row,
+.col {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+body {
+  font-family: "Open Sans", sans-serif;
+}
+
+.gj-datepicker-bootstrap [role="right-icon"] button {
+  border: none !important;
+}
+
+.bi-check-all {
+  font-size: 20px;
+}
+
+/*Inicio del loader */
+#loader-out {
+  background-color: #cecece;
+  opacity: 0.5;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100000000;
+}
+
+#loader-container {
+  width: 150px;
+  height: 150px;
+  color: white;
+  margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  border: 5px solid #cecece;
+  border-radius: 50%;
+  -webkit-animation: borderScale 1s infinite ease-in-out;
+  animation: borderScale 1s infinite ease-in-out;
+}
+
+#loading-text {
+  color: #222;
+  font-size: 1.5em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+
+@-webkit-keyframes borderScale {
+  0% {
+    border: 5px solid white;
+  }
+
+  50% {
+    border: 25px solid #800080;
+  }
+
+  100% {
+    border: 5px solid white;
+  }
+}
+
+@keyframes borderScale {
+  0% {
+    border: 5px solid white;
+  }
+
+  50% {
+    border: 25px solid #800080;
+  }
+
+  100% {
+    border: 5px solid white;
+  }
+}
+
+/*Fin del loader*/
+
+.bi-arrow-left-circle:hover {
+  color: #222;
+}
+
+.font_sise_17 {
+  font-size: 17px;
+}
+
+.menu-vertical .app-brand {
+  padding-left: 15px !important;
+}
+
+.btnMovil {
+  display: flex;
+  justify-content: flex-end;
+  text-align: end;
+  background-color: #fff;
+}
+
+.bx-menu {
+  background: var(--primary-gradient) !important;
+  color: #fff;
+  padding: 10px 10px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+
+
+.noLeido {
+  color: #272e37;
+  font-weight: 600;
+}
+
+tbody tr {
+  border-bottom: 1px solid #eee !important;
+}
+
+tbody tr:hover {
+  cursor: pointer;
+}
+
+.checkedTodos:hover {
+  cursor: pointer;
+}
+
+.form-check-input[disabled]~.form-check-label,
+.form-check-input:disabled~.form-check-label {
+  opacity: initial !important;
+}
+
+.borderCheckbox {
+  cursor: pointer;
+  border-color: #800080;
+  box-shadow: 0 2px 4px 0 rgba(128, 0, 128, 0.4);
+}
+
+.pagination .page-link {
+  border: none !important;
+  border-radius: 8px !important;
+  margin: 0 3px !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2) !important;
+}
+
+/*Loader para precarga en botn cargar mas consignaciones*/
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100000000;
+  background-color: #cecece;
+  opacity: 0.5;
+}
+
+.pesos {
+  background-color: #800080;
+  color: #fff;
+  padding: 2px;
+  border-radius: 10%;
+  margin-right: 10px;
+}
+
+.colorTheadTrTh {
+  color: #fff !important;
+}
+
+.input_vacio {
+  border-color: var(--accent-danger) !important;
+  box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.1) !important;
+}
+
+.input_lleno {
+  border-color: var(--accent-success) !important;
+}
+
+/* Premium Form Inputs */
+.form-control,
+.form-select {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.6rem 1rem !important;
+  font-size: 0.95rem !important;
+  transition: all 0.2s ease !important;
+  background-color: #f8fafc !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #6366f1 !important;
+  background-color: #fff !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+}
+
+label {
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 0.85rem !important;
+}
+
+.menu-vertical .menu-inner>.menu-item .menu-link {
+  margin: 0 !important;
+  padding-left: 1.5rem !important;
+}
+
+
+@media (min-width: 1400px) {
+
+  .container-xxl,
+  .container-xl,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+.menu-vertical .menu-item.active:not(.open)>.menu-link {
+  font-size: 14px !important;
+}
+
+.alert-success {
+  background: var(--accent-success) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+}
+
+.mayuscula {
+  text-transform: uppercase !important;
+}
+
+.btn-primary {
+  background-color: #800080 !important;
+  border: none !important;
+}
+
+.btn-close {
+  width: auto !important;
+  height: auto !important;
+}
+
+.bi-x {
+  color: #222 !important;
+}
+
+.form-check-input {
+  width: 1.8em !important;
+  height: 1.9em !important;
+}
+
+.difference {
+  padding: 5px 10px;
+  font-size: 15px;
+  color: #222;
+}
+
+.bi-star-fill {
+  padding: 0px 10px 0px 0px;
+}
+
+#informe_general:hover {
+  cursor: pointer;
+  border-bottom: dotted 1px #800080;
+}
+
+#search {
+  min-width: 44% !important;
+  background-color: #f3efef !important;
+}
+
+
+
+
+/* Notes Container (Siniestros) */
+.notes-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 30px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  background-color: #f8fafc;
+}
+
+.notes-container .sidebar {
+  width: 250px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  overflow-y: auto;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.notes-container .add-note-button {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.notes-container .add-note-button:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.notes-container .note-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notes-container .note-item {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.notes-container .note-item:last-child {
+  border-bottom: none;
+}
+
+.notes-container .note-item.active {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: #4f46e5;
+  border-left: 4px solid #4f46e5;
+}
+
+.notes-container .note-content {
+  flex-grow: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 500px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.notes-container .note-content h2 {
+  margin-top: 0;
+  font-weight: 700;
+  color: var(--text-main);
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+/* Modals */
+.modal-content {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #f1f5f9;
+  padding: 1.5rem;
+}
+
+/* Select2 Custom Styling (if used) */
+.select2-container--bootstrap-5 .select2-selection {
+  border-color: #e2e8f0 !important;
+  border-radius: var(--radius-md) !important;
+  height: calc(3.5rem + 2px) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+
+/* --- NUEVAS REGLAS PARA SIDEBAR HOVER --- */
+
+/* Sidebar Premium Styling */
+.layout-menu.menu-vertical {
+  background: #fff !important;
+  border-right: 1px solid #f1f5f9 !important;
+  box-shadow: 10px 0 30px -15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.menu-vertical .menu-item.active>.menu-link {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+  border-radius: 12px !important;
+  margin: 0 10px !important;
+}
+
+.menu-vertical .menu-item.active>.menu-link i {
+  color: white !important;
+}
+
+.menu-vertical .menu-link:hover {
+  background: #f8fafc !important;
+  border-radius: 12px !important;
+}
+
+.layout-menu.menu-vertical .app-brand {
+  padding: 1rem !important;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botón de toggle para móviles: Asegurarse de que esté oculto en escritorio pero visible en móvil */
+.layout-menu.menu-vertical .layout-menu-toggle {
+  display: none !important;
+  /* Lo ocultamos completamente en escritorio */
+}
+
+/* Al pasar el mouse por encima: expandir la sidebar y ocupar espacio en el flujo */
+.layout-menu.menu-vertical:hover {
+  width: 17.25rem !important;
+  position: fixed !important;
+  z-index: 2000 !important;
+}
+
+/* Mostrar texto al hacer hover */
+.layout-menu.menu-vertical:hover .menu-inner>.menu-item .menu-link div[data-i18n] {
+  opacity: 1;
+  width: auto;
+  display: block !important;
+}
+
+/* Ocultar texto cuando no está en hover */
+.layout-menu.menu-vertical:not(:hover) .menu-inner>.menu-item .menu-link div[data-i18n] {
+  display: none !important;
+}
+
+/* Mostrar logo y texto "Cabal" al hacer hover */
+.layout-menu.menu-vertical:hover .app-brand-link .app-brand-logo,
+.layout-menu.menu-vertical:hover .app-brand-link .app-brand-text {
+  opacity: 1;
+  width: auto;
+  /* Ocupa su ancho natural */
+}
+
+/* Restaurar el padding del app-brand al hacer hover */
+.layout-menu.menu-vertical:hover .app-brand {
+  padding: 1.5rem !important;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1rem;
+  justify-content: flex-start;
+  /* Alinear a la izquierda */
+}
+
+/* Ajuste para submenús cuando la sidebar está colapsada */
+.layout-menu.menu-vertical .menu-sub {
+  position: absolute;
+  /* Para que el submenú aparezca al lado */
+  left: 100%;
+  /* Se posiciona a la derecha de la sidebar */
+  top: 0;
+  background-color: var(--bs-menu-bg);
+  /* Mismo fondo que la sidebar */
+  min-width: 12rem;
+  /* Ancho mínimo para el submenú */
+  z-index: 1000;
+  /* Asegura que esté por encima de otros elementos */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  /* Sombra para destacarlo */
+  border-radius: 0.375rem;
+  /* Bordes redondeados */
+  visibility: hidden;
+  /* Oculto por defecto */
+  opacity: 0;
+  transform: translateX(-10px);
+  /* Ligeramente a la izquierda */
+  transition: visibility 0s, opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Mostrar submenú cuando el elemento padre está en hover */
+.layout-menu.menu-vertical .menu-item.open>.menu-sub {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+  /* Vuelve a su posición normal */
+}
+
+/* Asegurar que los elementos del submenú se vean */
+.layout-menu.menu-vertical .menu-sub .menu-item .menu-link div[data-i18n] {
+  opacity: 1;
+  width: auto;
+  transition: none;
+  /* No aplicar la transición de ocultar/mostrar texto a los submenús */
+}
+
+.layout-menu.menu-vertical .menu-icon {
+  margin-right: 0 !important;
+  /* Elimina el margen derecho por defecto */
+  transition: margin-right 0.3s ease-in-out, font-size 0.3s ease-in-out;
+}
+
+.layout-menu.menu-vertical:hover .menu-icon {
+  margin-right: 0.5rem !important;
+  /* Restaura el margen derecho al expandir */
+  font-size: 1.15rem !important;
+}
+
+/* Ajustes cuando está retraído */
+.layout-menu.menu-vertical:not(:hover) .menu-item .menu-link {
+  justify-content: flex-start !important;
+  padding-left: 1.5rem !important;
+  padding-right: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+}
+
+.layout-menu.menu-vertical:not(:hover) .menu-icon {
+  font-size: 1.25rem !important;
+  margin-right: 0 !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: inherit !important;
+}
+
+.layout-menu.menu-vertical:not(:hover) .menu-item.active .menu-icon {
+  color: #fff !important;
+}
+
+.layout-menu.menu-vertical:not(:hover) .menu-item.active>.menu-link {
+  margin: 0 8px !important;
+}
+
+/* Ajuste para el ícono de toggle del submenú */
+.layout-menu.menu-vertical .menu-toggle .bx {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.layout-page {
+  margin-left: 0 !important;
+  width: 100% !important;
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+
+.layout-menu.menu-vertical:hover .menu-toggle .bx {
+  opacity: 1;
+}
+
+/* Media Query para pantallas pequeñas */
+@media (max-width: 1200px) {
+
+  /* Por ejemplo, para pantallas de laptop y tablets */
+  .layout-menu.menu-vertical {
+    width: 0 !important;
+    /* La sidebar está completamente oculta por defecto */
+  }
+
+  .layout-menu.menu-vertical .menu-inner>.menu-item .menu-link div[data-i18n],
+  .layout-menu.menu-vertical .app-brand-link .app-brand-logo,
+  .layout-menu.menu-vertical .app-brand-link .app-brand-text {
+    opacity: 0;
+    width: 0;
+  }
+
+  .layout-menu.menu-vertical:hover {
+    width: 17.25rem !important;
+    /* Se expande al ancho normal al pasar el mouse */
+  }
+
+  .layout-menu.menu-vertical:hover .menu-inner>.menu-item .menu-link div[data-i18n],
+  .layout-menu.menu-vertical:hover .app-brand-link .app-brand-logo,
+  .layout-menu.menu-vertical:hover .app-brand-link .app-brand-text {
+    opacity: 1;
+    width: auto;
+  }
+
+  /* Mostrar el botón de toggle en pantallas pequeñas */
+  .layout-menu.menu-vertical .layout-menu-toggle {
+    display: block !important;
+    /* Re-habilita el botón de toggle para móviles */
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Para teléfonos, mantiene el comportamiento original del tema */
+  .layout-menu.menu-vertical {
+    width: 0 !important;
+    /* Se oculta por defecto en móvil */
+    /* Puede que necesites que el tema se encargue de mostrarla con un botón */
+  }
+
+  .layout-menu.menu-vertical:hover {
+    width: 0 !important;
+    /* El hover no debería aplicarse en móvil, se usa el toggle */
+  }
+
+  .layout-menu.menu-vertical .layout-menu-toggle {
+    display: block !important;
+  }
+
+  /* El JavaScript que tienes para el toggle debería manejar esto */
+}
+
+/* ... (otras reglas existentes de tu sidebar) ... */
+
+/* Ajuste para submenús cuando la sidebar está colapsada */
+.layout-menu.menu-vertical .menu-sub {
+  position: absolute;
+  /* Para que el submenú aparezca al lado */
+  left: 100%;
+  /* Se posiciona a la derecha de la sidebar */
+  top: 0;
+  /* Alinea con la parte superior del elemento padre */
+  background-color: var(--bs-menu-bg, #fff);
+  /* Usa la variable de fondo de Bootstrap, o un fallback */
+  min-width: 12rem;
+  /* Ancho mínimo para el submenú flotante */
+  z-index: 1000;
+  /* Asegura que esté por encima de otros elementos */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  /* Sombra para destacarlo */
+  border-radius: 0.375rem;
+  /* Bordes redondeados */
+  visibility: hidden;
+  /* Oculto por defecto */
+  opacity: 0;
+  transform: translateX(-10px);
+  /* Ligeramente a la izquierda al ocultarse */
+  transition: visibility 0s, opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Mostrar submenú cuando el elemento padre está en hover O cuando tiene la clase 'open' */
+/* Esta es la clave para que funcione el click de JS */
+.layout-menu.menu-vertical .menu-item.open>.menu-sub,
+.layout-menu.menu-vertical .menu-item:hover>.menu-link+.menu-sub {
+  /* Añadimos el :hover para que también funcione sin click si se desea */
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+  /* Vuelve a su posición normal */
+}
+
+/* Asegurar que los elementos del submenú se vean correctamente */
+.layout-menu.menu-vertical .menu-sub .menu-item .menu-link div[data-i18n] {
+  opacity: 1 !important;
+  /* Asegura que el texto se vea en el submenú flotante */
+  width: auto !important;
+  /* Ocupa su ancho natural */
+  transition: none !important;
+  /* No aplicar la transición de ocultar/mostrar texto a los submenús */
+}
+
+/* Ajuste para los iconos de los submenús, para que se vean siempre y sean más pequeños */
+.layout-menu.menu-vertical .menu-sub .menu-icon {
+  opacity: 1 !important;
+  margin-right: 0.5rem !important;
+  font-size: 0.9rem !important;
+  /* Un poco de margen para separar el icono del texto */
+}
+
+.layout-menu.menu-vertical .menu-sub .menu-link {
+  padding-left: 2.25rem !important;
+  /* Mayor sangría para distinguir del menú principal */
+}
+
+/* Asegurar que los íconos de toggle de los submenús sean visibles al abrirse */
+.layout-menu.menu-vertical .menu-item.open>.menu-link .bx-chevron-right,
+/* O .bx-chevron-left */
+.layout-menu.menu-vertical .menu-item:hover>.menu-link .bx-chevron-right {
+  opacity: 1 !important;
+}
+
+/* En modo expandido (hover de la sidebar), los submenús vuelven a su posición normal */
+.layout-menu.menu-vertical:hover .menu-sub {
+  position: static;
+  /* Vuelve a fluir normalmente en el documento */
+  left: auto;
+  top: auto;
+  box-shadow: none;
+  border-radius: 0;
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+  transition: none;
+  /* No animar el cambio de posición */
+}
+
+/* --- AJUSTE GLOBAL PARA CONTENEDORES DE FLUIDOS --- */
+/* Permite que los contenedores de Bootstrap ocupen todo el ancho disponible */
+@media (min-width: 1200px) {
+
+  /* Aplica para pantallas de escritorio y grandes tablets */
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* ================================================= */
+/* --- AJUSTE DEL CONTENIDO PRINCIPAL: .layout-page --- */
+/* ================================================= */
+
+/* Cuando la sidebar está colapsada (ancho de 5rem) */
+
+/* Sidebar fija a la izquierda, tabla pegada a la sidebar */
+.layout-menu.menu-vertical {
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 1050;
+  width: 5rem !important;
+  transition: width 0.3s ease-in-out, position 0.3s;
+}
+
+.layout-page {
+  margin-left: 0 !important;
+  width: 100% !important;
+  transition: none;
+}
+
+/* Cuando la sidebar se expande al hacer hover, desplaza el contenido */
+.layout-menu.menu-vertical:hover {
+  width: 17.25rem !important;
+}
+
+/* El contenido nunca se desplaza, el menú se superpone */
+
+/* Media Queries para comportamiento responsivo */
+
+/* En pantallas más pequeñas (como laptops pequeñas o tablets en modo retrato), la sidebar se oculta */
+@media (max-width: 1200px) {
+  .layout-page {
+    margin-left: 0 !important;
+    /* Sin margen, ya que la sidebar no ocupa espacio fijo */
+    width: 100% !important;
+    /* El contenido principal ocupa todo el ancho */
+  }
+}
+
+/* En teléfonos, aseguramos que el contenido ocupe el 100% */
+@media (max-width: 768px) {
+  .layout-page {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+
+
+/* ================================================= */
+/* --- (Reglas altamente específicas eliminadas para permitir margen correcto) --- */
+/* ================================================= */
+
+/* Ajuste de contenedores de Bootstrap para permitirles expandirse al 100% */
+/* Mantengo estas reglas porque son muy importantes para que el contenido dentro se vea completo */
+@media (min-width: 1200px) {
+
+  /* Aplica en pantallas grandes */
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* Media Queries para comportamiento responsivo (sidebar oculta y botón visible) */
+/* Mantengo estas reglas para asegurar un buen comportamiento en móviles */
+@media (max-width: 1200px) {
+  .layout-menu.menu-vertical {
+    width: 0 !important;
+    /* Oculta la sidebar completamente */
+    overflow: hidden !important;
+  }
+
+  .layout-menu.menu-vertical:hover {
+    width: 0 !important;
+    /* Evita que el hover la muestre en pantallas pequeñas */
+  }
+
+  .layout-page {
+    margin-left: 0 !important;
+    /* El contenido se pega al borde izquierdo */
+    width: 100% !important;
+    /* El contenido ocupa todo el ancho */
+    min-width: 100% !important;
+  }
+
+  .layout-menu-toggle {
+    display: block !important;
+    /* Asegura que el botón de toggle sea visible */
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-menu.menu-vertical {
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .layout-menu.menu-vertical:hover {
+    width: 0 !important;
+  }
+
+  .layout-page {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .layout-menu-toggle {
+    display: block !important;
+  }
+}

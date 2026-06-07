@@ -1,0 +1,218 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Crud con Python 🐍 | Editar asegurado{% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+  {% if asegurado|length %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="/lista-de-asegurado">
+          <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        ACTUALIZAR DATOS DEL ASEGURADO
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST"
+        action="{{ url_for('actualizarAsegurado', id = asegurado.CI ) }}" autocomplete="off"
+        enctype="multipart/form-data">
+
+
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label for="CI" class="form-label">CI</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="CI" name="CI" value="{{ asegurado.CI }}" readonly>
+            </div>
+          </div>
+
+
+
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="nombre_empleado" class="form-label">
+                Nombre del asegurado
+              </label>
+              <input type="text" name="nombre_asegurado" value="{{ asegurado.Nombre }}" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Segundo Nombre del asegurado
+              </label>
+              <input class="form-control" type="text" name="nombre2_asegurado" value="{{ asegurado.Nombre2 }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Apellido del asegurado
+              </label>
+              <input class="form-control" type="text" name="apellido_asegurado" value="{{ asegurado.Apellido }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Segundo apellido del asegurado
+              </label>
+              <input class="form-control" type="text" name="apellido2_asegurado" value="{{ asegurado.Apellido2 }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="email_asegurado" class="form-label">
+                Email del asegurado
+              </label>
+              <input class="form-control" type="email" name="email_asegurado" value="{{ asegurado.Correo }}" required />
+            </div>
+            <div class="col-md-6">
+              <label for="telefono_asegurado" class="form-label">
+                Telefono del asegurado
+              </label>
+              <div class="input-group">
+                {% set tel = asegurado.Telefono or '' %}
+                <select class="form-select custom-select-width" name="prefijo_telefono">
+                  <option value="414" {% if tel[:3]=='414' %}selected{% endif %}>414</option>
+                  <option value="212" {% if tel[:3]=='212' %}selected{% endif %}>212</option>
+                  <option value="416" {% if tel[:3]=='416' %}selected{% endif %}>416</option>
+                  <option value="424" {% if tel[:3]=='424' %}selected{% endif %}>424</option>
+                  <option value="412" {% if tel[:3]=='412' %}selected{% endif %}>412</option>
+                </select>
+                <input class="form-control" type="text" name="telefono_asegurado_numero" value="{{ tel[3:] }}"
+                  required />
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="email_empleado" class="form-label">
+                Fecha de nacimiento
+              </label>
+              <input class="form-control" type="date" name="Fecha" value="{{ asegurado.Fecha_nacimiento }}" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Profesion" class="form-label">
+                Profesion
+              </label>
+              <select class="form-select custom-select-width" name="Profesion">
+                <option value="Profesion BR" {% if asegurado.profesion=='Profesion BR' %}selected{% endif %}>Profesion
+                  BR</option>
+                <option value="Profesion MR" {% if asegurado.profesion=='Profesion MR' %}selected{% endif %}>Profesion
+                  MR</option>
+                <option value="Profesion AR" {% if asegurado.profesion=='Profesion AR' %}selected{% endif %}>Profesion
+                  AR</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="localidad" class="form-label">
+                Localidad
+              </label>
+              <select id="localidad" class="form-select select2-search" name="localidad"
+                data-placeholder="Selecciona un estado">
+                <option value="" {% if asegurado.localidad=="" %}selected{% endif %}>-- Selecciona un estado --</option>
+
+                {# Definimos una lista de estados en Jinja2 o la podrías pasar desde Flask #}
+                {% set estados_venezuela = [
+                "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar",
+                "Carabobo", "Cojedes", "Delta Amacuro", "Dependencias Federales",
+                "Distrito Capital", "Falcón", "Guárico", "La Guaira", "Lara", "Mérida",
+                "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira",
+                "Trujillo", "Yaracuy", "Zulia"
+                ] %}
+
+                {# Iteramos sobre la lista de estados para crear las opciones #}
+                {% for estado in estados_venezuela %}
+                <option value="{{ estado }}" {% if asegurado.localidad|string==estado|string %}selected{% endif %}>
+                  {{ estado }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Canal" class="form-label">
+                Canal
+              </label>
+              <select class="form-select custom-select-width" name="Canal">
+                <option value="Cara a cara" {% if asegurado.canal=='Cara a cara' %}selected{% endif %}>Cara a
+                  Cara/convencional</option>
+                <option value="Internet" {% if asegurado.canal=='Internet' %}selected{% endif %}>Internet</option>
+                <option value="Correos con dominios privados" {% if asegurado.canal=='Correos con dominios privados'
+                  %}selected{% endif %}>Correos con dominios privados</option>
+                <option value="Correos con dominios publicos" {% if asegurado.canal=='Correos con dominios publicos'
+                  %}selected{% endif %}>Correos con dominios publicos</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="ejecutivo" class="form-label">
+                Ejecutivo
+              </label>
+              <select id="ejecutivo" class="form-select select2-search" name="Ejecutivo"
+                data-placeholder="Selecciona un ejecutivo">
+                <option value="">Seleccione una opcion</option>
+                {% for row in ejecutivos %}
+                <option value="{{ row.cod_ejecutivo }}" {% if asegurado.Ejecutivo|string==row.cod_ejecutivo|string
+                  %}selected{% endif %}>
+                  {{ row.Nombre }} {{ row.Apellido }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+
+
+
+
+          <div class="mb-3 mt-4 text-center">
+            <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+              Actualizar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center">No existe el asegurado</h3>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario');
+
+  formulario.addEventListener('submit', function () {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+  });
+</script>
+{% endblock %}

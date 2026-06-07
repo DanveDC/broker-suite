@@ -1,0 +1,896 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %}Vista Previa de Carga | App Seguros{% endblock %}
+
+{% block customCSS %}
+<style>
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    .payment-row {
+        background-color: var(--bg-main);
+        font-size: 0.85rem;
+    }
+
+    .policy-header {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .policy-header:hover {
+        background-color: #f8f9fa;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    /* Label Badges */
+    .bg-label-warning {
+        background-color: #fff3e0 !important;
+        color: #ff9800 !important;
+    }
+
+    .bg-label-danger {
+        background-color: #ffebee !important;
+        color: #ef5350 !important;
+    }
+
+    .bg-label-success {
+        background-color: #e8f5e9 !important;
+        color: #4caf50 !important;
+    }
+
+    .bg-label-info {
+        background-color: #e0f2f1 !important;
+        color: #009688 !important;
+    }
+
+    .shadow-inner {
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <!-- Hidden input to store data for JS is at the end of the body block -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <a href="{{ url_for('view_upload_mercantil') }}" class="text-secondary me-3">
+                        <i class="bi bi-arrow-left-circle fs-4"></i>
+                    </a>
+                    <h5 class="card-title mb-0 fw-bold">Revisión de Datos - Carga Masiva</h5>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary rounded-pill px-3 py-2" id="totalCount">{{ data|length }} Pólizas
+                        detectadas</span>
+                    <button type="button" id="startImportBtn" class="btn btn-primary px-4 fw-bold"
+                        onclick="startBulkImport()">
+                        <i class="bi bi-play-circle me-1"></i> Confirmar e Importar Ahora
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div id="progressContainer" class="px-4 py-2 bg-light border-bottom d-none">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-bold" id="progressText">Procesando...</span>
+                        <span class="small fw-bold" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                            role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 40px;" class="ps-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                                    </div>
+                                </th>
+                                <th>Póliza</th>
+                                <th>Asegurado</th>
+                                <th>Compañía / Ramo</th>
+                                <th>Emisión / Prima</th>
+                                <th>Pagos</th>
+                                <th style="min-width: 200px;">Estado / Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in data %}
+                            {% set ns = namespace(tiene_anterior=false) %}
+                            {% for p in item.pagos %}{% if p.es_anterior %}{% set ns.tiene_anterior = true %}{% endif
+                            %}{% endfor %}
+                            <tr class="policy-header" id="row-{{ loop.index0 }}">
+                                <td class="ps-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input row-checkbox" type="checkbox"
+                                            name="selected_indices" value="{{ loop.index0 }}" {% if
+                                            item.status=='up_to_date' or item.missing_executive or
+                                            item.poliza_data.missing_company %}disabled{% else %}checked{% endif %}>
+                                    </div>
+                                </td>
+                                <td data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                    <span class="fw-bold text-primary">{{ item.poliza }}</span>
+                                    {% if ns.tiene_anterior %}
+                                    <div class="mt-1">
+                                        <span class="badge bg-label-warning" style="font-size: 0.6rem;">
+                                            <i class="bi bi-calendar-event me-1"></i>Incluye Pagos Año Anterior
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                    <div class="fw-bold">{{ item.asegurado.nombre }} {{ item.asegurado.apellido }}</div>
+                                    <div class="text-muted small">{{ item.asegurado.tipo_ci }}-{{ item.asegurado.ci }}
+                                    </div>
+                                    <div class="mt-1">
+                                        {% if item.missing_executive %}
+                                        <span class="badge bg-label-danger" style="font-size: 0.6rem;"
+                                            title="Referidor original: {{ item.referidor_original }}">
+                                            <i class="bi bi-person-x me-1"></i>Ejecutivo no encontrado
+                                        </span>
+                                        <div class="text-danger x-small mt-1" style="font-size: 0.6rem;">
+                                            <i class="bi bi-exclamation-triangle"></i> Debe asignar uno para importar
+                                        </div>
+                                        {% else %}
+                                        <span class="text-success" style="font-size: 0.7rem;"
+                                            title="Referidor: {{ item.referidor_original }}">
+                                            <i class="bi bi-person-check me-1"></i>Match: <b>{{ item.ejecutivo_nombre
+                                                }}</b>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                    <div>{{ item.poliza_data.compania }}</div>
+                                    <div class="mt-1">
+                                        {% if item.poliza_data.missing_company %}
+                                        <span class="badge bg-label-danger" style="font-size: 0.6rem;"
+                                            title="Compañía original: {{ item.poliza_data.compania }}">
+                                            <i class="bi bi-building-x me-1"></i>Compañía no encontrada
+                                        </span>
+                                        <div class="text-danger x-small mt-1" style="font-size: 0.6rem;">
+                                            <i class="bi bi-exclamation-triangle"></i> Debe asignar una para importar
+                                        </div>
+                                        {% else %}
+                                        <span class="text-info" style="font-size: 0.7rem;"
+                                            title="Compañía original: {{ item.poliza_data.compania }}">
+                                            <i class="bi bi-building-check me-1"></i>Match: <b>{{
+                                                item.poliza_data.compania_nombre }}</b>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-info-light text-info border-0 mt-1">{{ item.poliza_data.ramo
+                                        }}</span>
+                                </td>
+                                <td data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                    <div class="small fw-bold">{{ item.poliza_data.fecha_emision | format_date }}</div>
+                                    <div class="text-success small fw-bold">{{ item.poliza_data.prima }} {{
+                                        item.pagos[0].moneda if item.pagos else '' }}</div>
+                                </td>
+                                <td data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}">
+                                    <span class="badge bg-secondary rounded-pill">{{ item.pagos|length }} recs</span>
+                                    {% if ns.tiene_anterior %}
+                                    <span class="ms-1" title="Pagos fuera de vigencia actual">
+                                        <i class="bi bi-info-circle text-warning fs-6"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center status-container" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse{{ loop.index }}">
+                                        {% if item.status == 'ready' %}
+                                        <span class="status-badge bg-success-light text-success"><i
+                                                class="bi bi-check-circle me-1"></i>Nuevo</span>
+                                        {% elif item.status == 'insured_exists' %}
+                                        <span class="status-badge bg-warning-light text-warning"><i
+                                                class="bi bi-person-check me-1"></i>Asegurado Existe</span>
+                                        {% elif item.status == 'policy_exists' %}
+                                        <span class="status-badge bg-info-light text-info"><i
+                                                class="bi bi-file-earmark-check me-1"></i>Póliza Existe</span>
+                                        {% elif item.status == 'new_payments' %}
+                                        <span class="status-badge bg-label-info"><i
+                                                class="bi bi-cash-stack me-1"></i>Nuevos Pagos</span>
+                                        {% elif item.status == 'updates_needed' %}
+                                        <span class="status-badge bg-label-warning"><i
+                                                class="bi bi-arrow-repeat me-1"></i>Actualizar Estados</span>
+                                        {% elif item.status == 'up_to_date' %}
+                                        <span class="status-badge bg-label-success"><i
+                                                class="bi bi-shield-check me-1"></i>Al día</span>
+                                        {% endif %}
+                                        {% if item.status == 'ready' or item.status == 'new_payments' or item.status ==
+                                        'updates_needed' %}
+                                        <span class="badge bg-primary ms-1" style="font-size: 0.6rem;">Acción</span>
+                                        {% endif %}
+                                        <div class="status-icon ms-2"></div>
+                                    </div>
+                                    <div class="mt-1 action-buttons d-flex gap-1">
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-primary rounded-pill edit-btn-trigger"
+                                            data-index="{{ loop.index0 }}">
+                                            <i class="bi bi-pencil me-1"></i>Editar
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-warning rounded-pill retry-btn-trigger d-none"
+                                            data-index="{{ loop.index0 }}">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="collapse{{ loop.index }}">
+                                <td colspan="7" class="p-0 border-0">
+                                    <div class="p-4 bg-light shadow-inner">
+
+                                        {# Contador de campos faltantes #}
+                                        {% set ns2 = namespace(missing=0) %}
+                                        {% if not item.asegurado.ci or item.asegurado.ci|string == 'None' %}{% set
+                                        ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not item.asegurado.nombre or item.asegurado.nombre|string == 'None' %}{%
+                                        set ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not item.asegurado.apellido or item.asegurado.apellido|string == 'None'
+                                        %}{% set ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not item.poliza or item.poliza|string == 'None' %}{% set ns2.missing =
+                                        ns2.missing + 1 %}{% endif %}
+                                        {% if not item.poliza_data.ramo or item.poliza_data.ramo|string == 'None' %}{%
+                                        set ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not item.poliza_data.prima or item.poliza_data.prima|string == 'None' %}{%
+                                        set ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not item.poliza_data.frecuencia or item.poliza_data.frecuencia|string ==
+                                        'None' %}{% set ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% for pago in item.pagos %}
+                                        {% if not pago.monto or pago.monto|string == 'None' %}{% set ns2.missing =
+                                        ns2.missing + 1 %}{% endif %}
+                                        {% if not pago.fecha_cobro or pago.fecha_cobro|string == 'None' %}{% set
+                                        ns2.missing = ns2.missing + 1 %}{% endif %}
+                                        {% if not pago.recibo or pago.recibo|string == 'None' %}{% set ns2.missing =
+                                        ns2.missing + 1 %}{% endif %}
+                                        {% endfor %}
+
+                                        {% if ns2.missing > 0 %}
+                                        <div class="alert alert-warning py-2 mb-3 d-flex align-items-center gap-2">
+                                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                                            <span><strong>{{ ns2.missing }} campo(s) faltante(s)</strong> — Revisa los
+                                                campos marcados en <span class="badge bg-danger">NULL</span> antes de
+                                                importar.</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="alert alert-success py-2 mb-3 d-flex align-items-center gap-2">
+                                            <i class="bi bi-check-circle-fill fs-5"></i>
+                                            <span>Todos los campos críticos están completos. Listo para importar.</span>
+                                        </div>
+                                        {% endif %}
+
+                                        <div class="row g-3">
+
+                                            {# ---- TABLA: asegurado ---- #}
+                                            <div class="col-md-3">
+                                                <div class="card border-0 shadow-sm h-100">
+                                                    <div class="card-header py-2"
+                                                        style="background:rgba(105,108,255,0.1);">
+                                                        <span class="fw-bold small text-primary"><i
+                                                                class="bi bi-person-fill me-1"></i>INSERT
+                                                            asegurado</span>
+                                                    </div>
+                                                    <div class="card-body p-2">
+                                                        {% macro val_field(label, val) %}
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                                            <span class="detail-label"
+                                                                style="min-width:80px;font-size:0.7rem;">{{ label
+                                                                }}</span>
+                                                            {% if val and val|string not in ['None', '', 'nan'] %}
+                                                            <span class="small text-end"
+                                                                style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                                                title="{{ val }}">{{ val }}</span>
+                                                            {% else %}
+                                                            <span class="badge bg-danger"
+                                                                style="font-size:0.6rem;">NULL</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% endmacro %}
+                                                        {{ val_field('CI', item.asegurado.ci) }}
+                                                        {{ val_field('Tipo CI', item.asegurado.tipo_ci) }}
+                                                        {{ val_field('Nombre', item.asegurado.nombre) }}
+                                                        {{ val_field('Nombre2', item.asegurado.nombre2) }}
+                                                        {{ val_field('Apellido', item.asegurado.apellido) }}
+                                                        {{ val_field('Apellido2', item.asegurado.apellido2) }}
+                                                        {{ val_field('Correo', item.asegurado.correo) }}
+                                                        {{ val_field('Teléfono', item.asegurado.telefono) }}
+                                                        {{ val_field('Ejecutivo', item.ejecutivo_nombre) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {# ---- TABLA: poliza + renovacion ---- #}
+                                            <div class="col-md-4">
+                                                <div class="card border-0 shadow-sm mb-2">
+                                                    <div class="card-header py-2"
+                                                        style="background:rgba(3,195,236,0.1);">
+                                                        <span class="fw-bold small text-info"><i
+                                                                class="bi bi-file-earmark-text-fill me-1"></i>INSERT
+                                                            poliza</span>
+                                                        <span class="badge bg-secondary ms-2"
+                                                            style="font-size:0.6rem;">Tipo_venta = 3</span>
+                                                    </div>
+                                                    <div class="card-body p-2">
+                                                        {% macro pol_field(label, val) %}
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                                            <span class="detail-label"
+                                                                style="min-width:80px;font-size:0.7rem;">{{ label
+                                                                }}</span>
+                                                            {% if val and val|string not in ['None', '', 'nan'] %}
+                                                            <span class="small text-end"
+                                                                style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                                                title="{{ val }}">{{ val }}</span>
+                                                            {% else %}
+                                                            <span class="badge bg-danger"
+                                                                style="font-size:0.6rem;">NULL</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% endmacro %}
+                                                        {{ pol_field('Póliza', item.poliza) }}
+                                                        {{ pol_field('CI Aseg.', item.asegurado.ci) }}
+                                                        {{ pol_field('Compañía', item.poliza_data.compania_nombre) }}
+                                                        {{ pol_field('Tomador', item.poliza_data.tomador) }}
+                                                        {{ pol_field('Ramo', item.poliza_data.ramo) }}
+                                                        {{ pol_field('Emisión', item.poliza_data.fecha_emision) }}
+                                                    </div>
+                                                </div>
+                                                <div class="card border-0 shadow-sm">
+                                                    <div class="card-header py-2"
+                                                        style="background:rgba(255,171,0,0.1);">
+                                                        <span class="fw-bold small text-warning"><i
+                                                                class="bi bi-arrow-repeat me-1"></i>INSERT
+                                                            renovacion</span>
+                                                    </div>
+                                                    <div class="card-body p-2">
+                                                        {% macro ren_field(label, val) %}
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                                            <span class="detail-label"
+                                                                style="min-width:80px;font-size:0.7rem;">{{ label
+                                                                }}</span>
+                                                            {% if val and val|string not in ['None', '', 'nan'] %}
+                                                            <span class="small text-end"
+                                                                style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                                                title="{{ val }}">{{ val }}</span>
+                                                            {% else %}
+                                                            <span class="badge bg-danger"
+                                                                style="font-size:0.6rem;">NULL</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% endmacro %}
+                                                        {{ ren_field('Prima', item.poliza_data.prima) }}
+                                                        {{ ren_field('Frecuencia', item.poliza_data.frecuencia) }}
+                                                        {{ ren_field('Cobertura', item.poliza_data.cobertura) }}
+                                                        {{ ren_field('Sub-Ramo', item.poliza_data.sub_ramo) }}
+                                                        {{ ren_field('Producto', item.poliza_data.producto) }}
+                                                        {% if item.poliza_data.ramo == 'Auto' %}
+                                                        {{ ren_field('Placa', item.ramo_especifico.placa) }}
+                                                        {{ ren_field('Marca', item.ramo_especifico.marca) }}
+                                                        {{ ren_field('Modelo', item.ramo_especifico.modelo) }}
+                                                        {{ ren_field('Año', item.ramo_especifico.año) }}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {# ---- TABLA: pago ---- #}
+                                            <div class="col-md-5">
+                                                <div class="card border-0 shadow-sm h-100">
+                                                    <div class="card-header py-2 d-flex justify-content-between align-items-center"
+                                                        style="background:rgba(113,221,55,0.1);">
+                                                        <span class="fw-bold small text-success"><i
+                                                                class="bi bi-cash-stack me-1"></i>INSERT pago ({{
+                                                            item.pagos|length }})</span>
+                                                        {% set ns3 = namespace(null_p=0) %}
+                                                        {% for p in item.pagos %}
+                                                        {% if not p.monto or p.monto|string in ['None','','nan'] %}{%
+                                                        set ns3.null_p = ns3.null_p + 1 %}{% endif %}
+                                                        {% if not p.recibo or p.recibo|string in ['None','','nan'] %}{%
+                                                        set ns3.null_p = ns3.null_p + 1 %}{% endif %}
+                                                        {% if not p.fecha_cobro or p.fecha_cobro|string in
+                                                        ['None','','nan'] %}{% set ns3.null_p = ns3.null_p + 1 %}{%
+                                                        endif %}
+                                                        {% endfor %}
+                                                        {% if ns3.null_p > 0 %}
+                                                        <span class="badge bg-danger" style="font-size:0.65rem;"><i
+                                                                class="bi bi-exclamation-triangle me-1"></i>{{
+                                                            ns3.null_p }} NULL(s)</span>
+                                                        {% else %}
+                                                        <span class="badge bg-success" style="font-size:0.65rem;"><i
+                                                                class="bi bi-check me-1"></i>OK</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="card-body p-2">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm table-bordered bg-white mb-0"
+                                                                style="font-size:0.72rem;">
+                                                                <thead class="bg-light">
+                                                                    <tr>
+                                                                        <th>Cuota</th>
+                                                                        <th>Recibo</th>
+                                                                        <th>Monto</th>
+                                                                        <th>Moneda</th>
+                                                                        <th>Tasa</th>
+                                                                        <th>Método</th>
+                                                                        <th>Fecha</th>
+                                                                        <th>Estado</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for pago in item.pagos %}
+                                                                    <tr
+                                                                        class="{{ 'table-warning' if pago.es_anterior else '' }}">
+                                                                        <td>
+                                                                            {% if pago.nro_cuota and
+                                                                            pago.nro_cuota|string not in
+                                                                            ['None','','nan'] %}
+                                                                            {{ pago.nro_cuota }}
+                                                                            {% else %}
+                                                                            <span class="badge bg-warning text-dark"
+                                                                                style="font-size:0.6rem;">?</span>
+                                                                            {% endif %}
+                                                                            {% if pago.es_anterior %}<br><span
+                                                                                class="badge bg-label-danger"
+                                                                                style="font-size:0.55rem;">Año
+                                                                                Ant.</span>{% endif %}
+                                                                        </td>
+                                                                        <td>
+                                                                            {% if pago.recibo and pago.recibo|string not
+                                                                            in ['None','','nan'] %}
+                                                                            <span class="text-primary fw-bold">{{
+                                                                                pago.recibo }}</span>
+                                                                            {% else %}
+                                                                            <span class="badge bg-danger"
+                                                                                style="font-size:0.6rem;">NULL</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>
+                                                                            {% if pago.monto and pago.monto|string not
+                                                                            in ['None','','nan'] %}
+                                                                            <span class="fw-bold text-success">{{
+                                                                                pago.monto }}</span>
+                                                                            {% else %}
+                                                                            <span class="badge bg-danger"
+                                                                                style="font-size:0.6rem;">NULL</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>{{ pago.moneda or '—' }}</td>
+                                                                        <td>{{ pago.tasa or '—' }}</td>
+                                                                        <td>{{ pago.metodo or '—' }}</td>
+                                                                        <td>
+                                                                            {% if pago.fecha_cobro and
+                                                                            pago.fecha_cobro|string not in
+                                                                            ['None','','nan'] %}
+                                                                            {{ pago.fecha_cobro | format_date }}
+                                                                            {% else %}
+                                                                            <span class="badge bg-danger"
+                                                                                style="font-size:0.6rem;">NULL</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td><span
+                                                                                class="badge bg-success-light text-success">{{
+                                                                                pago.estado }}</span></td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="error-detail-container mt-3 d-none">
+                                            <div class="alert alert-danger py-2 small mb-0">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                <span class="error-text"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Editar Registro Mercantil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editIndex">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Nombre</label>
+                            <input type="text" class="form-control" id="editNombre">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Apellido</label>
+                            <input type="text" class="form-control" id="editApellido">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Cédula (Solo números)</label>
+                            <input type="text" class="form-control" id="editCI">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Póliza</label>
+                            <input type="text" class="form-control" id="editPoliza">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Ramo</label>
+                            <select class="form-select" id="editRamo">
+                                <option value="Auto">Auto</option>
+                                <option value="Persona">Persona</option>
+                                <option value="Patrimonial">Patrimonial</option>
+                                <option value="Fianza">Fianza</option>
+                                <option value="Viaje">Viaje</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Prima</label>
+                            <input type="text" class="form-control" id="editPrima">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Ejecutivo</label>
+                            <select class="form-select" id="editEjecutivo">
+                                <!-- Options will be populated via JS -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Compañía</label>
+                            <select class="form-select" id="editCompania">
+                                <!-- Options will be populated via JS -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-uppercase">Tipo de Venta</label>
+                            <input type="text" class="form-control" id="editTipoVenta">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill" onclick="saveChanges()">Guardar
+                    Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="allDataInput" value="{{ data | tojson | forceescape }}">
+<input type="hidden" id="ejecutivosInput" value="{{ ejecutivos | tojson | forceescape }}">
+<input type="hidden" id="companiasInput" value="{{ companias | tojson | forceescape }}">
+
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const allData = JSON.parse(document.getElementById('allDataInput').value);
+    const ejecutivosList = JSON.parse(document.getElementById('ejecutivosInput').value);
+    const companiasList = JSON.parse(document.getElementById('companiasInput').value);
+    console.log("Mercantil data loaded:", allData.length, "records");
+
+    let isImporting = false;
+
+    // Populate Selects in Modal
+    function populateSelects() {
+        const execSelect = document.getElementById('editEjecutivo');
+        execSelect.innerHTML = '';
+        ejecutivosList.forEach(e => {
+            const option = document.createElement('option');
+            option.value = e.cod_ejecutivo;
+            option.textContent = (e.Nombre + ' ' + (e.Apellido || '')).trim();
+            execSelect.appendChild(option);
+        });
+
+        const ciaSelect = document.getElementById('editCompania');
+        ciaSelect.innerHTML = '';
+        companiasList.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.Cod_compania;
+            option.textContent = c.Nombre;
+            ciaSelect.appendChild(option);
+        });
+    }
+    populateSelects();
+
+    function openEditModal(index) {
+        console.log("Opening edit modal for index:", index);
+        let record = allData[index];
+        if (!record) {
+            console.error("Record not found at index:", index);
+            return;
+        }
+
+        document.getElementById('editIndex').value = index;
+        document.getElementById('editNombre').value = record.asegurado.nombre || '';
+        document.getElementById('editApellido').value = record.asegurado.apellido || '';
+        document.getElementById('editCI').value = record.asegurado.ci || '';
+        document.getElementById('editPoliza').value = record.poliza || '';
+        document.getElementById('editRamo').value = record.poliza_data.ramo || '';
+        document.getElementById('editPrima').value = record.poliza_data.prima || '';
+        document.getElementById('editEjecutivo').value = record.ejecutivo || 3;
+        document.getElementById('editCompania').value = record.poliza_data.cod_compania || '';
+        document.getElementById('editTipoVenta').value = record.tipo_venta || 'NUEVA';
+
+        const modalEl = document.getElementById('editModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function saveChanges() {
+        let index = document.getElementById('editIndex').value;
+        let record = allData[index];
+        if (!record) return;
+
+        record.asegurado.nombre = document.getElementById('editNombre').value;
+        record.asegurado.apellido = document.getElementById('editApellido').value;
+        record.asegurado.ci = document.getElementById('editCI').value;
+        record.poliza = document.getElementById('editPoliza').value;
+        record.poliza_data.ramo = document.getElementById('editRamo').value;
+        record.poliza_data.prima = document.getElementById('editPrima').value;
+        const execSelect = document.getElementById('editEjecutivo');
+        record.ejecutivo = execSelect.value;
+        record.ejecutivo_nombre = execSelect.options[execSelect.selectedIndex].text;
+
+        const ciaSelect = document.getElementById('editCompania');
+        record.poliza_data.cod_compania = ciaSelect.value;
+        record.poliza_data.compania_nombre = ciaSelect.options[ciaSelect.selectedIndex].text;
+
+        record.tipo_venta = document.getElementById('editTipoVenta').value;
+        record.missing_executive = false;
+        record.poliza_data.missing_company = false;
+
+        const modalEl = document.getElementById('editModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        // Update DOM row
+        const row = document.getElementById(`row-${index}`);
+        if (row) {
+            const polizaSpan = row.querySelector('td:nth-child(2) span');
+            if (polizaSpan) polizaSpan.innerText = record.poliza;
+
+            const nameDiv = row.querySelector('td:nth-child(3) .fw-bold');
+            if (nameDiv) nameDiv.innerText = record.asegurado.nombre + ' ' + record.asegurado.apellido;
+
+            // Update executive display
+            const execInfoContainer = row.querySelector('td:nth-child(3) .mt-1');
+            if (execInfoContainer) {
+                execInfoContainer.innerHTML = `<span class="text-success" style="font-size: 0.7rem;"><i class="bi bi-person-check me-1"></i>Match: <b>${record.ejecutivo_nombre}</b></span>`;
+            }
+
+            // Update company display
+            const ciaInfoContainer = row.querySelector('td:nth-child(4) .mt-1');
+            if (ciaInfoContainer) {
+                ciaInfoContainer.innerHTML = `<span class="text-info" style="font-size: 0.7rem;"><i class="bi bi-building-check me-1"></i>Match: <b>${record.poliza_data.compania_nombre}</b></span>`;
+            }
+
+            // Allow checking the row if it was disabled due to missing exec or company
+            const checkbox = row.querySelector('.row-checkbox');
+            if (checkbox && checkbox.disabled && record.status !== 'up_to_date') {
+                if (!record.missing_executive && !record.poliza_data.missing_company) {
+                    checkbox.disabled = false;
+                    checkbox.checked = true;
+                }
+            }
+            const cidiv = row.querySelector('td:nth-child(3) .text-muted');
+            if (cidiv) cidiv.innerText = (record.asegurado.tipo_ci || 'V') + '-' + record.asegurado.ci;
+
+            const ramoBadge = row.querySelector('td:nth-child(4) .badge');
+            if (ramoBadge) ramoBadge.innerText = record.poliza_data.ramo;
+
+            const primaDiv = row.querySelector('td:nth-child(5) .text-success');
+            if (primaDiv) primaDiv.innerText = record.poliza_data.prima + ' ' + (record.pagos[0]?.moneda || '');
+        }
+
+        Toast.fire({
+            icon: 'info',
+            title: 'Cambios guardados localmente'
+        });
+    }
+
+    // Event Delegation for Edit and Retry buttons
+    document.addEventListener('click', function (e) {
+        const editBtn = e.target.closest('.edit-btn-trigger');
+        if (editBtn) {
+            console.log("Edit button clicked");
+            e.preventDefault();
+            e.stopPropagation();
+            openEditModal(editBtn.getAttribute('data-index'));
+            return;
+        }
+
+        const retryBtn = e.target.closest('.retry-btn-trigger');
+        if (retryBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            importSingleRecord(retryBtn.getAttribute('data-index'));
+            return;
+        }
+    });
+
+    async function startBulkImport() {
+        if (isImporting) return;
+
+        const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked:not(:disabled)');
+        const skippedCount = document.querySelectorAll('.row-checkbox[disabled]').length;
+
+        if (selectedCheckboxes.length === 0) {
+            Swal.fire('Atención', 'Selecciona al menos una póliza válida para importar. Los registros en rojo o sin ejecutivo deben ser corregidos primero.', 'warning');
+            return;
+        }
+
+        let message = `Se procesarán ${selectedCheckboxes.length} pólizas.`;
+        if (skippedCount > 0) {
+            message += `\n(${skippedCount} registros serán omitidos por estar duplicados o incompletos)`;
+        }
+
+        const confirmResult = await Swal.fire({
+            title: '¿Iniciar importación Mercantil?',
+            text: message,
+            icon: skippedCount > 0 ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, importar selección',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#696cff',
+            cancelButtonColor: '#8592a3',
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        isImporting = true;
+        const startBtn = document.getElementById('startImportBtn');
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importando...';
+        document.getElementById('progressContainer').classList.remove('d-none');
+
+        let processed = 0;
+        let total = selectedCheckboxes.length;
+
+        for (const cb of selectedCheckboxes) {
+            const index = parseInt(cb.value);
+            await importSingleRecord(index);
+            processed++;
+
+            const percent = Math.round((processed / total) * 100);
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressText = document.getElementById('progressText');
+
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (progressPercent) progressPercent.innerText = `${percent}%`;
+            if (progressText) progressText.innerText = `Procesando ${processed} de ${total}...`;
+        }
+
+        isImporting = false;
+        const startBtnFin = document.getElementById('startImportBtn');
+        startBtnFin.disabled = false;
+        startBtnFin.innerHTML = '<i class="bi bi-play-circle me-1"></i> Confirmar e Importar Ahora';
+        const progressTextFin = document.getElementById('progressText');
+        if (progressTextFin) progressTextFin.innerText = 'Proceso finalizado';
+
+        const progressBarFin = document.getElementById('progressBar');
+        if (progressBarFin) progressBarFin.classList.remove('progress-bar-animated');
+
+        Swal.fire('Completado', 'La importación Mercantil ha finalizado.', 'success');
+    }
+
+    async function importSingleRecord(index) {
+        index = parseInt(index);
+        const row = document.getElementById(`row-${index}`);
+        if (!row) return;
+
+        const statusIcon = row.querySelector('.status-icon');
+        const statusBadge = row.querySelector('.status-badge');
+        const retryBtn = row.querySelector('.retry-btn-trigger');
+        const editBtn = row.querySelector('.edit-btn-trigger');
+        const errorContainer = document.querySelector(`#collapse${index + 1} .error-detail-container`);
+
+        // Loading state
+        if (statusIcon) statusIcon.innerHTML = `<div class="spinner-border spinner-border-sm text-primary" role="status"></div>`;
+        if (statusBadge) {
+            statusBadge.innerText = 'Procesando...';
+            statusBadge.className = 'status-badge bg-light text-primary';
+        }
+        if (retryBtn) retryBtn.classList.add('d-none');
+        if (errorContainer) errorContainer.classList.add('d-none');
+
+        try {
+            const response = await fetch('/process_single_mercantil', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(allData[index])
+            });
+
+            if (!response.ok) throw new Error('Error en el servidor');
+
+            const result = await response.json();
+
+            if (result.success) {
+                if (statusIcon) statusIcon.innerHTML = `<i class="bi bi-check-circle-fill text-success fs-5"></i>`;
+                if (statusBadge) {
+                    statusBadge.innerText = 'Importado';
+                    statusBadge.className = 'status-badge bg-success-light text-success';
+                }
+                const cb = row.querySelector('.row-checkbox');
+                if (cb) {
+                    cb.checked = false;
+                    cb.disabled = true;
+                }
+                if (editBtn) editBtn.classList.add('d-none');
+            } else {
+                if (statusIcon) statusIcon.innerHTML = `<i class="bi bi-x-circle-fill text-danger fs-5"></i>`;
+                if (statusBadge) {
+                    statusBadge.innerText = 'Error';
+                    statusBadge.className = 'status-badge bg-danger-light text-danger';
+                }
+                if (retryBtn) retryBtn.classList.remove('d-none');
+
+                if (errorContainer) {
+                    errorContainer.classList.remove('d-none');
+                    const errorText = errorContainer.querySelector('.error-text');
+                    if (errorText) errorText.innerText = result.message || 'Error desconocido';
+                }
+            }
+        } catch (error) {
+            console.error("Import error:", error);
+            if (statusIcon) statusIcon.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>`;
+            if (statusBadge) {
+                statusBadge.innerText = 'Fallo de Red';
+                statusBadge.className = 'status-badge bg-warning-light text-warning';
+            }
+            if (retryBtn) retryBtn.classList.remove('d-none');
+        }
+    }
+
+    // Select All functionality
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function () {
+            console.log("Select all changed:", this.checked);
+            const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    }
+</script>
+{% endblock %}

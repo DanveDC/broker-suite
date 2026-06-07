@@ -1,0 +1,168 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %} Detalles Asegurado{% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<!---->
+{% if (detalle_Asegurado|length) %}
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">
+      <a href="/lista-de-asegurado" class="text-secondary me-2">
+        <i class="bi bi-arrow-left-circle"></i>
+      </a>
+      INFORMACIÓN DEL ASEGURADO
+    </h3>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label for="nombre_asegurado" class="form-label">
+              Nombre del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Nombre}}
+          </div>
+          <div class="col-md-6">
+            <label for="apellido_empleado" class="form-label">
+              Segundo nombre del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Nombre2 | default('') }}
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label for="sexo_empleado" class="form-label">
+              Apellido del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Apellido}}
+          </div>
+          <div class="col-md-6">
+            <label for="telefono_empleado" class="form-label">
+              Segundo Apellido del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Apellido2 | default('') }}
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label for="email_asegurado" class="form-label">
+              Email del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Correo}}
+          </div>
+          <div class="col-md-6">
+            <label for="profesion_empleado" class="form-label">
+              telefono del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Telefono}}
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label for="fecha_nacimiento" class="form-label">
+              Fecha de nacimiento del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.Fecha_nacimiento}}
+          </div>
+          <div class="col-md-6">
+            <label for="Profesion_Asegurado" class="form-label">
+              Profesion del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.profesion}}
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label for="localidad" class="form-label">
+              Localidad del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.localidad}}
+          </div>
+          <div class="col-md-6">
+            <label for="canal_asegurado" class="form-label">
+              Canal del Asegurado
+            </label>
+            <br />
+            {{ detalle_Asegurado.canal}}
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label for="localidad" class="form-label">
+              Ejecutivo
+            </label>
+            <br />
+            {{ detalle_Asegurado.Nombre_ejecutivo}} {{ detalle_Asegurado.Apellido_ejecutivo}}
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-md-12">
+            <h4 class="text-center fw-bold">Pólizas Asociadas</h4>
+            {% if polizas and polizas|length > 0 %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped text-center">
+                <thead>
+                  <tr>
+                    <th>Póliza</th>
+                    <th>Ramo</th>
+                    <th>Fecha Emisión</th>
+                    <th>Compañía</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for poliza in polizas %}
+                  <tr>
+                    <td>{{ poliza.Cod_poliza }}</td>
+                    <td>{{ poliza.Ramo }}</td>
+                    <td>{{ poliza.Fecha_emision }}</td>
+                    <td>{{ poliza.nombre_compania }}</td>
+                    <td>
+                      <a href="/detalles-poliza/{{ poliza.Cod_poliza }}" class="btn btn-info btn-sm" title="Ver Detalles">
+                        <i class="bi bi-eye"></i> Ver Detalles
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted mt-3">No hay pólizas asociadas a este asegurado.</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<h2 class="text-center">
+  No existe el Asegurado 😭
+  <hr />
+</h2>
+{% endif %} {% endblock %}

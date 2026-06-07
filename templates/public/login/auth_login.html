@@ -1,0 +1,66 @@
+<div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
+            <div class="card">
+                <div class="card-body">
+                    <div class="app-brand justify-content-center">
+                        <span class="app-brand-logo">
+                            <img class="logo" style="display: flex"
+                                src="{{ url_for('static', filename ='./assets/img/logo.png') }}" alt="Logo" />
+                        </span>
+                    </div>
+
+                    <form id="formAuthentication" class="mb-3" action="{{ url_for('loginCliente') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email_user" placeholder="Escribe tu email"
+                                autofocus required />
+                        </div>
+                        <div class="mb-3 form-password-toggle">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label" for="password">Clave</label>
+                                <a href="{{ url_for('cpanelRecoveryPassUser') }}">
+                                    <small>Olvidó su Clave?</small>
+                                </a>
+                            </div>
+                            <div class="input-group input-group-merge">
+                                <input type="password" class="form-control" name="pass_user" id="pass_user"
+                                    placeholder="············" aria-describedby="password" required />
+                                <span class="input-group-text cursor-pointer">
+                                    <i class="bx bx-hide"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-primary w-100" type="submit" id="login">
+                                Entrar ahora
+                                <i class="bi bi-arrow-right-circle"></i>
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% block customJS %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Helpers !== 'undefined' && Helpers.initPasswordToggle) {
+            Helpers.initPasswordToggle();
+        }
+    });
+
+    const formulario = document.getElementById("formAuthentication");
+    const submitButton = document.getElementById("login");
+
+    formulario.addEventListener('submit', function (event) {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Loggeando...';
+    });
+</script>
+
+{% endblock %}

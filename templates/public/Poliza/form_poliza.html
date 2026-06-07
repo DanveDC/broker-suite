@@ -1,0 +1,854 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %} Registrar poliza {% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">REGISTRAR NUEVA POLIZA</h3>
+  </div>
+
+  <div class="row justify-content-center mt-3 mb-0 px-3">
+    <div class="col-md-10">
+      <div class="alert alert-info alert-dismissible d-flex align-items-center" role="alert">
+        <i class="bx bx-info-circle me-2 fs-5"></i>
+        <div>Complete todos los campos requeridos. El código de póliza debe coincidir con el documento oficial de la aseguradora.</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-poliza"
+        autocomplete="off" enctype="multipart/form-data">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="numero_poliza" class="form-label">
+                Numero de poliza
+              </label>
+              <input type="text" name="numero_poliza" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Cedula_asegurado" class="form-label">
+                Asegurado
+              </label>
+              <select id="asegurado" class="form-select select2-search" name="asegurado"
+                data-placeholder="Seleccione un asegurado">
+                <option value="">Seleccione una opcion</option>
+                {% for row in asegurado %}
+                <option value="{{ row.CI }}">{{ row.Nombre }} {{ row.Nombre2 }} {{ row.Apellido }} {{ row.Apellido2 }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="tomador_poliza" class="form-label">
+                Tomador
+              </label>
+              <select id="tomador_poliza" class="form-select select2-search" name="Tomador"
+                data-placeholder="Seleccione o escriba el tomador" data-tags="true" required>
+                <option value="">Seleccione una opcion</option>
+                {% for row in asegurado %}
+                <option value="{{ row.Nombre }} {{ row.Nombre2 }} {{ row.Apellido }} {{ row.Apellido2 }}">
+                  {{ row.Nombre }} {{ row.Nombre2 }} {{ row.Apellido }} {{ row.Apellido2 }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="company" class="form-label">
+                Compañía
+              </label>
+              <select id="companyS" class="form-select select2-search" name="company"
+                data-placeholder="Seleccione compañía">
+                <option value="">Seleccione una opcion</option>
+                {% for row in company %}
+                <option value="{{ row.Nombre }}">{{ row.Nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Ramo" class="form-label">
+                Ramo
+                <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="El ramo define el tipo de seguro: Persona (HCM/Vida/Accidentes), Auto, Patrimonial, Viaje o Fianza"></i>
+              </label>
+              <select id="mySelect" class="form-select select2-search" name="Ramo" data-placeholder="Seleccione ramo">
+                <option value=""></option>
+                <option value="Persona">Persona</option>
+                <option value="Auto">Auto</option>
+                <option value="Patrimonial">Patrimonial</option>
+                <option value="Fianza">Fianzas </option>
+                <option value="Viaje">Viaje</option>
+              </select>
+            </div>
+            <div class="col-md-6" id="camposPersona2">
+              <label for="Subtipo" class="form-label">
+                Subtipo
+              </label>
+              <select id="subRamo" class="form-select select2-search" name="SubRamo"
+                data-placeholder="Seleccione un subramo">
+                <option value=""></option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6" id="camposPersona">
+              <label for="PlanP" class="form-label">
+                Producto
+              </label>
+              <select id="producto" class="form-select select2-search" name="producto"
+                data-placeholder="Seleccione un producto">
+                <option value=""></option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Cobertura" class="form-label">
+                Cobertura
+              </label>
+              <input class="form-control" type="text" name="Cobertura" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="fecha_emision" class="form-label">
+                Fecha de emision
+              </label>
+              <input class="form-control" type="date" name="fecha_emision" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Frecuencia" class="form-label">
+                Frecuencia de pago
+                <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Periodicidad de los pagos: Anual, Mensual, Trimestral, Semestral"></i>
+              </label>
+              <select class="form-select select2-search" name="Frecuencia" data-placeholder="Seleccione frecuencia">
+                <option value=""></option>
+                <option value="2">Mensual</option>
+                <option value="6">Bimensual</option>
+                <option value="3">Trimestral</option>
+                <option value="5">Cuatrimestral</option>
+                <option value="4">Semestral</option>
+                <option value="1">Anual</option>
+                <option value="10">Mensual (10 pagos)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Prima" class="form-label">
+                Prima
+                <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Monto total del seguro en la moneda seleccionada. Se registra en Bs o USD"></i>
+              </label>
+              <input class="form-control" type="text" name="prima" id="prima" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Tipo_venta" class="form-label">
+                Tipo de venta
+              </label>
+              <select class="form-select select2-search" name="Tipo_venta" data-placeholder="Seleccione tipo de venta"
+                required>
+                <option value="">Seleccione una opción</option>
+                <option value="1">emision tradicional</option>
+                <option value="2">emision venta interna</option>
+                <option value="3">emision pago directo</option>
+                <option value="4">emision tercerizados</option>
+                <option value="5">renovacion tradicional</option>
+                <option value="6">emision corporativa</option>
+              </select>
+            </div>
+          </div>
+
+          <input type="hidden" id="Hramo" name="Hramo">
+
+          <div class="row mt-2">
+            <div class="col-md-6" id="camposAuto" style="display: none;">
+              <label for="Marca" class="form-label">
+                Marca
+              </label>
+              <input class="form-control" type="text" name="Marca" required />
+            </div>
+            <div class="col-md-6" id="camposAuto4" style="display: none;">
+              <label for="placa" class="form-label">
+                Placa
+              </label>
+              <input class="form-control" type="text" name="placa" required>
+            </div>
+            <div class="col-md-6" id="camposPatrimonio" style="display: none;">
+              <label for="direccion" class="form-label">
+                Direccion
+              </label>
+              <input class="form-control" type="text" name="direccion" required />
+            </div>
+            <div class="col-md-6" id="camposViaje" style="display: none;">
+              <label for="pasaporte" class="form-label">
+                Pasaporte
+              </label>
+              <input class="form-control" type="text" name="pasaporte" required />
+            </div>
+          </div>
+
+
+
+
+
+
+          <div class="row mt-2">
+            <div class="col-md-6" id="camposAuto2" style="display: none;">
+              <label for="Ano" class="form-label">
+                Año
+              </label>
+              <input class="form-control" type="number" min="1900" max="2099" name="Ano" required>
+            </div>
+            <div class="col-md-6" id="camposAuto3" style="display: none;">
+              <label for="Modelo" class="form-label">
+                Modelo
+              </label>
+              <input class="form-control" type="text" name="Modelo" required />
+            </div>
+          </div>
+
+
+
+
+          <input type="hidden" id="MycompanyT" name="companyT">
+
+          <div class="mb-3 mt-4 text-center">
+            <button id="miBoton" disabled type="submit" class="btn rounded-pill btn-primary">
+              Guardar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario');
+
+  formulario.addEventListener('submit', function () {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    const $ramoSelect = $('#mySelect');
+    const $boton = $('#miBoton');
+    const $campoOculto = $('#Hramo');
+    const formulario = document.getElementById('formulario');
+
+    // Función para validar todo el formulario basándose en la validez nativa de HTML5
+    // y validación manual de campos dinámicos (sin usar el atributo 'required')
+    function validateForm() {
+      setTimeout(() => {
+        // 1. Validar campos básicos requeridos en el HTML
+        let isFormValid = formulario.checkValidity();
+
+        // 2. Validar manualmente los campos dinámicos SI están visibles
+        const selectedValue = $ramoSelect.val();
+        let dynamicValid = true;
+
+        if (selectedValue === 'Auto') {
+          ['camposAuto', 'camposAuto2', 'camposAuto3', 'camposAuto4'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none') {
+              const input = el.querySelector('input');
+              if (input && !input.value.trim()) dynamicValid = false;
+            }
+          });
+        } else if (selectedValue === 'Patrimonial') {
+          const el = document.getElementById('camposPatrimonio');
+          if (el && el.style.display !== 'none') {
+            const input = el.querySelector('input');
+            if (input && !input.value.trim()) dynamicValid = false;
+          }
+        } else if (selectedValue === 'Viaje') {
+          const el = document.getElementById('camposViaje');
+          if (el && el.style.display !== 'none') {
+            const input = el.querySelector('input');
+            if (input && !input.value.trim()) dynamicValid = false;
+          }
+        }
+
+        // Habilitar botón solo si ambos criterios se cumplen
+        $boton.prop('disabled', !(isFormValid && dynamicValid));
+      }, 50);
+    }
+
+    function handleRamoChange() {
+      const selectedValue = $ramoSelect.val();
+
+      // Reset all dynamic fields (visibilidad SOLAMENTE)
+      const fieldIds = ['camposAuto', 'camposAuto2', 'camposAuto3', 'camposAuto4', 'camposPatrimonio', 'camposViaje'];
+      fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          // Eliminamos cualquier rastro de 'required' anterior
+          const input = el.querySelector('input');
+          if (input) input.removeAttribute('required');
+        }
+      });
+
+      if (selectedValue === 'Auto') {
+        ['camposAuto', 'camposAuto2', 'camposAuto3', 'camposAuto4'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'block';
+        });
+        $campoOculto.val('Auto');
+      } else if (selectedValue === 'Persona') {
+        $campoOculto.val('Persona');
+      } else if (selectedValue === 'Patrimonial') {
+        const el = document.getElementById('camposPatrimonio');
+        if (el) el.style.display = 'block';
+        $campoOculto.val('Patrimonio');
+      } else if (selectedValue === 'Fianza') {
+        $campoOculto.val('Fianza');
+      } else if (selectedValue === 'Viaje') {
+        const el = document.getElementById('camposViaje');
+        if (el) el.style.display = 'block';
+        $campoOculto.val('Viaje');
+      }
+
+      validateForm();
+    }
+
+    // Escuchar cambios en campos normales (Inputs, Selects nativos)
+    $(formulario).on('input change', 'input, select, textarea', validateForm);
+
+    // Escuchar cambios específicos de Select2 (ya que algunos no disparan 'input' nativo)
+    $('select').on('change.select2', validateForm);
+
+    // Manejar el cambio de Ramo específicamente
+    $ramoSelect.on('change', handleRamoChange);
+
+    // Lógica para aviso de 10 o 12 pagos en Mercantil
+    const $frecuenciaSelect = $('select[name="Frecuencia"]');
+    const $companiaSelect = $('#companyS');
+
+    function checkMercantilPayments() {
+        const compania = $companiaSelect.val() || '';
+        const frecuencia = $frecuenciaSelect.val();
+        
+        // Activamos el aviso si es Mercantil y selecciona Mensual (2).
+        if (compania.toUpperCase().includes('MERCANTIL') && frecuencia === '2') {
+            if (confirm('Esta póliza de Mercantil, ¿desea realizarla con 10 o 12 pagos?\n\nAceptar = 10 pagos\nCancelar = 12 pagos (Mensual estándar)')) {
+                $frecuenciaSelect.val('10').trigger('change.select2');
+            } else {
+                $frecuenciaSelect.val('2').trigger('change.select2');
+            }
+        }
+    }
+
+    $frecuenciaSelect.on('change', function() {
+        // Evitar bucle infinito si el cambio fue provocado por el confirm
+        if ($(this).data('manually-changing')) return;
+        $(this).data('manually-changing', true);
+        checkMercantilPayments();
+        $(this).removeData('manually-changing');
+    });
+
+    $companiaSelect.on('change', checkMercantilPayments);
+
+    // Validar inicialmente
+    validateForm();
+  });
+</script>
+<script>
+  document.getElementById('miBoton').addEventListener('click', function () {
+    console.log('Button clicked');
+  });
+</script>
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const companiaSelect = document.getElementById('companyS');
+    const ramoSelect = document.getElementById('mySelect');
+    const subRamoSelect = document.getElementById('subRamo');
+    const productoSelect = document.getElementById('producto');
+
+    const base = JSON.parse('{{ base | tojson }}');
+
+    console.log(base)
+
+    const productosI = {
+      'MERCANTIL PANAMÁ': {
+        'Persona': {
+          'SALUD': ['INTEGRAL', 'VITAL'],
+          'VIDA': ['VIDA A TERMINO']
+        }
+      },
+
+      'VUMI': {
+        'Persona': {
+          'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP']
+        }
+      },
+
+
+      'LA REGIONAL': {
+        'Persona': {
+          'SALUD': ['MEDICARE CLASSIC'],
+          'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'EMBARCACIONES': ['EMBARCACIONES'],
+          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+
+      'CONTINENTAL': {
+        'Viajes': {
+          'ANUALES MULTIVIAJES': ['CORPORATIVO'],
+          'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'],
+          'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'],
+          'ESTUDIANTES': ['ESTUDIANTES']
+        }
+      },
+      'AFIANAUCO': {
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+
+      'AMERICAN FIDELITY': {
+        'Persona': {
+          'VIDA': ['VIDA']
+        }
+      },
+      'PAN-AMERICAN': {
+        'Persona': {
+          'VIDA': ['VIDA']
+        }
+      }
+    };
+
+    const productosN = {
+      'MERCANTIL': {
+        'Persona': {
+          'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'],
+          'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'],
+          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+        },
+        'Auto': {
+          'CA/PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRUA'],
+          'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+        },
+        'Viaje': {
+          'POR DIAS': ['POR DIAS']
+        }
+      },
+      'ESTAR SEGUROS': {
+        'Persona': {
+          'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'],
+          'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'],
+          'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'],
+          'VIDA': ['VIDA TEMPORAL']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'EMBARCACIONES': ['EMBARCACIONES'],
+          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'LA INTERNACIONAL': {
+        'Persona': {
+          'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'EMBARCACIONES': ['EMBARCACIONES'],
+          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+          'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'CARACAS': {
+        'Persona': {
+          'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'],
+          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'EMBARCACIONES': ['EMBARCACIONES'],
+          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'banesco': {
+        'Persona': {
+          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        }
+      },
+      'UNIVERSITAS': {
+        'Persona': {
+          'SALUD': ['SALUD INDIVIDUAL'],
+          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Mascotas': {
+          'MASCOTAS': ['MASCOTAS PLUS']
+        }
+      },
+
+      'QUALITAS': {
+        'Persona': {
+          'SALUD': ['TU APOYO PREMIUM'],
+          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'UNISEGUROS': {
+        'Persona': {
+          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'OCEANICA': {
+        'Persona': {
+          'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'],
+          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
+          'VIDA': ['Temporal', 'A termino']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'EMBARCACIONES': ['EMBARCACIONES'],
+          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
+          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'PIRAMIDE': {
+        'Persona': {
+          'SALUD': ['HCM INDIVIDUAL'],
+          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+        },
+        'Auto': {
+          'CA / PT': ['CA', 'PT'],
+          'RCV': ['RCV', 'RCV + GRÚA'],
+          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
+        }
+      },
+      'REAL SEGUROS': {
+        'Persona': {
+          'SALUD': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS']
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': ['COMBINADO EMPRESARIAL'],
+          'COMBINADO RESIDENCIAL': ['HOGAR'],
+          'RCG': ['RCG'],
+          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
+          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
+        }
+      },
+      'MAPFRE': {
+        'Persona': {
+          'SALUD': ['PROTECCIÓN SALUD']
+        },
+        'Fianzas': {
+          'FIANZAS': ['FIANZAS'],
+          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
+          'LABORAL': ['LABORAL'],
+          'LICITACION': ['LICITACION']
+        }
+      },
+      'SEGUROS VENEZUELA': {
+        'Persona': {
+          'SALUD': ['ORO', 'PLATA', 'BRONCE'],
+          'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
+          'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
+          'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
+          'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
+        },
+        'Auto': {
+          'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
+          'PERDIDA TOTAL': ['PERDIDA TOTAL'],
+          'RCV': ['RCV']
+        }
+      }
+    };
+
+    let productos;
+    if (base == "nacional") {
+      productos = productosN;
+    }
+    else { productos = productosI; }
+
+
+
+
+
+
+
+
+    function normalizeText(text) {
+      if (!text) return '';
+      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    }
+
+    function findCompany(selectedCompania, productosObj) {
+      const normalizedSelected = normalizeText(selectedCompania);
+      if (!normalizedSelected) return null;
+
+      // Intento match exacto primero
+      if (productosObj[normalizedSelected]) return normalizedSelected;
+
+      // Intento match por subcadena (si la compañía seleccionada contiene la clave o viceversa)
+      const keys = Object.keys(productosObj);
+      for (const key of keys) {
+        const normalizedKey = normalizeText(key);
+        if (normalizedSelected.includes(normalizedKey) || normalizedKey.includes(normalizedSelected)) {
+          return key;
+        }
+      }
+      return null;
+    }
+
+    function updateSubRamoOptions() {
+      const companiaSeleccionada = (companiaSelect.value || '');
+      const companiaKey = findCompany(companiaSeleccionada, productos);
+
+      let ramo = ramoSelect.value;
+      if (ramo === 'Fianza') ramo = 'Fianzas'; // Coincidir con la clave en los objetos
+
+      // Actualizar campo oculto MycompanyT
+      const selectedOption = companiaSelect.options[companiaSelect.selectedIndex];
+      if (selectedOption) {
+        const campoOculto = document.getElementById('MycompanyT');
+        if (campoOculto) campoOculto.value = selectedOption.text;
+      }
+
+      subRamoSelect.innerHTML = '<option value="">Selecciona un sub ramo</option>';
+      productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+      if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo]) {
+        Object.keys(productos[companiaKey][ramo]).forEach(function (subRamo) {
+          const option = document.createElement('option');
+          option.value = subRamo;
+          option.text = subRamo;
+          subRamoSelect.appendChild(option);
+        });
+      }
+      $(subRamoSelect).trigger('change');
+      $(productoSelect).trigger('change');
+    }
+
+    function updateProductoOptions() {
+      const companiaSeleccionada = (companiaSelect.value || '');
+      const companiaKey = findCompany(companiaSeleccionada, productos);
+
+      let ramo = ramoSelect.value;
+      if (ramo === 'Fianza') ramo = 'Fianzas';
+      const subRamo = subRamoSelect.value;
+
+      productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+
+      if (companiaKey && productos[companiaKey] && productos[companiaKey][ramo] && productos[companiaKey][ramo][subRamo]) {
+        productos[companiaKey][ramo][subRamo].forEach(function (producto) {
+          const option = document.createElement('option');
+          option.value = producto;
+          option.text = producto;
+          productoSelect.appendChild(option);
+        });
+      }
+      $(productoSelect).trigger('change');
+    }
+
+    // Use jQuery for listeners to ensure better integration with Select2 triggers
+    $(companiaSelect).on('change', updateSubRamoOptions);
+    $(ramoSelect).on('change', updateSubRamoOptions);
+    $(subRamoSelect).on('change', updateProductoOptions);
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const primaInput = document.getElementById('prima');
+    let rawValue = '0';
+
+    const formatRawValue = () => {
+      // Rellena el valor para asegurar que tenga al menos 3 dígitos (para los decimales)
+      const paddedValue = rawValue.padStart(3, '0');
+      const integerPart = paddedValue.slice(0, -2);
+      const decimalPart = paddedValue.slice(-2);
+
+      // Formatea la parte entera con puntos como separadores de miles
+      const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+
+      return `${formattedInteger},${decimalPart}`;
+    };
+
+    primaInput.addEventListener('focus', (e) => {
+      e.target.value = formatRawValue();
+      // Selecciona el texto para que el usuario pueda sobrescribirlo al empezar a escribir
+      setTimeout(() => e.target.select(), 0);
+    });
+
+    primaInput.addEventListener('blur', (e) => {
+      // Si el valor es 0,00 al perder el foco, limpia el campo
+      if (rawValue === '0') {
+        e.target.value = '';
+      } else {
+        e.target.value = formatRawValue();
+      }
+    });
+
+    primaInput.addEventListener('keydown', (e) => {
+      // Previene la acción por defecto para tener control total
+      e.preventDefault();
+
+      if (e.key >= '0' && e.key <= '9') {
+        // Si el valor es '0', lo reemplaza, si no, añade el dígito
+        if (rawValue === '0') {
+          rawValue = e.key;
+        } else {
+          rawValue += e.key;
+        }
+      } else if (e.key === 'Backspace') {
+        // Maneja el retroceso
+        rawValue = rawValue.slice(0, -1);
+        if (rawValue === '') {
+          rawValue = '0';
+        }
+      } else if (e.key === 'Delete') {
+        // Maneja la tecla suprimir para reiniciar el valor
+        rawValue = '0';
+      } else if (e.key === '.') {
+        // Ignora el punto, como se solicitó
+        return;
+      }
+
+      // Actualiza el valor del campo con el formato correcto
+      primaInput.value = formatRawValue();
+    });
+  });
+</script>
+{% endblock %}

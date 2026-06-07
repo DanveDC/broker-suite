@@ -1,0 +1,44 @@
+{% for asegurado in dataBusqueda %}
+            <tr id="asegurado{{ asegurado.CI }}">
+              <td>{{ asegurado.Tipo_CI }} - {{ asegurado.CI }}</td>
+              <td>{{ asegurado.Nombre }} {{ asegurado.Nombre2 | default('') }}</td>
+              <td>{{ asegurado.Apellido }} {{ asegurado.Apellido2 | default('') }}</td>
+              <td>{{ asegurado.Telefono }}</td>
+              <td>{{ asegurado.Correo }}</td>
+              <td>{{ asegurado.Fecha_nacimiento }}</td>
+              <td width="10px">
+                <a
+                href="/detalles-asegurado/{{ asegurado.CI }}"
+                title="Ver Detalles"
+                type="button"
+                class="btn btn-info btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-offset="0,4"
+                data-bs-placement="top"
+                data-bs-html="true"
+                title="<span>Ver detalles</span>">
+                <i class="bi bi-eye"></i>
+                Ver detalles
+              </a>
+              <a
+                  href="{{ url_for('EditarAsegurado', id = asegurado.CI) }}"
+                  class="btn btn-success btn-sm"
+                  tooltip="Actualizar Registro">
+                  <i class="bi bi-arrow-clockwise"></i>
+                  editar
+              </a>
+              <a
+                href="#"
+                onclick="eliminarAsegurado('{{ asegurado.CI }}');"
+                class="btn btn-danger btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-offset="0,4"
+                data-bs-placement="top"
+                data-bs-html="true"
+                title="<span>Eliminar poliza </span>">
+                <i class="bi bi-trash3"></i>
+                Eliminar
+                </a>
+              </td>
+            </tr>
+            {% endfor %}

@@ -1,0 +1,209 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Registrar Asegurado{% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">REGISTRAR NUEVO ASEGURADO</h3>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-asegurado"
+        autocomplete="off">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Nombre del asegurado
+              </label>
+              <input type="text" name="nombre_asegurado" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Nombre_asegurado2" class="form-label">
+                Segundo Nombre del asegurado
+              </label>
+              <input class="form-control" type="text" name="nombre_asegurado2" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="apellido_asegurado" class="form-label">
+                Apellido del asegurado
+              </label>
+              <input class="form-control" type="text" name="apellido_asegurado" required />
+            </div>
+            <div class="col-md-6">
+              <label for="apellido_asegurado2" class="form-label">
+                Segundo Apellido del asegurado
+              </label>
+              <input type="text" name="apellido_asegurado2" class="form-control" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="sexo_asegurado" class="form-label">
+                Sexo del asegurado
+              </label>
+              <select class="form-select select2-search" name="sexo_asegurado" data-placeholder="Seleccione el sexo">
+                <option value=""></option>
+                <option value="1">Masculino</option>
+                <option value="2">Femenino</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="telefono_asegurado" class="form-label">
+                Telefono del asegurado
+              </label>
+              <div class="input-group">
+                <select class="form-select select2-search select2-small" name="prefijo_telefono" data-placeholder="---">
+                  <option value="414">414</option>
+                  <option value="212">212</option>
+                  <option value="416">416</option>
+                  <option value="424">424</option>
+                  <option value="412">412</option>
+                </select>
+                <input class="form-control" type="text" name="telefono_asegurado_numero" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="email_asegurado" class="form-label">
+                Email del asegurado
+              </label>
+              <input class="form-control" type="email" name="email_asegurado" required />
+            </div>
+
+
+            <div class="col-md-6">
+              <label for="Cedula_asegurado" class="form-label">
+                Cedula del asegurado
+              </label>
+              <div class="input-group">
+                <select class="form-select select2-search select2-small" name="tipo" data-placeholder="-">
+                  <option value="V">V</option>
+                  <option value="J">J</option>
+                  <option value="M">M</option>
+                  <option value="E">E</option>
+                </select>
+                <input class="form-control" type="text" name="Cedula_asegurado" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="fecha_nacimiento" class="form-label">
+                fecha nacimiento
+              </label>
+              <input class="form-control" type="date" name="fecha_nacimiento" required />
+            </div>
+            <div class="col-md-6">
+              <label for="ejecutivo" class="form-label">
+                Ejecutivo
+              </label>
+              <select id="ejecutivo" class="form-select select2-search" name="Ejecutivo"
+                data-placeholder="Seleccione un ejecutivo">
+                <option value="">Seleccione una opcion</option>
+                {% for row in ejecutivo %}
+                <option value="{{ row.cod_ejecutivo }}">{{ row.Nombre }} {{ row.Apellido }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Profesion" class="form-label">
+                Profesion
+              </label>
+              <select class="form-select select2-search" name="Profesion" data-placeholder="Seleccione profesión">
+                <option value="Profesion BR">Profesion BR</option>
+                <option value="Profesion MR">Profesion MR</option>
+                <option value="Profesion AR">Profesion AR</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="localidad" class="form-label">
+                Localidad
+              </label>
+              <select id="localidad" class="form-select select2-search" name="localidad"
+                data-placeholder="Seleccione estado">
+                <option value="Amazonas">Amazonas</option>
+                <option value="Anzoátegui">Anzoátegui</option>
+                <option value="Apure">Apure</option>
+                <option value="Aragua">Aragua</option>
+                <option value="Barinas">Barinas</option>
+                <option value="Bolívar">Bolívar</option>
+                <option value="Carabobo">Carabobo</option>
+                <option value="Cojedes">Cojedes</option>
+                <option value="Delta Amacuro">Delta Amacuro</option>
+                <option value="Dependencias Federales">Dependencias Federales</option>
+                <option value="Distrito Capital">Distrito Capital</option>
+                <option value="Falcón">Falcón</option>
+                <option value="Guárico">Guárico</option>
+                <option value="La Guaira">La Guaira</option>
+                <option value="Lara">Lara</option>
+                <option value="Mérida">Mérida</option>
+                <option value="Miranda">Miranda</option>
+                <option value="Monagas">Monagas</option>
+                <option value="Nueva Esparta">Nueva Esparta</option>
+                <option value="Portuguesa">Portuguesa</option>
+                <option value="Sucre">Sucre</option>
+                <option value="Táchira">Táchira</option>
+                <option value="Trujillo">Trujillo</option>
+                <option value="Yaracuy">Yaracuy</option>
+                <option value="Zulia">Zulia</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Canal" class="form-label">
+                Canal
+              </label>
+              <select class="form-select select2-search" name="Canal" data-placeholder="Seleccione canal">
+                <option value="Cara a cara">Cara a Cara/convencional</option>
+                <option value="Internet">Internet</option>
+                <option value="Correos con dominios privados">Correos con dominios privados</option>
+                <option value="Correos con dominios publicos">Correos con dominios publicos</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="mb-3 mt-4 text-center">
+            <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+              Guardar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario');
+
+  formulario.addEventListener('submit', function () {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+  });
+</script>
+{% endblock %}

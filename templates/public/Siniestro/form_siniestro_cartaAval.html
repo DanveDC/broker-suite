@@ -1,0 +1,241 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Registrar Carta aval {% endblock %}
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="{{ url_for('detallePoliza', cod_poliza=cod_poliza) }}">
+          <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        Registro de Carta Aval
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-cartaAval"
+        autocomplete="off" enctype="multipart/form-data">
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Nombre del Asegurado
+              </label>
+              <input type="text" class="form-control" id="nombre_asegurado"
+                value="{{ datos.nombre_asegurado }} {{ datos.apellido_asegurado }} " readonly />
+            </div>
+            <div class="col-md-6">
+              <label for="nombre_compania" class="form-label">
+                Nombre de la Compañía
+              </label>
+              <input type="text" class="form-control" id="nombre_compania" value="{{ datos.nombre_compania }}"
+                readonly />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Diagnostico" class="form-label">
+                Especialidad
+              </label>
+              <input type="text" name="Diagnostico" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Procedimiento" class="form-label">
+                Procedimiento
+              </label>
+              <input type="text" name="Procedimiento" class="form-control" />
+            </div>
+          </div>
+          
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Tipo_de_Atencion" class="form-label">
+                Tipo de Atención
+              </label>
+              <select id="tipoDeAtencionSelect" class="form-select select2-search" name="Tipo_de_Atencion"
+                data-placeholder="Atención">
+                <option value=""></option>
+                <option value="Cirugia">Cirugia</option>
+                <option value="Estudio">Estudio</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Status" class="form-label">
+                Estatus
+              </label>
+              <select id="statusSelect" class="form-select select2-search" name="Status" data-placeholder="Estado">
+                <option value=""></option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Declinado">Declinado</option>
+              </select>
+            </div>
+          </div>
+            <div class="col-md-6">
+              <label for="Moneda" class="form-label">
+                Moneda
+              </label>
+              <select id="mySelect" class="form-select select2-search" name="Moneda" data-placeholder="Moneda">
+                <option value="Dolares">Dolares</option>
+                <option value="Bolivares">Bolivares</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Monto_solicitado" class="form-label">
+                Monto solicitado
+              </label>
+              <input class="form-control" type="text" name="Monto_solicitado" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Monto_aprobado" class="form-label">
+                Monto aprobado
+              </label>
+              <input class="form-control" type="text" name="Monto_aprobado" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Aprobado" class="form-label">
+                Monto aprobado($)
+              </label>
+              <input class="form-control" type="text" name="Monto_aprobado_dolares" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_notificada" class="form-label">
+                Fecha notificada
+              </label>
+              <input class="form-control" type="date" name="Fecha_notificada" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Fecha_aprobada" class="form-label">
+                Fecha aprobada
+              </label>
+              <input class="form-control" type="date" name="Fecha_aprobada" />
+            </div>
+            <div class="col-md-6">
+              <label for="Correo" class="form-label">
+                Correo
+              </label>
+              <input class="form-control" type="text" name="correo" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="codigo_siniestro" class="form-label">
+                Número de Siniestro
+              </label>
+              <input class="form-control" type="text" name="codigo_siniestro" required />
+            </div>
+            <div class="col-md-6">
+              <label for="MES" class="form-label">
+                Mes
+              </label>
+              <input class="form-control" type="text" name="MES" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="NEGOCIO" class="form-label">
+                Negocio
+              </label>
+              <input class="form-control" type="text" name="NEGOCIO" />
+            </div>
+            <div class="col-md-6">
+              <label for="TITULAR" class="form-label">
+                Titular
+              </label>
+              <input class="form-control" type="text" name="TITULAR" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="RECLAMANTE" class="form-label">
+                Reclamante
+              </label>
+              <input class="form-control" type="text" name="RECLAMANTE" />
+            </div>
+            <div class="col-md-6">
+              <label for="REFERIDOR" class="form-label">
+                Referidor
+              </label>
+              <input class="form-control" type="text" name="REFERIDOR" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="ANALISTA" class="form-label">
+                Analista
+              </label>
+              <input class="form-control" type="text" name="ANALISTA" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-12">
+              <label for="OBSERVACION" class="form-label">
+                Observación
+              </label>
+              <textarea class="form-control" name="OBSERVACION" rows="3"></textarea>
+            </div>
+          </div>
+
+          <input type="hidden" id="cod" name="cod_poliza">
+
+          <div class="mb-3 mt-4 text-center">
+            <button id="miBoton" type="submit" class="btn rounded-pill btn-primary">
+              Guardar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}{% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario'); // Reemplaza 'tuFormulario' con el ID real de tu formulario
+
+
+  formulario.addEventListener('submit', function () {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+
+  });
+
+</script>
+
+
+<script>
+
+  const campoOculto = document.getElementById('cod');
+  const cod = JSON.parse('{{ cod_poliza | tojson }}');
+  campoOculto.value = cod;
+  console.log(cod);
+
+</script>
+
+{% endblock %}

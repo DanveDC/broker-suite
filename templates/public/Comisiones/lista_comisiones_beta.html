@@ -1,0 +1,1862 @@
+{% extends 'public/base_cpanel.html' %}
+<!-- Cambiando el title -->
+{% block title %}Lista de Comisiones (Beta){% endblock %}
+
+{% block customCSS %}
+<style>
+    /* Premium Look */
+    .commission-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-gradient {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .stats-card {
+        border-radius: 12px;
+        border-left: 5px solid #4e73df;
+        transition: transform 0.2s;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .table-premium thead th {
+        background-color: #f8f9fc;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05rem;
+        font-weight: 700;
+        color: #4e73df;
+        border-top: none;
+    }
+
+    .status-badge {
+        font-weight: 600;
+        padding: 0.5em 0.8em;
+        border-radius: 50px;
+    }
+
+    tr.procesado {
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+
+    tr.no-encontrado {
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    tr.no-procesado {
+        background-color: rgba(255, 193, 7, 0.05);
+    }
+
+    /* Glassmorphism utility */
+    .glass-bg {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">Gestión de Comisiones <span
+                class="badge bg-primary fs-6 align-middle">Beta</span></h2>
+        {% if matched_data is defined and matched_data %}
+        <div class="d-flex align-items-center gap-3">
+            {% if total_blocks and total_blocks > 1 %}
+            <nav aria-label="Navegación de tramos"
+                class="d-flex align-items-center bg-white rounded-pill border border-primary p-1 shadow-sm">
+                <!-- Anterior -->
+                <a href="{{ url_for('comisiones_beta', block_idx=current_block_idx - 1) if current_block_idx > 0 else '#' }}"
+                    class="btn btn-link py-1 px-2 text-decoration-none {{ 'disabled text-muted' if current_block_idx == 0 else 'text-primary' }}"
+                    title="Tramo Anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                <!-- Números de Bloque -->
+                <div class="d-flex align-items-center gap-1 px-2 border-start border-end">
+                    {% for i in range(total_blocks) %}
+                    {% if total_blocks < 8 or (i < 2 or i> total_blocks - 3 or (i >= current_block_idx - 1 and i <=
+                            current_block_idx + 1)) %} <a href="{{ url_for('comisiones_beta', block_idx=i) }}"
+                            class="btn btn-sm rounded-circle fw-bold d-flex align-items-center justify-content-center {{ 'btn-primary' if current_block_idx == i else 'btn-outline-primary border-0' }}"
+                            style="width: 28px; height: 28px; padding: 0; font-size: 0.8rem; min-width: 28px;">
+                            {{ i + 1 }}
+                            </a>
+                            {% elif i == 2 or i == total_blocks - 3 %}
+                            <span class="text-muted small align-middle px-1">...</span>
+                            {% endif %}
+                            {% endfor %}
+                </div>
+
+                <!-- Siguiente -->
+                <a href="{{ url_for('comisiones_beta', block_idx=current_block_idx + 1) if current_block_idx + 1 < total_blocks else '#' }}"
+                    class="btn btn-link py-1 px-2 text-decoration-none {{ 'disabled text-muted' if current_block_idx + 1 == total_blocks else 'text-primary' }}"
+                    title="Siguiente Tramo">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </nav>
+            {% endif %}
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('comisiones_beta', reset=1) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Otra Carga
+                </a>
+                <button id="procesarMatchBtn" class="btn btn-success shadow-sm px-4 fw-bold">
+                    <i class="bi bi-check-circle"></i> Confirmar Bloque
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SELECTION CONTAINER (Only shows if no data) -->
+    {% if not matched_data %}
+    <div id="selection-container" class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card commission-card glass-bg">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-cloud-upload text-primary" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Carga de Movimientos</h3>
+                    <p class="text-muted mb-5">Selecciona la aseguradora para procesar el archivo de relación de
+                        comisiones.</p>
+
+                    <div class="row g-4 justify-content-center">
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-caracas-btn" style="border-left-color: #ce1126;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">S. Caracas</h5>
+                                    <small class="text-muted">Excel</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm" id="show-star-btn"
+                                style="border-left-color: #1cc88a;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Star Seguros</h5>
+                                    <small class="text-muted">Excel</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-mercantil-btn" style="border-left-color: #004b93;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Mercantil</h5>
+                                    <small class="text-muted">PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-internacional-btn" style="border-left-color: #36b9cc;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Internacional</h5>
+                                    <small class="text-muted">PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-oceanica-btn" style="border-left-color: #f6c23e;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Oceánica</h5>
+                                    <small class="text-muted">PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-piramide-btn" style="border-left-color: #6c757d;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Pirámide</h5>
+                                    <small class="text-muted">PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-venezuela-btn" style="border-left-color: #1a1a1a;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Venezuela</h5>
+                                    <small class="text-muted">Excel</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-universitas-btn" style="border-left-color: #ffc107;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Universitas</h5>
+                                    <small class="text-muted">Excel</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                id="show-banesco-btn" style="border-left-color: #e31837;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Banesco</h5>
+                                    <small class="text-muted">PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#manualCommissionModal"
+                                style="border-left-color: #6f42c1;">
+                                <div class="card-body p-2">
+                                    <h5 class="fw-bold text-dark">Carga Manual</h5>
+                                    <small class="text-muted">Formulario</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Forms Container -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% set forms = [
+            {'id': 'caracas-form', 'title': 'Seguros Caracas', 'action': '/upload-comisiones-caracas', 'name':
+            'file_caracas', 'color': 'danger', 'accept': '.pdf'},
+            {'id': 'star-form', 'title': 'Star Seguros', 'action': '/upload-comisiones-star', 'name': 'file_star',
+            'color': 'success', 'accept': '.xlsx, .xls'},
+            {'id': 'internacional-form', 'title': 'Internacional', 'action': '/upload-comisiones-internacional', 'name':
+            'file_internacional', 'color': 'info', 'accept': '.pdf'},
+            {'id': 'oceanica-form', 'title': 'Oceánica', 'action': '/upload-comisiones-oceanica', 'name':
+            'file_oceanica', 'color': 'warning', 'accept': '.pdf'},
+            {'id': 'mercantil-form', 'title': 'Mercantil', 'action': '/upload-comisiones-mercantil', 'name':
+            'file_mercantil_pdf', 'color': 'primary', 'accept': '.pdf'},
+            {'id': 'piramide-form', 'title': 'Pirámide Seguros', 'action': '/upload-comisiones-piramide', 'name':
+            'file_piramide', 'color': 'secondary', 'accept': '.pdf'},
+            {'id': 'venezuela-form', 'title': 'Seguros Venezuela', 'action': '/upload-comisiones-venezuela', 'name':
+            'file_venezuela', 'color': 'dark', 'accept': '.xlsx, .xls'},
+            {'id': 'universitas-form', 'title': 'Universitas Seguros', 'action': '/upload-comisiones-universitas', 'name':
+            'file_universitas', 'color': 'warning', 'accept': '.xlsx, .xls'},
+            {'id': 'banesco-form', 'title': 'Banesco Seguros', 'action': '/upload-comisiones-banesco', 'name':
+            'file_banesco', 'color': 'danger', 'accept': '.pdf'}
+            ] %}
+
+            {% for form in forms %}
+            <div id="{{ form.id }}" class="upload-section mt-4" style="display: none;">
+                <div class="card commission-card border-left-{{ form.color }}">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="card-title text-{{ form.color }} mb-0 fw-bold">
+                                <i
+                                    class="bi bi-file-earmark-{% if form.accept == '.pdf' %}pdf{% else %}excel{% endif %}"></i>
+                                {{ form.title }}
+                            </h4>
+                            <button class="btn btn-sm btn-light back-btn"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                        <form action="{{ form.action }}" method="post" enctype="multipart/form-data">
+                            <div class="row align-items-end g-3">
+                                {% if form.extra %}
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Fecha de Pago</label>
+                                    <input type="date" class="form-control" name="fecha_pago" required>
+                                </div>
+                                {% endif %}
+                                <div class="col-md">
+                                    <label class="form-label fw-bold">Seleccionar Archivo</label>
+                                    <input class="form-control" type="file" id="file-input-{{ form.id }}"
+                                        name="{{ form.name }}" accept="{{ form.accept }}" required>
+                                </div>
+                                <div class="col-md-auto">
+                                    <button type="submit" class="btn btn-{{ form.color }} px-4 shadow-sm"
+                                        id="btn-{{ form.id }}" disabled>
+                                        <i class="bi bi-upload"></i> Procesar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- RESULTS CONTAINER -->
+    {% if matched_data %}
+    <div class="row g-4">
+        <!-- BLOQUE INFO & SUMMARY -->
+        <div class="col-lg-12">
+            <div class="card commission-card shadow-sm">
+                <div class="card-header-gradient d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-white"><i class="bi bi-layers"></i> Información del Bloque de Pago</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-light text-danger fw-bold shadow-sm" data-bs-toggle="modal"
+                            data-bs-target="#addRetentionModal">
+                            <i class="bi bi-dash-circle"></i> Agregar Retención
+                        </button>
+                        {% if compania == 'MERCANTIL' or compania == 'STAR' %}
+                        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="toggleBlockCurrency()">
+                            <i class="bi bi-currency-exchange"></i> Cambiar Moneda ($/Bs)
+                        </button>
+                        {% endif %}
+                        <span class="badge bg-light text-dark fw-bold px-3 py-2">Total Registros: {{ matched_data|length
+                            }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold text-muted small">NRO. EGRESO / TRANSFERENCIA</label>
+                            <input type="text" class="form-control" id="numero_egreso" placeholder="000000"
+                                value="{{ metadata.get('egreso', '') }}" style="border-radius: 8px;">
+                        </div>
+                        <div class="col-md-auto">
+                            <label class="form-label fw-bold text-muted small">REFERENCIA BANCARIA</label>
+                            <input type="text" class="form-control" id="referencia_bancaria" placeholder="REF-000"
+                                value="{{ metadata.get('referencia', '') }}" style="border-radius: 8px;">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold text-muted small">CÓDIGO BANCO</label>
+                            <input type="text" class="form-control" id="codigo_banco_bloque" placeholder="0102"
+                                value="{{ metadata.get('codigo_banco', '') }}" style="border-radius: 8px;">
+                        </div>
+                        <input type="hidden" id="compania_nombre" value="{{ compania }}">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold text-muted small">FECHA DEL MOVIMIENTO</label>
+                            <input type="date" class="form-control" id="fecha_movimiento"
+                                value="{{ fecha_seleccionada }}" style="border-radius: 8px;">
+                        </div>
+                        <div class="col-md-auto">
+                            <!-- Summary calculated via JS -->
+                            <div class="d-flex gap-3 h-100">
+                                <div
+                                    class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center">
+                                    <span class="small text-muted fw-bold">MONTO MONEDA</span>
+                                    <h3 class="mb-0 text-success fw-bold" id="total-bloque-usd">0,00</h3>
+                                </div>
+                                <div
+                                    class="p-3 bg-light rounded text-center h-100 d-flex flex-column justify-content-center">
+                                    <span class="small text-muted fw-bold">MONTO LOCAL</span>
+                                    <h3 class="mb-0 text-primary fw-bold" id="total-bloque-bs">0,00 Bs</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN TABLE -->
+        <div class="col-lg-12">
+            <div class="card commission-card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-premium table-hover align-middle mb-0" id="table-comisiones">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Estado</th>
+                                <th>Movimiento / Descripción</th>
+                                <th>Póliza / Recibo</th>
+                                <th>Asegurado</th>
+                                <th class="text-end">Prima</th>
+                                <th class="text-center">% Com</th>
+                                <th class="text-center">Moneda</th>
+                                <th class="text-end">Comisión $</th>
+                                <th class="text-center">Tasa</th>
+                                <th class="text-end text-primary">Total Pagado (Bs)</th>
+                                {% if compania == 'MERCANTIL' or compania == 'OCEANICA' %}
+                                <th class="text-center">No. Egreso</th>
+                                {% endif %}
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in matched_data %}
+                            <tr id="row-{{ loop.index0 }}"
+                                class="{{ 'procesado' if row.procesado == 'procesada' else 'no-encontrado' if row.procesado == 'no encontrada' else 'no-procesado' }}">
+                                <td class="text-center fw-bold text-muted">{{ loop.index }}</td>
+                                <td>
+                                    {% if row.procesado == 'procesada' %}
+                                    {% if row.db_cod_pago == 'AJUSTE_GLOBAL' %}
+                                    <span class="status-badge bg-info text-white small"><i class="bi bi-calculator"></i>
+                                        Ajuste</span>
+                                    {% else %}
+                                    <span class="status-badge bg-success text-white small"><i
+                                            class="bi bi-check-circle"></i> Lista</span>
+                                    {% endif %}
+                                    {% elif row.procesado == 'no encontrada' %}
+                                    <span class="status-badge bg-danger text-white small"><i
+                                            class="bi bi-question-circle"></i> No Match</span>
+                                    {% else %}
+                                    <span class="status-badge bg-warning text-dark small"><i class="bi bi-clock"></i>
+                                        Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="{{ 'text-danger fw-bold' if row.db_cod_pago == 'RETENCION' else '' }}">
+                                    <div class="fw-bold">{{ row['DESCRIPCION MOVIMIENTO'] }}</div>
+                                    <small class="text-muted">{{ row['FECHA COBRO RECIBO'] }}</small>
+                                </td>
+                                <td class="{{ 'text-danger fw-bold' if row.db_cod_pago == 'RETENCION' else '' }}">
+                                    <div class="fw-bold text-dark val-nro-poliza">{{ row['NRO. POLIZA'] }}</div>
+                                    <div class="small text-muted">Recibo: <span class="val-nro-recibo">{{ row['NRO. RECIBO'] }}</span></div>
+                                    {% if row.nro_cuota %}
+                                    <div class="small text-primary fw-bold">Cuota: <span class="val-nro-cuota">{{ row.nro_cuota }}</span></div>
+                                    {% else %}
+                                    <div class="small text-primary fw-bold d-none">Cuota: <span class="val-nro-cuota">-</span></div>
+                                    {% endif %}
+                                </td>
+                                <td class="{{ 'text-danger fw-bold' if row.db_cod_pago == 'RETENCION' else '' }}">
+                                    <div class="text-truncate" style="max-width: 150px;"
+                                        title="{{ row['NOMBRE CLIENTE'] }}">
+                                        {{ row['NOMBRE CLIENTE'] }}
+                                    </div>
+                                    {% if row.is_match %}
+                                    <span class="badge bg-light text-primary border border-primary small"
+                                        style="font-size: 0.6rem;">BD OK</span>
+                                    {% elif row.db_cod_pago == 'AJUSTE_GLOBAL' %}
+                                    <span class="badge bg-light text-info border border-info small"
+                                        style="font-size: 0.6rem;">AJUSTE</span>
+                                    {% elif row.db_cod_pago == 'RETENCION' %}
+                                    <span class="badge bg-danger text-white border border-danger small"
+                                        style="font-size: 0.6rem;">RETENCION</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="fw-bold">{{ "%.2f"|format((row['MONTO PRIMA'] or
+                                        row['monto_prima'])|default(0)|float) }}</div>
+                                </td>
+                                <td class="text-center">
+                                    {% set porc_com = row['porcentaje_comision_pdf']|default(0)|float %}
+                                    {% set prima = (row['MONTO PRIMA'] or row['monto_prima'])|default(0)|float %}
+                                    {% if porc_com == 0 and (compania == 'CARACAS' or compania == 'STAR') and prima != 0
+                                    %}
+                                    {% set comision = row.monto_usd_excel|default(0)|float %}
+                                    {% if comision == 0 and row.moneda == 'BOLIVARES' %}
+                                    {% set comision = row.monto_pagado_excel|default(0)|float %}
+                                    {% endif %}
+                                    {% set porc_com = (comision / prima) * 100 %}
+                                    {% endif %}
+                                    <div class="badge bg-light text-muted border">{{ "%.2f"|format(porc_com) }}%</div>
+                                </td>
+                                <td class="text-center">
+                                    <span
+                                        class="val-moneda badge {{ 'bg-success' if row.moneda != 'BOLIVARES' else 'bg-primary' }}">
+                                        {{ row.moneda or 'DOLARES' }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="fw-bold"><span class="val-monto-usd-excel">{{
+                                            "%.2f"|format(row.monto_usd_excel|default(0)|float) }}</span> $</div>
+                                </td>
+                                <td class="text-center font-monospace">
+                                    <span class="val-tasa-excel">{{ "%.2f"|format(row.tasa_excel|default(0)|float)
+                                        }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <div
+                                        class="fw-bold container-val-bs {{ 'text-danger' if (row.moneda == 'BOLIVARES' and row.monto_pagado_excel|float < 0) or (row.moneda != 'BOLIVARES' and row.monto_usd_excel|float < 0) else 'text-primary' }}">
+                                        {% if row.moneda == 'BOLIVARES' %}
+                                        <span class="val-monto-pagado-excel">{{
+                                            "%.2f"|format(row.monto_pagado_excel|default(0)|float) }}</span> Bs
+                                        {% else %}
+                                        {% set calc_bs = row.monto_usd_excel|default(0)|float *
+                                        row.tasa_excel|default(0)|float %}
+                                        <span
+                                            class="val-monto-pagado-excel {{ 'd-none' if row.tasa_excel|default(0)|float == 0 }}">{{
+                                            "%.2f"|format(calc_bs) }}</span>
+                                        <span
+                                            class="currency-label-bs {{ 'd-none' if row.tasa_excel|default(0)|float == 0 }}">Bs</span>
+                                        <span
+                                            class="text-muted highlight-dash {{ 'd-none' if row.tasa_excel|default(0)|float > 0 }}">-</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                {% if compania == 'MERCANTIL' or compania == 'OCEANICA' %}
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">{{ row.Egreso or row.egreso or '-' }}</span>
+                                </td>
+                                {% endif %}
+
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm shadow-sm" role="group">
+                                        <button class="btn btn-outline-primary btn-edit"
+                                            onclick="toggleEdit('{{ loop.index0 }}')" title="Editar Valores">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-assign"
+                                            onclick="openAssignModal('{{ loop.index0 }}')" title="Buscar y Asignar Póliza">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-delete"
+                                            onclick="deleteRow('{{ loop.index0 }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <button class="btn btn-success btn-save d-none"
+                                            onclick="saveEdit('{{ loop.index0 }}')">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-cancel d-none"
+                                            onclick="cancelEdit('{{ loop.index0 }}')">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal Retention -->
+    <div class="modal fade" id="addRetentionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-dash-circle"></i> Agregar Retención Manual</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Moneda</label>
+                        <select id="retention-currency" class="form-select">
+                            <option value="BOLIVARES">BOLIVARES</option>
+                            <option value="DOLARES">DOLARES</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monto a Restar</label>
+                        <div class="input-group">
+                            <input type="number" id="retention-amount" class="form-control" step="0.01" min="0"
+                                placeholder="0.00">
+                        </div>
+                    </div>
+                    <div id="retention-tasa-container" class="mb-3 d-none">
+                        <label class="form-label fw-bold">Tasa de Cambio (Opcional)</label>
+                        <input type="number" id="retention-tasa" class="form-control" step="0.01" min="0"
+                            placeholder="0.00">
+                        <small class="text-muted">Si ingresa tasa, se calculará el monto en Bs.</small>
+                    </div>
+                    <small class="text-muted d-block mt-2">Ingrese el valor positivo, se restará
+                        automáticamente.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="addRetentionRow()">Confirmar
+                        Retención</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Carga Manual -->
+    <div class="modal fade" id="manualCommissionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-purple text-white" style="background-color: #6f42c1;">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle"></i> Asignación Manual de Comisión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="search-box mb-4 p-3 bg-light rounded shadow-sm">
+                        <label class="form-label fw-bold">Buscar Póliza</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchManualPoliza" placeholder="Ingrese número de póliza...">
+                            <button class="btn btn-purple" type="button" id="searchManualBtn" style="background-color: #6f42c1; color: white;">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="manualSearchResults" style="display: none;">
+                        <div class="policy-info mb-4 p-3 border-start border-4 border-purple rounded bg-white shadow-sm" style="border-color: #6f42c1 !important;">
+                            <h6 class="fw-bold text-purple" id="resPolicyNum" style="color: #6f42c1;">PÓLIZA: -</h6>
+                            <p class="mb-0 text-muted" id="resAsegurado">Asegurado: -</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Seleccionar Cuota/Recibo Pagado</label>
+                            <select class="form-select shadow-sm" id="manualPaymentSelect">
+                                <option value="">Seleccione una cuota...</option>
+                            </select>
+                            <div class="form-text">Solo se muestran pagos con estado 'PAGADO'.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Monto Comisión (USD)</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm" id="manualMontoUsd" placeholder="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tasa de Cambio</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm" id="manualTasa" placeholder="1.00">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Descripción / Movimiento</label>
+                                <input type="text" class="form-control shadow-sm" id="manualDesc" placeholder="Ej: COMISION 1RA CUOTA">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-purple px-4 shadow-sm" id="addToTableManualBtn" disabled style="background-color: #6f42c1; color: white;">
+                        <i class="bi bi-plus-lg"></i> Agregar a Tabla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Asignar Póliza a Registro -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-search"></i> Buscar y Asignar Póliza</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="assignTargetIndex">
+                    <div class="search-box mb-4 p-3 bg-light rounded shadow-sm">
+                        <label class="form-label fw-bold">Buscar Póliza Completa</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="assignSearchPoliza" placeholder="Ej: HCAD0000020">
+                            <button class="btn btn-info text-white" type="button" id="assignSearchBtn">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="assignSearchResults" style="display: none;">
+                        <div class="policy-info mb-4 p-3 border-start border-4 border-info rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-info" id="assignResPolicyNum">PÓLIZA: -</h6>
+                            <p class="mb-0 text-muted" id="assignResAsegurado">Asegurado: -</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Seleccionar Cuota/Recibo Pagado</label>
+                            <select class="form-select shadow-sm" id="assignPaymentSelect">
+                                <option value="">Seleccione una cuota...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-info text-white px-4 shadow-sm" id="confirmAssignBtn" disabled>
+                        <i class="bi bi-check-circle"></i> Asignar a Registro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Helpers ---
+        const calculateDateDiff = (date1, date2) => {
+            if (!date1 || !date2) return 999999;
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            if (isNaN(d1) || isNaN(d2)) return 999999;
+            return Math.abs(d1 - d2);
+        };
+        const setupNav = () => {
+            const btns = {
+                'show-caracas-btn': 'caracas-form',
+                'show-star-btn': 'star-form',
+                'show-internacional-btn': 'internacional-form',
+                'show-oceanica-btn': 'oceanica-form',
+                'show-mercantil-btn': 'mercantil-form',
+                'show-piramide-btn': 'piramide-form',
+                'show-venezuela-btn': 'venezuela-form',
+                'show-universitas-btn': 'universitas-form',
+                'show-banesco-btn': 'banesco-form'
+            };
+
+            Object.keys(btns).forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                const formId = btns[btnId];
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        const container = document.getElementById('selection-container');
+                        const targetForm = document.getElementById(formId);
+                        if (container) container.style.display = 'none';
+                        if (targetForm) {
+                            targetForm.style.display = 'block';
+                            // Ensure it's not hidden by other means
+                            targetForm.classList.remove('d-none');
+                        }
+                    });
+                }
+            });
+
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const container = document.getElementById('selection-container');
+                    if (container) container.style.display = 'flex';
+                    document.querySelectorAll('.upload-section').forEach(s => {
+                        s.style.display = 'none';
+                        const fileInput = s.querySelector('input[type="file"]');
+                        if (fileInput) fileInput.value = ''; // Limpiar archivo al volver atrás
+                    });
+                });
+            });
+
+            // Limpiar inputs de archivos al cargar la página
+            document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
+        };
+        setupNav();
+
+        // --- File Inputs & Form Submission ---
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function () {
+                const btnId = 'btn-' + this.closest('.upload-section').id;
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = !this.files.length;
+            });
+        });
+
+        // Add loading state to upload forms
+        document.querySelectorAll('.upload-section form').forEach(form => {
+            form.addEventListener('submit', function () {
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+                }
+            });
+        });
+
+        // --- Data ---
+        window.allMatchedData = JSON.parse('{{ (matched_data | tojson | safe) if matched_data else "[]" }}');
+
+        // --- Stats & Totals ---
+        window.updateTotals = () => {
+            if (!window.allMatchedData.length) return;
+
+            // Calculate Totals
+            let totalBs = 0;
+            let totalMontoMoneda = 0;
+            let isBolivares = false;
+
+            // We can determine the block's main currency by looking at the first non-deleted row
+            const firstRow = window.allMatchedData.find(row => !row.deleted);
+            if (firstRow && firstRow.moneda === 'BOLIVARES') {
+                isBolivares = true;
+            }
+
+            window.allMatchedData.forEach(row => {
+                if (row.deleted) return;
+
+                if (row.moneda === 'BOLIVARES') {
+                    const valBs = parseFloat(row.monto_pagado_excel) || 0;
+                    totalBs += valBs;
+                    totalMontoMoneda += valBs; // if it's Bolívares, the currency amount is in Bs
+                } else {
+                    const usd = parseFloat(row.monto_usd_excel) || 0;
+                    const tasa = parseFloat(row.tasa_excel) || 0;
+                    totalBs += (usd * tasa);
+                    totalMontoMoneda += usd;
+                }
+            });
+
+            // Update UI & Visibility
+            const displayBsV = document.getElementById('total-bloque-bs');
+            const containerBs = displayBsV ? displayBsV.parentElement : null;
+            if (displayBsV) {
+                displayBsV.textContent = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2 }).format(totalBs) + ' Bs';
+                if (containerBs) {
+                    if (totalBs === 0) containerBs.classList.add('d-none');
+                    else containerBs.classList.remove('d-none');
+                }
+            }
+
+            const displayUsdV = document.getElementById('total-bloque-usd');
+            const containerUsd = displayUsdV ? displayUsdV.parentElement : null;
+
+            // Format for confirmation messages and summary
+            if (isBolivares) {
+                window.totalUsdText = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2 }).format(totalMontoMoneda) + ' Bs';
+            } else {
+                window.totalUsdText = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(totalMontoMoneda) + ' $';
+            }
+            window.totalBsText = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2 }).format(totalBs) + ' Bs';
+
+            if (displayUsdV) {
+                displayUsdV.textContent = window.totalUsdText;
+                if (containerUsd) {
+                    if (totalMontoMoneda === 0) containerUsd.classList.add('d-none');
+                    else containerUsd.classList.remove('d-none');
+                }
+            }
+        };
+
+        window.toggleBlockCurrency = () => {
+            if (!confirm("¿Desea cambiar la moneda de todos los registros de este bloque? (Dólares <-> Bolívares)")) return;
+
+            window.allMatchedData.forEach((row, idx) => {
+                const tr = document.getElementById(`row-${idx}`);
+                if (!tr || row.deleted) return;
+
+                const tasaVal = parseFloat(row.tasa_excel) || 0;
+                let bsToDisplay = 0;
+
+                if (row.moneda === 'BOLIVARES') {
+                    row.moneda = 'DOLARES';
+                    row.monto_usd_excel = row.monto_pagado_excel;
+                    row.monto_pagado_excel = 0;
+                    bsToDisplay = row.monto_usd_excel * tasaVal;
+                } else {
+                    row.moneda = 'BOLIVARES';
+                    row.monto_pagado_excel = row.monto_usd_excel;
+                    row.monto_usd_excel = 0;
+                    bsToDisplay = row.monto_pagado_excel;
+                }
+
+                // Actualizar UI de la fila
+                const badgeMoneda = tr.querySelector('.val-moneda');
+                if (badgeMoneda) {
+                    badgeMoneda.textContent = row.moneda;
+                    badgeMoneda.classList.toggle('bg-success', row.moneda !== 'BOLIVARES');
+                    badgeMoneda.classList.toggle('bg-primary', row.moneda === 'BOLIVARES');
+                }
+
+                const spanUsd = tr.querySelector('.val-monto-usd-excel');
+                if (spanUsd) spanUsd.textContent = parseFloat(row.monto_usd_excel).toFixed(2);
+
+                const spanPagado = tr.querySelector('.val-monto-pagado-excel');
+                if (spanPagado) spanPagado.textContent = bsToDisplay.toFixed(2);
+
+                const containerBs = tr.querySelector('.container-val-bs');
+                if (containerBs) {
+                    containerBs.classList.toggle('text-primary', true); // Reset color
+                    // Si es negativo, poner en rojo (asumiendo que row.monto_... ya tiene el signo)
+                    const isNeg = (row.moneda === 'BOLIVARES' ? row.monto_pagado_excel < 0 : row.monto_usd_excel < 0);
+                    containerBs.classList.toggle('text-danger', isNeg);
+                    containerBs.classList.toggle('text-primary', !isNeg);
+                }
+
+                // Visibilidad según tasa
+                const bsLabel = tr.querySelector('.currency-label-bs');
+                const dashRepl = tr.querySelector('.highlight-dash');
+
+                if (row.moneda !== 'BOLIVARES' && tasaVal === 0) {
+                    if (spanPagado) spanPagado.classList.add('d-none');
+                    if (bsLabel) bsLabel.classList.add('d-none');
+                    if (dashRepl) dashRepl.classList.remove('d-none');
+                } else {
+                    if (spanPagado) spanPagado.classList.remove('d-none');
+                    if (bsLabel) bsLabel.classList.remove('d-none');
+                    if (dashRepl) dashRepl.classList.add('d-none');
+                }
+            });
+
+            window.updateTotals();
+            alert("Moneda actualizada correctamente.");
+        };
+
+        window.updateTotals();
+
+        // --- Inline Edits ---
+        window.editingIndex = null;
+
+        window.toggleEdit = function (index) {
+            if (window.editingIndex !== null) {
+                alert("Ya hay una fila en edición. Por favor, guarde o cancele antes de editar otra.");
+                return;
+            }
+            window.editingIndex = index;
+
+            const row = document.getElementById('row-' + index);
+            const btnEdit = row.querySelector('.btn-edit');
+            const btnSave = row.querySelector('.btn-save');
+            const btnCancel = row.querySelector('.btn-cancel');
+
+            btnEdit.classList.add('d-none');
+            btnSave.classList.remove('d-none');
+            btnCancel.classList.remove('d-none');
+
+            const currentData = window.allMatchedData[index];
+            const moneda = currentData.moneda || 'DOLARES';
+
+            // 1. Setup Moneda Select
+            const spanMoneda = row.querySelector('.val-moneda');
+            const originalMoneda = spanMoneda.textContent.trim();
+            spanMoneda.dataset.original = originalMoneda;
+
+            spanMoneda.innerHTML = `
+                <select id="input-moneda-${index}" class="form-select form-select-sm" style="width: 110px;" onchange="updateInputsVisibility(${index})">
+                    <option value="DOLARES" ${moneda !== 'BOLIVARES' ? 'selected' : ''}>DOLARES</option>
+                    <option value="BOLIVARES" ${moneda === 'BOLIVARES' ? 'selected' : ''}>BOLIVARES</option>
+                </select>
+            `;
+
+            // 2. Setup Inputs (Create them all, irrelevant of current state)
+            const fields = ['monto_usd_excel', 'tasa_excel', 'monto_pagado_excel'];
+            fields.forEach(field => {
+                const span = row.querySelector(`.val-${field.replace(/_/g, '-')}`);
+                // Ensure span is visible and cleared of previous special content (like '-')
+                span.classList.remove('d-none');
+                span.innerHTML = '';
+
+                const currentVal = currentData[field];
+                span.dataset.original = currentVal; // Store original value
+
+                // Create input regardless of currency, we will control visibility next
+                span.innerHTML = `<input type="number" step="0.01" class="form-control form-control-sm text-center font-monospace" value="${parseFloat(currentVal) || 0}" id="input-${field}-${index}" style="width: 100px; display: inline-block;">`;
+            });
+
+            // 2.5 Setup Policy and Receipt
+            const spanPoliza = row.querySelector('.val-nro-poliza');
+            const spanRecibo = row.querySelector('.val-nro-recibo');
+
+            spanPoliza.dataset.original = currentData['NRO. POLIZA'];
+            spanRecibo.dataset.original = currentData['NRO. RECIBO'];
+
+            spanPoliza.innerHTML = `<input type="text" class="form-control form-control-sm fw-bold" value="${currentData['NRO. POLIZA']}" id="input-poliza-${index}" style="width: 130px;">`;
+            spanRecibo.innerHTML = `<input type="text" class="form-control form-control-sm" value="${currentData['NRO. RECIBO']}" id="input-recibo-${index}" style="width: 130px;">`;
+
+            // 3. Attach Auto-Calc Listeners
+            const inputUsd = document.getElementById(`input-monto_usd_excel-${index}`);
+            const inputTasa = document.getElementById(`input-tasa_excel-${index}`);
+            const inputBs = document.getElementById(`input-monto_pagado_excel-${index}`);
+
+            const recalcFromUsd = () => {
+                const currentMoneda = document.getElementById(`input-moneda-${index}`).value;
+                if (currentMoneda !== 'BOLIVARES') {
+                    const usd = parseFloat(inputUsd.value) || 0;
+                    const tasa = parseFloat(inputTasa.value) || 0;
+                    if (inputBs) {
+                        inputBs.value = (usd * tasa).toFixed(2);
+                    }
+                }
+            };
+
+            const recalcFromBs = () => {
+                const currentMoneda = document.getElementById(`input-moneda-${index}`).value;
+                if (currentMoneda !== 'BOLIVARES') {
+                    const bs = parseFloat(inputBs.value) || 0;
+                    const tasa = parseFloat(inputTasa.value) || 0;
+                    if (tasa > 0 && inputUsd) {
+                        inputUsd.value = (bs / tasa).toFixed(2);
+                    }
+                }
+            };
+
+            inputUsd.addEventListener('input', recalcFromUsd);
+            inputTasa.addEventListener('input', recalcFromUsd);
+            if (inputBs) inputBs.addEventListener('input', recalcFromBs);
+
+            // 4. Initial Visibility Update
+            updateInputsVisibility(index);
+        };
+
+        window.updateInputsVisibility = function (index) {
+            const monedaSelect = document.getElementById(`input-moneda-${index}`);
+            const moneda = monedaSelect.value;
+
+            const inputUsd = document.getElementById(`input-monto_usd_excel-${index}`);
+            const inputTasa = document.getElementById(`input-tasa_excel-${index}`);
+            const inputBs = document.getElementById(`input-monto_pagado_excel-${index}`);
+
+            // Containers (Parents) to handle "Text Muted" or "-" display if needed? 
+            // For simplicity, we just disable/hide inputs.
+
+            if (moneda === 'BOLIVARES') {
+                // Mode: BOLIVARES
+                // Enable: BS Input
+                // Disable/Zero: USD, Tasa
+                if (inputBs) {
+                    inputBs.disabled = false;
+                    inputBs.parentElement.classList.remove('d-none');
+                }
+
+                if (inputUsd) {
+                    inputUsd.disabled = true;
+                    inputUsd.value = 0;
+                    inputUsd.parentElement.classList.remove('d-none'); // Show input but disabled
+                }
+
+                if (inputTasa) {
+                    inputTasa.disabled = true;
+                    inputTasa.value = 0;
+                    inputTasa.parentElement.classList.remove('d-none');
+                }
+
+            } else {
+                // Mode: DOLARES
+                // Enable: USD, Tasa
+                // Disable/Zero: BS
+                if (inputUsd) {
+                    inputUsd.disabled = false;
+                    inputUsd.parentElement.classList.remove('d-none');
+                }
+
+                if (inputTasa) {
+                    inputTasa.disabled = false;
+                    inputTasa.parentElement.classList.remove('d-none');
+                }
+
+                if (inputBs) {
+                    inputBs.disabled = true;
+                    inputBs.value = 0;
+                    inputBs.parentElement.classList.remove('d-none');
+                }
+            }
+        };
+
+        window.saveEdit = async function (index) {
+            const row = document.getElementById('row-' + index);
+            const btnSave = row.querySelector('.btn-save');
+            const originalHtml = btnSave.innerHTML;
+
+            const newPoliza = document.getElementById(`input-poliza-${index}`).value.trim();
+            const newRecibo = document.getElementById(`input-recibo-${index}`).value.trim();
+            const monedaInput = document.getElementById(`input-moneda-${index}`);
+            const newMoneda = monedaInput ? monedaInput.value : 'DOLARES';
+
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                // 1. Verificar Póliza en el backend
+                const resp = await fetch('/verificar-poliza-beta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ poliza: newPoliza })
+                });
+                const result = await resp.json();
+
+                if (!result.success) {
+                    alert("Error verificando póliza: " + result.message);
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = originalHtml;
+                    return;
+                }
+
+                // 2. Update Data Array
+                const rowData = window.allMatchedData[index];
+                rowData['NRO. POLIZA'] = newPoliza;
+                rowData['NRO. RECIBO'] = newRecibo;
+                rowData.moneda = newMoneda;
+
+                const fields = ['monto_usd_excel', 'tasa_excel', 'monto_pagado_excel'];
+                fields.forEach(field => {
+                    const input = document.getElementById(`input-${field}-${index}`);
+                    if (input) {
+                        rowData[field] = parseFloat(input.value) || 0;
+                    }
+                });
+
+                // 3. Update Match Status
+                if (result.exists) {
+                    rowData.is_match = true;
+                    rowData['NOMBRE CLIENTE'] = result.nombre_cliente;
+                    rowData.cod_ejecutivo = result.poliza.cod_ejecutivo;
+
+                    // Ver si el recibo coincide con el ID o el número de recibo en la BD
+                    let matchPago = result.pagos.find(p =>
+                        String(p.db_cod_pago) === String(newRecibo) ||
+                        (p.db_nro_recibo && String(p.db_nro_recibo).trim().toUpperCase() === String(newRecibo).trim().toUpperCase())
+                    );
+
+                    // Si no hay match exacto por recibo, intentar por fecha más próxima
+                    if (!matchPago && result.pagos.length > 0) {
+                        const commissionDate = rowData['FECHA COBRO RECIBO'] || new Date().toISOString().split('T')[0];
+                        
+                        // Contar usos actuales en el lote (excluyendo la fila actual) para priorizar libres
+                        const currentUsage = {};
+                        if (window.allMatchedData) {
+                            window.allMatchedData.forEach((r, idx) => {
+                                if (idx !== index && r.db_cod_pago) {
+                                    currentUsage[r.db_cod_pago] = (currentUsage[r.db_cod_pago] || 0) + 1;
+                                }
+                            });
+                        }
+
+                        const MAX_MARGIN_MS = 45 * 24 * 60 * 60 * 1000;
+                        let bestScore = null;
+                        
+                        result.pagos.forEach(p => {
+                            const pDate = p.db_fecha_cuota || p.fecha_pagada;
+                            const diff = calculateDateDiff(commissionDate, pDate);
+                            
+                            if (diff > MAX_MARGIN_MS) return;
+
+                            const timesUsed = currentUsage[p.db_cod_pago] || 0;
+                            const penalty = timesUsed * 30 * 24 * 60 * 60 * 1000; // Penalización virtual de 30 días si ya está usada
+                            const score = diff + penalty;
+
+                            if (bestScore === null || score < bestScore) {
+                                bestScore = score;
+                                matchPago = p;
+                            }
+                        });
+                    }
+
+                    if (matchPago) {
+                        rowData.procesado = 'procesada';
+                        rowData.db_cod_pago = matchPago.db_cod_pago;
+                        rowData.nro_cuota = matchPago.nro_cuota;
+                        if (matchPago.db_comision_porc) rowData.porcentaje_comision_pdf = matchPago.db_comision_porc;
+                    } else {
+                        rowData.procesado = 'por procesar';
+                        // Si no hay pago exacto, vinculamos a 'POLIZA_OK' (que el backend tratará como pago 0 pero usando cod_poliza)
+                        rowData.db_cod_pago = 'POLIZA_OK';
+                        rowData.nro_cuota = null;
+                    }
+                } else {
+                    rowData.is_match = false;
+                    rowData.procesado = 'no encontrada';
+                    rowData.db_cod_pago = null;
+                    rowData.cod_ejecutivo = null;
+                }
+
+                // 4. Update UI Components
+                // Nro Poliza & Recibo
+                const elPoliza = row.querySelector('.val-nro-poliza');
+                const elRecibo = row.querySelector('.val-nro-recibo');
+                if (elPoliza) elPoliza.textContent = newPoliza;
+                if (elRecibo) elRecibo.textContent = newRecibo;
+
+                // Cliente
+                const clientDiv = row.querySelector('td:nth-child(5) .text-truncate');
+                if (clientDiv) clientDiv.textContent = rowData['NOMBRE CLIENTE'];
+
+                // Cuota Info
+                const elCuota = row.querySelector('.val-nro-cuota');
+                const containerCuota = elCuota ? elCuota.parentElement : null;
+                if (elCuota && rowData.nro_cuota) {
+                    elCuota.textContent = rowData.nro_cuota;
+                    if (containerCuota) containerCuota.classList.remove('d-none');
+                } else if (containerCuota) {
+                    containerCuota.classList.add('d-none');
+                }
+
+                // Badge de Match
+                let badgeContainer = row.querySelector('td:nth-child(4)'); // Updated to match column 4 (Poliza/Recibo)
+                let existingBadge = badgeContainer ? badgeContainer.querySelector('.badge') : null;
+                if (!badgeContainer) badgeContainer = row.querySelector('td:nth-child(5)'); // Fallback
+
+                if (rowData.is_match && badgeContainer) {
+                    badgeContainer.insertAdjacentHTML('beforeend', '<span class="badge bg-light text-primary border border-primary small" style="font-size: 0.6rem;">BD OK</span>');
+                }
+
+                // Estado Row & Badge
+                row.classList.remove('procesado', 'no-encontrado', 'no-procesado');
+                const statusClass = rowData.procesado === 'procesada' ? 'procesado' : (rowData.procesado === 'no encontrada' ? 'no-encontrado' : 'no-procesado');
+                row.classList.add(statusClass);
+
+                const statusBadgeCell = row.querySelector('td:nth-child(2)');
+                if (rowData.procesado === 'procesada') {
+                    statusBadgeCell.innerHTML = '<span class="status-badge bg-success text-white small"><i class="bi bi-check-circle"></i> Lista</span>';
+                } else if (rowData.procesado === 'no encontrada') {
+                    statusBadgeCell.innerHTML = '<span class="status-badge bg-danger text-white small"><i class="bi bi-question-circle"></i> No Match</span>';
+                } else {
+                    statusBadgeCell.innerHTML = '<span class="status-badge bg-warning text-dark small"><i class="bi bi-clock"></i> Pendiente</span>';
+                }
+
+                // Moneda
+                const spanMoneda = row.querySelector('.val-moneda');
+                spanMoneda.className = `val-moneda badge ${newMoneda !== 'BOLIVARES' ? 'bg-success' : 'bg-primary'}`;
+                spanMoneda.textContent = newMoneda;
+
+                // All Other Spans
+                fields.forEach(field => {
+                    const span = row.querySelector(`.val-${field.replace(/_/g, '-')}`);
+                    if (span) span.innerHTML = rowData[field].toFixed(2);
+                });
+
+                cancelEdit(index, false);
+                updateTotals();
+
+            } catch (err) {
+                console.error(err);
+                alert("Error al guardar cambios.");
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = originalHtml;
+            }
+        };
+
+        window.cancelEdit = function (index, revert = true) {
+            window.editingIndex = null;
+            const row = document.getElementById('row-' + index);
+            const btnEdit = row.querySelector('.btn-edit');
+            const btnSave = row.querySelector('.btn-save');
+            const btnCancel = row.querySelector('.btn-cancel');
+
+            btnEdit.classList.remove('d-none');
+            btnSave.classList.add('d-none');
+            btnCancel.classList.add('d-none');
+
+            if (revert) {
+                const fields = ['monto_usd_excel', 'tasa_excel', 'monto_pagado_excel'];
+                fields.forEach(field => {
+                    const span = row.querySelector(`.val-${field.replace(/_/g, '-')}`);
+                    if (span) {
+                        const originalVal = span.dataset.original;
+                        if (originalVal !== undefined) {
+                            const valNum = parseFloat(originalVal) || 0;
+                            span.innerHTML = valNum.toFixed(2);
+
+                            // Handling visibility and placeholders
+                            const isBs = window.allMatchedData[index].moneda === 'BOLIVARES';
+                            const parent = span.parentElement;
+                            const dash = parent.querySelector('.highlight-dash');
+                            const label = parent.querySelector('.currency-label-bs');
+                            const bsPlaceholder = parent.querySelector('.text-muted.fw-bold.small'); // For USD column in BS
+
+                            if (field === 'monto_pagado_excel') {
+                                if (!isBs && valNum === 0 && window.allMatchedData[index].tasa_excel === 0) {
+                                    span.classList.add('d-none');
+                                    if (label) label.classList.add('d-none');
+                                    if (dash) dash.classList.remove('d-none');
+                                } else {
+                                    span.classList.remove('d-none');
+                                    if (label) label.classList.remove('d-none');
+                                    if (dash) dash.classList.add('d-none');
+                                }
+                            } else if (field === 'monto_usd_excel') {
+                                if (isBs) {
+                                    span.classList.add('d-none');
+                                    if (bsPlaceholder) bsPlaceholder.classList.remove('d-none');
+                                } else {
+                                    span.classList.remove('d-none');
+                                    if (bsPlaceholder) bsPlaceholder.classList.add('d-none');
+                                }
+                            } else if (field === 'tasa_excel') {
+                                if (isBs) {
+                                    span.classList.add('d-none');
+                                    const dashTasa = parent.querySelector('.text-muted');
+                                    if (dashTasa) dashTasa.classList.remove('d-none');
+                                } else {
+                                    span.classList.remove('d-none');
+                                    const dashTasa = parent.querySelector('.text-muted');
+                                    if (dashTasa) dashTasa.classList.add('d-none');
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Revert Moneda
+                const spanMoneda = row.querySelector('.val-moneda');
+                if (spanMoneda && spanMoneda.dataset.original) {
+                    spanMoneda.textContent = spanMoneda.dataset.original;
+                    const isBs = spanMoneda.textContent === 'BOLIVARES';
+                    spanMoneda.className = `val-moneda badge ${!isBs ? 'bg-success' : 'bg-primary'}`;
+                }
+
+                // Revert Poliza & Recibo
+                const spanPoliza = row.querySelector('.val-nro-poliza');
+                const spanRecibo = row.querySelector('.val-nro-recibo');
+                if (spanPoliza && spanPoliza.dataset.original) spanPoliza.textContent = spanPoliza.dataset.original;
+                if (spanRecibo && spanRecibo.dataset.original) spanRecibo.textContent = spanRecibo.dataset.original;
+            } else {
+                // Clean up UI after save
+                const isBs = window.allMatchedData[index].moneda === 'BOLIVARES';
+                const rowData = window.allMatchedData[index];
+
+                // Fix USD Column
+                const spanUsd = row.querySelector('.val-monto-usd-excel');
+                if (spanUsd) {
+                    if (isBs) {
+                        spanUsd.classList.add('d-none');
+                        const bsPlaceholder = spanUsd.parentElement.querySelector('.text-muted.fw-bold.small');
+                        if (bsPlaceholder) bsPlaceholder.classList.remove('d-none'); // Show 'BS'
+                    } else {
+                        spanUsd.classList.remove('d-none');
+                        const bsPlaceholder = spanUsd.parentElement.querySelector('.text-muted.fw-bold.small');
+                        if (bsPlaceholder) bsPlaceholder.classList.add('d-none');
+                    }
+                }
+
+                // Fix BS Column
+                const containerBs = row.querySelector('.container-val-bs');
+                const spanBs = row.querySelector('.val-monto-pagado-excel');
+                const labelBs = row.querySelector('.currency-label-bs');
+                const dashBs = row.querySelector('.highlight-dash');
+
+                if (spanBs) {
+                    const val = isBs ? rowData.monto_pagado_excel : (rowData.monto_usd_excel * rowData.tasa_excel);
+                    spanBs.textContent = val.toFixed(2);
+
+                    if (isBs) {
+                        spanBs.classList.remove('d-none');
+                        if (labelBs) labelBs.classList.remove('d-none');
+                        if (dashBs) dashBs.classList.add('d-none');
+                    } else {
+                        if (rowData.tasa_excel > 0) {
+                            spanBs.classList.remove('d-none');
+                            if (labelBs) labelBs.classList.remove('d-none');
+                            if (dashBs) dashBs.classList.add('d-none');
+                        } else {
+                            spanBs.classList.add('d-none');
+                            if (labelBs) labelBs.classList.add('d-none');
+                            if (dashBs) dashBs.classList.remove('d-none');
+                        }
+                    }
+
+                    // Update danger color for negative values across both USD/BS
+                    if (containerBs) {
+                        const isNegative = isBs ? (rowData.monto_pagado_excel < 0) : (rowData.monto_usd_excel < 0);
+                        if (isNegative) {
+                            containerBs.classList.add('text-danger');
+                            containerBs.classList.remove('text-primary');
+                        } else {
+                            containerBs.classList.remove('text-danger');
+                            containerBs.classList.add('text-primary');
+                        }
+                    }
+                }
+
+                // Fix Tasa Column
+                const spanTasa = row.querySelector('.val-tasa-excel');
+                if (spanTasa) {
+                    if (isBs) {
+                        spanTasa.classList.add('d-none');
+                        const dashTasa = spanTasa.parentElement.querySelector('.text-muted');
+                        if (dashTasa) dashTasa.classList.remove('d-none');
+                    } else {
+                        spanTasa.classList.remove('d-none');
+                        const dashTasa = spanTasa.parentElement.querySelector('.text-muted');
+                        if (dashTasa) dashTasa.classList.add('d-none');
+                    }
+                }
+            }
+        };
+
+        // --- Delete Row ---
+        window.deleteRow = function (index) {
+            if (!confirm('¿Está seguro de eliminar este registro? Esta acción no se puede deshacer.')) return;
+
+            // 1. Remove from Data Array
+            // We set it to null or filter it out. Filtering re-indexes, which might break other buttons if they rely on index.
+            // Safer approach: Mark as deleted and hide.
+
+            // Actually, for a clean removal, let's splice and re-render OR just hide and ignore in calculations.
+            // Re-rendering entire table is expensive.
+            // Let's use a "deleted" flag.
+
+            window.allMatchedData[index].deleted = true;
+            if (window.editingIndex === index) window.editingIndex = null;
+
+            // 2. Hide Row
+            const row = document.getElementById('row-' + index);
+            if (row) row.classList.add('d-none');
+
+            // 3. Recalc Totals
+            // Update updateTotals to ignore deleted rows
+            updateTotals();
+        };
+
+        // Update totals to ignore deleted
+        // Note: window.updateTotals at line 507 already handles the 'deleted' flag.
+
+        // Also need to ensure bulk process ignores deleted
+        // --- Bulk Process ---
+        const processBtn = document.getElementById('procesarMatchBtn');
+        if (processBtn) {
+            processBtn.addEventListener('click', async function () {
+                // Filter out deleted rows and use current state
+                // Filter out deleted rows and ensure we only process the current block
+                const currentBlockIdx = JSON.parse('{{ current_block_idx | default(0) | tojson | safe }}');
+                const totalBlocks = JSON.parse('{{ total_blocks | default(0) | tojson | safe }}');
+                
+                let data = window.allMatchedData.filter(row => !row.deleted);
+                
+                // If there are multiple blocks, filter by the current one
+                if (totalBlocks > 1 || (data.length > 0 && 'block_id' in data[0])) {
+                    data = data.filter(row => String(row.block_id) === String(currentBlockIdx));
+                }
+
+
+                const egreso = document.getElementById('numero_egreso').value.trim();
+                const ref = document.getElementById('referencia_bancaria').value.trim();
+                const codBanco = document.getElementById('codigo_banco_bloque').value.trim();
+                const fecha = document.getElementById('fecha_movimiento').value;
+
+                if (!egreso || !ref || !fecha) {
+                    alert('Debe completar la información del Bloque (Egreso, Referencia y Fecha).');
+                    return;
+                }
+
+                const noEncontradas = data.filter(i => i.procesado === 'no encontrada');
+                let confirmMsg = `¿Confirmar carga del bloque?\n`;
+
+                if (noEncontradas.length > 0) {
+                    confirmMsg += `\n⚠️ AVISO: ${noEncontradas.length} registros no tienen póliza asociada y se enviarán a 'Pólizas Pendientes'.\n`;
+                }
+                if (totalUsdText !== '0,00 $') confirmMsg += `Total USD: ${totalUsdText}\n`;
+                if (totalBsText !== '0,00 Bs') confirmMsg += `Total Bs: ${totalBsText}\n`;
+
+                if (!confirm(confirmMsg)) return;
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+
+                try {
+                    const response = await fetch('/procesar-comisiones-beta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            comisiones: data,
+                            bloque_info: {
+                                numero_egreso: egreso,
+                                referencia_bancaria: ref,
+                                codigo_banco: codBanco,
+                                fecha_movimiento: fecha,
+                                compania: document.getElementById('compania_nombre').value
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('¡Éxito! ' + result.message);
+
+                        // Pass variables as JSON strings to avoid IDE syntax errors
+                        const currentBlockIdx = JSON.parse('{{ current_block_idx | default(0) | tojson | safe }}');
+                        const totalBlocks = JSON.parse('{{ total_blocks | default(0) | tojson | safe }}');
+
+                        if (totalBlocks > 0 && currentBlockIdx + 1 < totalBlocks) {
+                            // Si hay más bloques, saltar automáticamente al siguiente
+                            window.location.href = "{{ url_for('comisiones_beta') }}?block_idx=" + (currentBlockIdx + 1);
+                        } else {
+                            location.reload();
+                        }
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (e) {
+                    alert('Error de conexión con el servidor.');
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-check-circle"></i> Confirmar Bloque';
+                }
+            });
+        }
+
+        // --- Retention Modal Logic ---
+        const retCurrency = document.getElementById('retention-currency');
+        if (retCurrency) {
+            retCurrency.addEventListener('change', function () {
+                const tasaContainer = document.getElementById('retention-tasa-container');
+                if (this.value === 'DOLARES') {
+                    tasaContainer.classList.remove('d-none');
+                } else {
+                    tasaContainer.classList.add('d-none');
+                }
+            });
+        }
+        window.addRetentionRow = function () {
+            const currency = document.getElementById('retention-currency').value;
+            const amountInput = document.getElementById('retention-amount');
+            const tasaInput = document.getElementById('retention-tasa');
+            const amount = parseFloat(amountInput.value) || 0;
+            const tasa = parseFloat(tasaInput.value) || 0;
+
+            if (amount <= 0) {
+                alert("Por favor ingrese un monto válido mayor a 0.");
+                return;
+            }
+
+            // Create new data object
+            const newIdx = window.allMatchedData.length;
+            const today = new Date().toISOString().split('T')[0];
+
+            const newRow = {
+                'NRO. POLIZA': 'RETENCIONES',
+                'NRO. RECIBO': 'MANUAL',
+                'NOMBRE CLIENTE': 'RETENCIONES MANUAL',
+                'DESCRIPCION MOVIMIENTO': 'RETENCIONES MANUAL',
+                'FECHA COBRO RECIBO': today,
+                'matched_db_pago': null,
+                'is_match': true,
+                'procesado': 'procesada',
+                'db_cod_pago': 'RETENCION',
+                'moneda': currency,
+                'monto_usd_excel': (currency === 'DOLARES' ? -amount : 0),
+                'tasa_excel': (currency === 'DOLARES' ? tasa : 0),
+                'monto_pagado_excel': (currency === 'BOLIVARES' ? -amount : 0),
+                'monto_prima': 0
+            };
+
+            window.allMatchedData.push(newRow);
+
+            // Append to Table
+            const tbody = document.querySelector('#table-comisiones tbody');
+            const tr = document.createElement('tr');
+            tr.id = 'row-' + newIdx;
+            tr.className = 'procesado';
+
+            const fmt = (n) => n.toFixed(2);
+
+            let html = `
+                <td class="text-center fw-bold text-muted">${newIdx + 1}</td>
+                <td><span class="status-badge bg-success text-white small"><i class="bi bi-check-circle"></i> Lista</span></td>
+                <td class="text-danger fw-bold">
+                    <div class="fw-bold">${newRow['DESCRIPCION MOVIMIENTO']}</div>
+                    <small class="text-muted">${newRow['FECHA COBRO RECIBO']}</small>
+                </td>
+                <td class="text-danger fw-bold">
+                    <div class="fw-bold text-dark"><span class="val-nro-poliza">${newRow['NRO. POLIZA']}</span></div>
+                    <div class="small text-muted">Recibo: <span class="val-nro-recibo">${newRow['NRO. RECIBO']}</span></div>
+                </td>
+                <td class="text-danger fw-bold">
+                    <div class="text-truncate" style="max-width: 150px;">${newRow['NOMBRE CLIENTE']}</div>
+                    <span class="badge bg-danger text-white border border-danger small" style="font-size: 0.6rem;">RETENCION</span>
+                </td>
+                <td class="text-end">
+                    <div class="fw-bold">0.00</div>
+                </td>
+                <td class="text-center">
+                    <div class="badge bg-light text-muted border">0.00%</div>
+                </td>
+                <td class="text-center">
+                     <span class="val-moneda badge ${currency !== 'BOLIVARES' ? 'bg-success' : 'bg-primary'}">${currency}</span>
+                </td>
+                <td class="text-end">
+                     ${currency === 'BOLIVARES' ?
+                    '<span class="text-muted fw-bold small">BS</span> <span class="d-none val-monto-usd-excel" data-original="0">0</span>' :
+                    `<div class="fw-bold"><span class="val-monto-usd-excel">${fmt(newRow.monto_usd_excel)}</span> $</div>`
+                }
+                </td>
+                <td class="text-center font-monospace">
+                     ${currency === 'BOLIVARES' ? '<span class="text-muted">-</span>' : `<span class="val-tasa-excel">${fmt(newRow.tasa_excel)}</span>`}
+                </td>
+                <td class="text-end">
+                     <div class="fw-bold container-val-bs text-danger">
+                         <span class="val-monto-pagado-excel">
+                            ${currency === 'BOLIVARES' ? fmt(newRow.monto_pagado_excel) : (newRow.tasa_excel > 0 ? fmt(newRow.monto_usd_excel * newRow.tasa_excel) : '0.00')}
+                         </span>
+                         <span class="currency-label-bs ${(currency !== 'BOLIVARES' && newRow.tasa_excel === 0) ? 'd-none' : ''}">Bs</span>
+                         <span class="text-muted highlight-dash ${(currency === 'BOLIVARES' || newRow.tasa_excel > 0) ? 'd-none' : ''}">-</span>
+                     </div>
+                </td>
+
+                <td class="text-center">
+                     <div class="btn-group btn-group-sm shadow-sm">
+                         <button class="btn btn-outline-primary btn-edit" onclick="toggleEdit('${newIdx}')"><i class="bi bi-pencil"></i></button>
+                         <button class="btn btn-outline-danger btn-delete" onclick="deleteRow('${newIdx}')"><i class="bi bi-trash"></i></button>
+                         <button class="btn btn-success btn-save d-none" onclick="saveEdit('${newIdx}')"><i class="bi bi-check-lg"></i></button>
+                         <button class="btn btn-danger btn-cancel d-none" onclick="cancelEdit('${newIdx}')"><i class="bi bi-x-circle"></i></button>
+                     </div>
+                </td>
+            `;
+
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
+
+            // Close Modal
+            const modalEl = document.getElementById('addRetentionModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            // Reset Input
+            amountInput.value = '';
+
+            // Update Totals
+            updateTotals();
+
+            // Update counts
+            const countBadge = document.querySelector('.card-header-gradient .badge');
+            if (countBadge) countBadge.textContent = 'Total Registros: ' + window.allMatchedData.length;
+        };
+
+        // --- Manual Commission Logic ---
+        const searchManualBtn = document.getElementById('searchManualBtn');
+        const searchManualPoliza = document.getElementById('searchManualPoliza');
+        const manualSearchResults = document.getElementById('manualSearchResults');
+        const manualPaymentSelect = document.getElementById('manualPaymentSelect');
+        const addToTableManualBtn = document.getElementById('addToTableManualBtn');
+
+        if (searchManualBtn) {
+            searchManualBtn.addEventListener('click', async () => {
+                const poliza = searchManualPoliza.value.trim();
+                if (!poliza) {
+                    Swal.fire('Error', 'Ingrese una póliza', 'warning');
+                    return;
+                }
+
+                searchManualBtn.disabled = true;
+                searchManualBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    const response = await fetch('/verificar-poliza-beta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ poliza })
+                    });
+                    const data = await response.json();
+
+                    if (data.success && data.exists) {
+                        manualSearchResults.style.display = 'block';
+                        document.getElementById('resPolicyNum').innerText = `PÓLIZA: ${data.poliza.cod_poliza}`;
+                        document.getElementById('resAsegurado').innerText = `Asegurado: ${data.poliza.Nombre} ${data.poliza.Apellido}`;
+
+                        // Populate payments
+                        manualPaymentSelect.innerHTML = '<option value="">Seleccione una cuota...</option>';
+                        data.pagos.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.db_cod_pago;
+                            option.dataset.raw = JSON.stringify(p);
+                            option.innerText = `Cuota #${p.nro_cuota || 'N/A'} - Recibo: ${p.db_nro_recibo || 'S/N'} - Pagado el: ${p.fecha_pagada} ($${p.db_monto_usd})`;
+                            manualPaymentSelect.appendChild(option);
+                        });
+
+                        addToTableManualBtn.disabled = false;
+                    } else {
+                        Swal.fire('No encontrada', data.message || 'Póliza no encontrada', 'info');
+                        manualSearchResults.style.display = 'none';
+                        addToTableManualBtn.disabled = true;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Error', 'Error al buscar póliza', 'error');
+                } finally {
+                    searchManualBtn.disabled = false;
+                    searchManualBtn.innerHTML = '<i class="bi bi-search"></i> Buscar';
+                }
+            });
+        }
+
+        if (addToTableManualBtn) {
+            addToTableManualBtn.addEventListener('click', () => {
+                const selectedOpt = manualPaymentSelect.selectedOptions[0];
+                if (!selectedOpt || !selectedOpt.value) {
+                    Swal.fire('Atención', 'Seleccione una cuota', 'warning');
+                    return;
+                }
+
+                const paymentData = JSON.parse(selectedOpt.dataset.raw);
+                const montoUsd = parseFloat(document.getElementById('manualMontoUsd').value) || 0;
+                const tasa = parseFloat(document.getElementById('manualTasa').value) || 1.0;
+                const desc = document.getElementById('manualDesc').value || 'CARGA MANUAL';
+
+                if (montoUsd <= 0) {
+                    Swal.fire('Atención', 'Ingrese un monto de comisión válido', 'warning');
+                    return;
+                }
+
+                const manualEntry = {
+                    'is_match': true,
+                    'NRO. POLIZA': paymentData.cod_poliza || searchManualPoliza.value.trim(),
+                    'NRO. RECIBO': paymentData.db_nro_recibo,
+                    'NOMBRE CLIENTE': document.getElementById('resAsegurado').innerText.replace('Asegurado: ', ''),
+                    'FECHA COBRO RECIBO': paymentData.fecha_pagada,
+                    'monto_usd_excel': montoUsd,
+                    'monto_usd_predefined': paymentData.db_monto_usd,
+                    'tasa_excel': tasa,
+                    'monto_pagado_excel': montoUsd * tasa,
+                    'db_cod_pago': paymentData.db_cod_pago,
+                    'nro_cuota': paymentData.nro_cuota,
+                    'cod_ejecutivo': paymentData.cod_ejecutivo,
+                    'predefined_comision_porcentaje': paymentData.db_comision_porc,
+                    'DESCRIPCIÃ“N MOVIMIENTO': desc,
+                    'moneda': 'DOLARES',
+                    'procesado': 'por procesar'
+                };
+
+                // Initialize table if empty
+                if (!window.allMatchedData || window.allMatchedData.length === 0) {
+                    window.allMatchedData = [];
+                    document.getElementById('results-section').style.display = 'block';
+                    document.getElementById('selection-container').style.display = 'none';
+                }
+
+                window.allMatchedData.push(manualEntry);
+                renderTable();
+
+                // Close modal
+                const modalEl = document.getElementById('manualCommissionModal');
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
+
+                // Reset form
+                searchManualPoliza.value = '';
+                manualSearchResults.style.display = 'none';
+                document.getElementById('manualMontoUsd').value = '';
+                document.getElementById('manualDesc').value = '';
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Agregado',
+                    text: 'Registro agregado a la tabla de procesamiento',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
+
+        // --- Assign Policy Logic ---
+        window.openAssignModal = function(index) {
+            document.getElementById('assignTargetIndex').value = index;
+            document.getElementById('assignSearchPoliza').value = '';
+            document.getElementById('assignSearchResults').style.display = 'none';
+            document.getElementById('confirmAssignBtn').disabled = true;
+            
+            const modalEl = document.getElementById('assignModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        };
+
+        const assignSearchBtn = document.getElementById('assignSearchBtn');
+        if (assignSearchBtn) {
+            assignSearchBtn.addEventListener('click', async () => {
+                const poliza = document.getElementById('assignSearchPoliza').value.trim();
+                if (!poliza) {
+                    Swal.fire('Error', 'Ingrese una póliza', 'warning');
+                    return;
+                }
+
+                assignSearchBtn.disabled = true;
+                assignSearchBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    const response = await fetch('/verificar-poliza-beta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ poliza })
+                    });
+                    const data = await response.json();
+
+                    if (data.success && data.exists) {
+                        document.getElementById('assignSearchResults').style.display = 'block';
+                        document.getElementById('assignResPolicyNum').innerText = `PÓLIZA: ${data.poliza.cod_poliza}`;
+                        document.getElementById('assignResAsegurado').innerText = `Asegurado: ${data.poliza.Nombre} ${data.poliza.Apellido}`;
+
+                        const select = document.getElementById('assignPaymentSelect');
+                        select.innerHTML = '<option value="">Seleccione una cuota...</option>';
+                        data.pagos.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.db_cod_pago;
+                            option.dataset.raw = JSON.stringify(p);
+                            option.innerText = `Cuota #${p.nro_cuota || 'N/A'} - Recibo: ${p.db_nro_recibo || 'S/N'} - Pagado el: ${p.fecha_pagada} ($${p.db_monto_usd})`;
+                            select.appendChild(option);
+                        });
+
+                        document.getElementById('confirmAssignBtn').disabled = false;
+                    } else {
+                        Swal.fire('No encontrada', data.message || 'Póliza no encontrada', 'info');
+                        document.getElementById('assignSearchResults').style.display = 'none';
+                        document.getElementById('confirmAssignBtn').disabled = true;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Error', 'Error al buscar póliza', 'error');
+                } finally {
+                    assignSearchBtn.disabled = false;
+                    assignSearchBtn.innerHTML = '<i class="bi bi-search"></i> Buscar';
+                }
+            });
+        }
+
+        const confirmAssignBtn = document.getElementById('confirmAssignBtn');
+        if (confirmAssignBtn) {
+            confirmAssignBtn.addEventListener('click', () => {
+                const select = document.getElementById('assignPaymentSelect');
+                const selectedOpt = select.selectedOptions[0];
+                if (!selectedOpt || !selectedOpt.value) {
+                    Swal.fire('Atención', 'Seleccione una cuota', 'warning');
+                    return;
+                }
+
+                const paymentData = JSON.parse(selectedOpt.dataset.raw);
+                const targetIdx = parseInt(document.getElementById('assignTargetIndex').value);
+                const originalPdfPolicy = window.allMatchedData[targetIdx]['NRO. POLIZA'];
+
+                let assignCount = 0;
+
+                window.allMatchedData.forEach((rowData, idx) => {
+                    // Update the target row, OR any unmatched row with the exact same original PDF policy
+                    if (idx === targetIdx || (rowData['NRO. POLIZA'] === originalPdfPolicy && rowData.procesado === 'no encontrada')) {
+                        
+                        // Update data array
+                        rowData.is_match = true;
+                        rowData.procesado = 'por procesar';
+                        rowData['NRO. POLIZA'] = paymentData.cod_poliza;
+                        rowData['NRO. RECIBO'] = paymentData.db_nro_recibo;
+                        rowData['NOMBRE CLIENTE'] = document.getElementById('assignResAsegurado').innerText.replace('Asegurado: ', '');
+                        rowData.db_cod_pago = paymentData.db_cod_pago;
+                        rowData.nro_cuota = paymentData.nro_cuota;
+                        rowData.cod_ejecutivo = paymentData.cod_ejecutivo;
+                        rowData.predefined_comision_porcentaje = paymentData.db_comision_porc;
+                        rowData.monto_usd_predefined = paymentData.db_monto_usd;
+
+                        // Update UI row
+                        const tr = document.getElementById('row-' + idx);
+                        if (tr) {
+                            tr.className = 'no-procesado'; // Pendiente state
+                            
+                            const statusCell = tr.cells[1];
+                            statusCell.innerHTML = '<span class="status-badge bg-warning text-dark small"><i class="bi bi-clock"></i> Pendiente</span>';
+                            
+                            const polizaCell = tr.cells[3];
+                            polizaCell.innerHTML = `
+                                <div class="fw-bold text-dark val-nro-poliza">${rowData['NRO. POLIZA']}</div>
+                                <div class="small text-muted">Recibo: <span class="val-nro-recibo">${rowData['NRO. RECIBO']}</span></div>
+                                <div class="small text-primary fw-bold">Cuota: <span class="val-nro-cuota">${rowData.nro_cuota || '-'}</span></div>
+                            `;
+                            
+                            const clienteCell = tr.cells[4];
+                            clienteCell.innerHTML = `
+                                <div class="text-truncate" style="max-width: 150px;" title="${rowData['NOMBRE CLIENTE']}">
+                                    ${rowData['NOMBRE CLIENTE']}
+                                </div>
+                                <span class="badge bg-light text-primary border border-primary small" style="font-size: 0.6rem;">ASIGNADO MANUAL</span>
+                            `;
+                        }
+                        assignCount++;
+                    }
+                });
+
+                // Close Modal
+                const modalEl = document.getElementById('assignModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+
+                let msg = 'El registro se ha enlazado a la póliza exitosamente.';
+                if (assignCount > 1) {
+                    msg = `Se enlazaron ${assignCount} registros que compartían el mismo código. Si alguno corresponde a otra cuota, usa la lupa en ese registro específico para cambiarlo.`;
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Asignado',
+                    text: msg,
+                    timer: 3500,
+                    showConfirmButton: false
+                });
+            });
+        }
+
+    });
+
+</script>
+{% endblock %}

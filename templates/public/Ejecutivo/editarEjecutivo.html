@@ -1,0 +1,1049 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Crud con Python 🐍 | Editar Ejecutivo{% endblock %}
+<!---->
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+
+<style>
+  /* Estilos generales para el cuerpo y el contenedor */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+  }
+
+  /* Estilos para el árbol de productos */
+  .tree {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .tree ul {
+    list-style-type: none;
+    padding-left: 20px;
+    display: none;
+    /* Oculta los sub-elementos por defecto */
+  }
+
+  .tree li {
+    margin: 5px 0;
+  }
+
+  .tree li.folder>span {
+    cursor: pointer;
+    font-weight: bold;
+    color: #333;
+    /* Color de texto para carpetas */
+  }
+
+  .tree li.folder>span:before {
+    content: "\25B6";
+    /* Triángulo derecho */
+    margin-right: 5px;
+    display: inline-block;
+  }
+
+  .tree li.folder.expanded>span:before {
+    content: "\25BC";
+    /* Triángulo abajo */
+  }
+
+  /* Estilos para los elementos de producto individuales */
+  .tree-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 0;
+  }
+
+  .tree-item input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  .tree-item label {
+    flex-grow: 1;
+    cursor: pointer;
+    color: #555;
+    /* Color de texto para ítems */
+  }
+
+  /* Estilos para el input de cantidad */
+  .quantity-input {
+    width: 120px;
+    /* Aumentado para mejor visualización */
+    margin-left: 10px;
+    padding: 6px 10px;
+    /* Relleno ajustado */
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    display: none;
+    /* Oculto por defecto */
+  }
+
+  /* Estilos para el botón de enviar */
+  .submit-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+
+  /* Estilos para el área de pre-visualización JSON */
+  #selectedProductsOutput {
+    margin-top: 30px;
+    padding: 15px;
+    background-color: #e9e9e9;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    /* Para mantener los saltos de línea y el formato */
+    max-height: 400px;
+    /* Altura máxima para scroll */
+    overflow-y: auto;
+    /* Habilitar scroll si el contenido es largo */
+    display: none;
+    /* Oculto por defecto */
+  }
+
+  /* Estilos para el cartel de instrucciones */
+  #cartel {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #e0f2fe;
+    /* Un azul claro */
+    color: #0c4a6e;
+    /* Un azul oscuro para el texto */
+    border-radius: 0.5rem;
+    border: 1px solid #90cdf4;
+  }
+</style>
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+  {% if ejecutivo|length %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="/lista-de-ejecutivos">
+          <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        ACTUALIZAR DATOS DEL EJECUTIVO
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario" class="form-horizontal mx-auto" method="POST"
+        action="{{ url_for('actualizarEjecutivo', id = ejecutivo.cod_ejecutivo ) }}" autocomplete="off"
+        enctype="multipart/form-data">
+
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label for="CI" class="form-label">Cod ejecutivo</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="cod_ejecutivo" name="cod_ejecutivo"
+                value="{{ ejecutivo.cod_ejecutivo }}" readonly>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="nombre_empleado" class="form-label">
+                Nombre del ejecutivo
+              </label>
+              <input type="text" name="nombre_ejecutivo" value="{{ ejecutivo.Nombre }}" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label for="nombre_asegurado" class="form-label">
+                Segundo Nombre del ejecutivo
+              </label>
+              <input class="form-control" type="text" name="nombre2_ejecutivo" value="{{ ejecutivo.nombre2 }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="nombre_ejecutivo" class="form-label">
+                Apellido del ejecutivo
+              </label>
+              <input class="form-control" type="text" name="apellido_ejecutivo" value="{{ ejecutivo.Apellido }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="nombre_ejecutivo" class="form-label">
+                Segundo apellido del ejecutivo
+              </label>
+              <input class="form-control" type="text" name="apellido2_ejecutivo" value="{{ ejecutivo.Apellido2 }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="email_ejecutivo" class="form-label">
+                Email del ejecutivo
+              </label>
+              <input class="form-control" type="email" name="email_ejecutivo" value="{{ ejecutivo.Correo }}" required />
+            </div>
+            <div class="col-md-6">
+              <label for="telefono_empleado" class="form-label">
+                Telefono del ejecutivo
+              </label>
+              <input class="form-control" type="text" name="telefono_ejecutivo" value="{{ ejecutivo.Telefono }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="tipo" class="form-label">
+                Tipo
+              </label>
+              <select id="TipoS" class="form-select" name="tipo" aria-label="Default select example">
+                <option selected>{{ ejecutivo.Tipo }}</option>
+                <option value="Agente">Agente</option>
+                <option value="Intermedio">Intermedio</option>
+                <option value="Referidor">Referidor</option>
+                <option value="Personalizado">Personalizado</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="cartel" style="display: none;">
+            <p class="font-semibold">Seleccione los productos deseados y especifique la comisión/bono.</p>
+          </div>
+
+          <div id="productTree" style="display: none;"></div>
+
+          <button class="submit-button" id="submitSelectionBtn" style="display: none;">Enviar Selección</button>
+
+          <h2 id="cartelOutput" style="display: none;">Productos Seleccionados:</h2>
+          <pre id="selectedProductsOutput" style="display: none;"></pre>
+
+
+          <div class="mb-3 mt-4 text-center">
+            <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+              Actualizar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center">No existe el ejecutivo</h3>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<script>
+  // Función para verificar la opción "Personalizado" y mostrar/ocultar elementos
+  function verificarOpcionPersonalizado() {
+    const select = document.getElementById("TipoS");
+    const selectedText = select.options[select.selectedIndex].text;
+
+    const productTree = document.getElementById("productTree");
+    const submitSelectionBtn = document.getElementById("submitSelectionBtn");
+    const selectedProductsOutput = document.getElementById("selectedProductsOutput");
+    const cartel = document.getElementById("cartel");
+    const cartelOutput = document.getElementById("cartelOutput");
+
+
+    if (selectedText === "Personalizado") {
+      productTree.style.display = "block";
+      submitSelectionBtn.style.display = "block";
+      selectedProductsOutput.style.display = "block";
+      cartel.style.display = "block";
+      cartelOutput.style.display = "block";
+    } else {
+      productTree.style.display = "none";
+      submitSelectionBtn.style.display = "none";
+      selectedProductsOutput.style.display = "none";
+      cartel.style.display = "none";
+      cartelOutput.style.display = "none";
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Datos de productos con estructura anidada
+    const productosN = {
+      'MERCANTIL': {
+        'Persona': {
+          'SALUD': {
+            'Planes Individuales': ['5K - 50K', '100K - 200K'],
+            'Servicios Médicos': ['EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO', 'PANAMA']
+          },
+          'VIDA': {
+            'Tipos de Vida': ['DEL MAS ALLA', 'VIDA A TERMINO']
+          },
+          'AP': {
+            'Opciones AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+          },
+          'FUNERARIO': {
+            'Planes Funerarios': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+          }
+        },
+        'Auto': {
+          'CA/PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRUA']
+          },
+          'FLOTA DE VEHICULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHICULOS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['EMPRESAS']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          }
+        },
+        'Viaje': {
+          'POR DIAS': {
+            'Planes de Viaje': ['POR DIAS']
+          }
+        }
+      },
+      'ESTAR SEGUROS': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES']
+          },
+          'AP': {
+            'Tipos de AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL']
+          },
+          'FUNERARIO': {
+            'Planes Funerarios': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL']
+          },
+          'VIDA': {
+            'Tipos de Vida': ['VIDA TEMPORAL']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['EMPRESAS']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'EMBARCACIONES': {
+            'Tipos de Embarcaciones': ['EMBARCACIONES']
+          },
+          'INDUSTRIA Y COMERCIO': {
+            'Opciones': ['INDUSTRIA Y COMERCIO']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          },
+          'TRANSPORTE TERRESTRE': {
+            'Opciones de Transporte': ['TRANSPORTE TERRESTRE OCASIONAL']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'LA INTERNACIONAL': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['EMPRESAS']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'EMBARCACIONES': {
+            'Tipos de Embarcaciones': ['EMBARCACIONES']
+          },
+          'INDUSTRIA Y COMERCIO': {
+            'Opciones': ['INDUSTRIA Y COMERCIO']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          },
+          'TRANSPORTE TERRESTRE': {
+            'Opciones de Transporte': ['TRANSPORTE TERRESTRE OCASIONAL']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'CARACAS': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL']
+          },
+          'AP': {
+            'Opciones AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['EMPRESAS']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'EMBARCACIONES': {
+            'Tipos de Embarcaciones': ['EMBARCACIONES']
+          },
+          'INDUSTRIA Y COMERCIO': {
+            'Opciones': ['INDUSTRIA Y COMERCIO']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          },
+          'TRANSPORTE TERRESTRE': {
+            'Opciones de Transporte': ['TRANSPORTE TERRESTRE OCASIONAL']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'banesco': {
+        'Persona': {
+          'FUNERARIO': {
+            'Planes Funerarios': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        }
+      },
+      'UNIVERSITAS': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['SALUD INDIVIDUAL']
+          },
+          'FUNERARIO': {
+            'Planes Funerarios': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Mascotas': {
+          'Planes para Mascotas': {
+            'Opciones': ['MASCOTAS PLUS']
+          }
+        }
+      },
+      'QUALITAS': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['TU APOYO PREMIUM']
+          },
+          'FUNERARIO': {
+            'Planes Funerarios': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'UNISEGUROS': {
+        'Persona': {
+          'FUNERARIO': {
+            'Planes Funerarios': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'OCEANICA': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS']
+          },
+          'AP': {
+            'Opciones AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['EMPRESAS']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'EMBARCACIONES': {
+            'Tipos de Embarcaciones': ['EMBARCACIONES']
+          },
+          'INDUSTRIA Y COMERCIO': {
+            'Opciones': ['INDUSTRIA Y COMERCIO']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          },
+          'TRANSPORTE TERRESTRE': {
+            'Opciones de Transporte': ['TRANSPORTE TERRESTRE OCASIONAL']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'PIRAMIDE': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['HCM INDIVIDUAL']
+          },
+          'AP': {
+            'Opciones AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
+          }
+        },
+        'Auto': {
+          'CA / PT': {
+            'Coberturas': ['CA', 'PT']
+          },
+          'RCV': {
+            'Opciones RCV': ['RCV', 'RCV + GRÚA']
+          },
+          'FLOTA DE VEHÍCULOS': {
+            'Tipos de Flota': ['FLOTA DE VEHÍCULOS']
+          }
+        }
+      },
+      'REAL SEGUROS': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS']
+          }
+        },
+        'Patrimonial': {
+          'COMBINADO EMPRESARIAL': {
+            'Opciones Empresariales': ['COMBINADO EMPRESARIAL']
+          },
+          'COMBINADO RESIDENCIAL': {
+            'Opciones Residenciales': ['HOGAR']
+          },
+          'RCG': {
+            'Opciones RCG': ['RCG']
+          },
+          'RESPONSABILIDAD PATRONAL': {
+            'Tipos de Responsabilidad': ['RESPONSABILIDAD PATRONAL']
+          },
+          'RIESGOS DIVERSOS': {
+            'Categorías': ['RIESGOS DIVERSOS']
+          }
+        }
+      },
+      'MAPFRE': {
+        'Persona': {
+          'SALUD': {
+            'Planes de Salud': ['PROTECCIÓN SALUD']
+          }
+        },
+        'Fianzas': {
+          'Tipos de Fianzas': {
+            'Generales': ['FIANZAS'],
+            'Específicas': ['FIEL CUMPLIMIENTO', 'LABORAL', 'LICITACION']
+          }
+        }
+      },
+      'SEGUROS VENEZUELA': {
+        'Persona': {
+          'SALUD': { 'Planes de Salud': ['ORO', 'PLATA', 'BRONCE'] },
+          'VIDA': { 'Tipos de Vida': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'] },
+          'FUNERARIO': { 'Planes Funerarios': ['DIAMANTE', 'PLATINIUM', 'PLATA'] },
+          'PREVENCIÓN FEMENINA': { 'Opciones': ['ORQUIDEA', 'ROSA', 'MARGARITA'] },
+          'PREVENCIÓN MASCULINA': { 'Opciones': ['TIERRA', 'AGUA', 'AIRE'] }
+        },
+        'Auto': {
+          'COBERTURA AMPLIA': { 'Coberturas': ['COBERTURA AMPLIA'] },
+          'PERDIDA TOTAL': { 'Coberturas': ['PERDIDA TOTAL'] },
+          'RCV': { 'Opciones RCV': ['RCV'] }
+        }
+      }
+    };
+
+    const productTreeDiv = document.getElementById('productTree');
+    const selectedProducts = {}; // Objeto para almacenar las selecciones actuales
+
+    // DATOS PRE-CARGADOS DESDE FLASK
+    // Esta variable 'user_selected_products' DEBE ser inyectada por Jinja2
+    // desde su backend de Flask. Por ejemplo, en su vista Flask:
+    // return render_template('your_template.html', ejecutivo=ejecutivo_data, user_selected_products=ejecutivo_data.productos_seleccionados)
+    // donde 'ejecutivo_data.productos_seleccionados' es una lista de diccionarios/objetos.
+    // Usamos '|| []' para asegurar que siempre sea un array, incluso si Flask no lo envía o es None.
+    const initialSelectedProducts = JSON.parse('{{ user_selected_products | tojson | safe }}') || [];
+
+
+    /**
+     * Actualiza el objeto selectedProducts de manera recursiva o por asignación directa.
+     * @param {Array<string>} productPathFull - La ruta completa al producto, ej. ['MERCANTIL', 'Persona', 'SALUD', '5K - 50K'].
+     * @param {number|null} commission - El valor de la comisión. Null si el producto debe ser eliminado.
+     */
+    function updateProductSelection(productPathFull, commission) {
+      let currentLevel = selectedProducts;
+      // Recorre la ruta hasta el padre del producto final
+      for (let i = 0; i < productPathFull.length - 1; i++) {
+        const key = productPathFull[i];
+        if (!currentLevel[key]) {
+          currentLevel[key] = {};
+        }
+        currentLevel = currentLevel[key];
+      }
+
+      const productName = productPathFull[productPathFull.length - 1];
+
+      if (commission !== null) {
+        currentLevel[productName] = commission;
+      } else {
+        // Si la comisión es null, se elimina el producto del objeto JS
+        delete currentLevel[productName];
+        // Nota: Limpiar objetos padres vacíos es más complejo y no es estrictamente necesario
+        // para la funcionalidad de envío, ya que flattenSelectedProducts solo procesa lo existente.
+      }
+      updateSelectedProductsOutput();
+    }
+
+    /**
+     * Renders the product tree recursively.
+     * @param {object} data - El nivel actual de datos de producto de productosN.
+     * @param {HTMLElement} parentElement - El elemento DOM al que se añadirá el árbol.
+     * @param {Array<string>} path - La ruta actual en la jerarquía del producto (usada para IDs).
+     */
+    function renderTree(data, parentElement, path = []) {
+      const ul = document.createElement('ul');
+      ul.classList.add('tree');
+      for (const key in data) {
+        const li = document.createElement('li');
+        const currentPath = [...path, key]; // Ruta para la clave actual
+
+        if (Array.isArray(data[key])) { // Si es un array, son los productos finales (con checkboxes)
+          data[key].forEach(productName => {
+            const productLi = document.createElement('li'); // Crea un <li> para cada producto individual
+            productLi.classList.add('tree-item');
+            const productPathFull = [...currentPath, productName]; // Ruta completa hasta el producto final
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = productPathFull.join('-'); // ID único para el checkbox del producto
+            checkbox.name = productPathFull.join('.'); // Nombre para el formulario (opcional)
+            checkbox.value = productName; // El valor del checkbox es el nombre del producto
+
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = productName;
+
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.min = '0';
+            quantityInput.step = '0.01'; // Permite valores decimales
+            quantityInput.placeholder = 'Comisión/Bono';
+            quantityInput.classList.add('quantity-input');
+            quantityInput.id = `quantity-${checkbox.id}`;
+            quantityInput.style.display = 'none'; // Inicialmente oculto
+
+            // Listener para el cambio del checkbox
+            checkbox.addEventListener('change', function () {
+              if (this.checked) {
+                quantityInput.style.display = 'inline-block';
+                // Usar el valor actual del input o 0 si está vacío
+                updateProductSelection(productPathFull, parseFloat(quantityInput.value) || 0);
+              } else {
+                quantityInput.style.display = 'none';
+                quantityInput.value = ''; // Limpiar valor al desmarcar
+                updateProductSelection(productPathFull, null); // Indicar eliminación
+              }
+            });
+
+            // Listener para el input de cantidad
+            quantityInput.addEventListener('input', function () {
+              const val = parseFloat(this.value);
+              // Solo actualiza si el checkbox está marcado y el valor es un número válido
+              if (checkbox.checked) {
+                updateProductSelection(productPathFull, isNaN(val) || val < 0 ? 0 : val);
+              } else {
+                // Si se cambia la cantidad pero el checkbox no está marcado, limpia el input
+                this.value = '';
+              }
+            });
+
+            productLi.appendChild(checkbox);
+            productLi.appendChild(label);
+            productLi.appendChild(quantityInput);
+            li.appendChild(productLi); // Añade el <li> de este producto al <li> de la categoría
+          });
+          ul.appendChild(li); // Añade el <li> que contiene los productos al <ul> actual
+        } else { // Si es un objeto, es una carpeta desplegable (Compañía, Categoría, Subramo o la nueva sublista)
+          li.classList.add('folder');
+          const span = document.createElement('span');
+          span.textContent = key;
+          span.addEventListener('click', function () {
+            const nestedUl = this.nextElementSibling;
+            if (nestedUl && nestedUl.tagName === 'UL') {
+              nestedUl.style.display = nestedUl.style.display === 'block' ? 'none' : 'block';
+              li.classList.toggle('expanded');
+            }
+          });
+          li.appendChild(span);
+          renderTree(data[key], li, currentPath); // Llamada recursiva para subcarpetas
+          ul.appendChild(li); // Añade el <li> de la carpeta al <ul> actual
+        }
+      }
+      parentElement.appendChild(ul);
+    }
+
+    /**
+     * Actualiza la salida JSON para los productos seleccionados.
+     */
+    function updateSelectedProductsOutput() {
+      document.getElementById('selectedProductsOutput').textContent = JSON.stringify(selectedProducts, null, 2);
+    }
+
+    /**
+     * Aplana el objeto anidado selectedProducts en una lista de objetos planos,
+     * adecuada para la inserción en la base de datos.
+     * @param {object} obj - El nivel actual de productos seleccionados.
+     * @param {string|null} currentCompany - La compañía actual en la traversa.
+     * @param {string|null} currentRamo - El ramo principal actual (Persona/Auto/Patrimonial).
+     * @param {string|null} currentSubramo - El sub-ramo actual (SALUD/VIDA/CA/PT, etc.).
+     * @param {number} depth - La profundidad actual en la recursión.
+     * @returns {Array<object>} Una lista plana de objetos de productos seleccionados.
+     */
+    function flattenSelectedProducts(obj, currentCompany = null, currentRamo = null, currentSubramo = null, depth = 0) {
+      let flatList = [];
+
+      for (const key in obj) {
+        // Si el valor es un objeto, es una categoría anidada
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          let nextCompany = currentCompany;
+          let nextRamo = currentRamo;
+          let nextSubramo = currentSubramo;
+
+          if (depth === 0) { // Primer nivel: Compañía
+            nextCompany = key;
+            nextRamo = null;
+            nextSubramo = null;
+          } else if (depth === 1) { // Segundo nivel: Ramo (Persona, Auto, etc.)
+            nextRamo = key;
+            nextSubramo = null;
+          } else if (depth === 2) { // Tercer nivel: Subramo (SALUD, CA/PT, etc.)
+            nextSubramo = key;
+          }
+
+          flatList = flatList.concat(flattenSelectedProducts(obj[key], nextCompany, nextRamo, nextSubramo, depth + 1));
+        } else {
+          // Si el valor no es un objeto, significa que `key` es el nombre del producto final
+          flatList.push({
+            cod_ejecutivo: document.getElementById('cod_ejecutivo').value,
+            comision_bono: obj[key], // El valor numérico de la comisión
+            compania: currentCompany,
+            ramo: currentRamo,
+            subramo: currentSubramo,
+            producto: key // El nombre real del producto final (ej., '5K - 50K')
+          });
+        }
+      }
+      return flatList;
+    }
+
+    /**
+     * Función auxiliar para encontrar la ruta completa de un producto en el árbol `productosN`.
+     * @param {object|Array} treePart - La parte actual del árbol que se está buscando.
+     * @param {Array<string>} currentPath - El camino acumulado hasta el punto actual.
+     * @param {object} targetItem - El objeto del producto a buscar (con 'compania', 'ramo', 'producto').
+     * @returns {Array<string>|null} La ruta completa si se encuentra, o null.
+     */
+    function findProductPathInTree(treePart, currentPath, targetItem) {
+      if (Array.isArray(treePart)) {
+        // Si es un array y contiene el producto deseado
+        if (treePart.includes(targetItem.producto)) {
+          // Asegurarse de que la compañía y el ramo coincidan con los niveles superiores de la ruta
+          const pathCompany = currentPath[0];
+          const pathRamo = currentPath[1];
+
+          // Comprobación adicional para evitar coincidencias erróneas en diferentes ramas del árbol
+          if (pathCompany === targetItem.compania && pathRamo === targetItem.ramo) {
+            return [...currentPath, targetItem.producto];
+          }
+        }
+        return null;
+      }
+
+      if (typeof treePart === 'object' && treePart !== null) {
+        for (const key in treePart) {
+          const result = findProductPathInTree(treePart[key], [...currentPath, key], targetItem);
+          if (result) {
+            return result;
+          }
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Carga y muestra las selecciones de productos iniciales en la interfaz de usuario.
+     * @param {Array<object>} initialData - Un array de objetos de producto previamente seleccionados.
+     */
+    function loadInitialSelections(initialData) {
+      if (!initialData || !Array.isArray(initialData) || initialData.length === 0) {
+        console.log("No hay datos iniciales de productos para cargar.");
+        return;
+      }
+
+      initialData.forEach(item => {
+        // Usamos la nueva función para encontrar la ruta completa del producto
+        const productPathFull = findProductPathInTree(productosN, [], item);
+
+        if (productPathFull && productPathFull.length > 0) {
+          const checkboxId = productPathFull.join('-');
+          const checkbox = document.getElementById(checkboxId);
+          const quantityInput = document.getElementById(`quantity-${checkboxId}`);
+
+          if (checkbox && quantityInput) {
+            checkbox.checked = true;
+            quantityInput.value = item.comision_bono;
+            quantityInput.style.display = 'inline-block';
+            updateProductSelection(productPathFull, item.comision_bono);
+
+            // Expandir las carpetas padre para hacer visible el checkbox
+            let currentParentPath = productPathFull.slice();
+            while (currentParentPath.length > 1) {
+              currentParentPath.pop();
+              // Escapar los caracteres especiales en el ID del selector CSS si los hay (ej. espacios)
+              const parentLiSelector = `#${CSS.escape(currentParentPath.join('-'))}`;
+              const parentLi = document.querySelector(parentLiSelector)?.closest('.folder');
+              if (parentLi && !parentLi.classList.contains('expanded')) {
+                parentLi.classList.add('expanded');
+                const nestedUl = parentLi.querySelector('ul');
+                if (nestedUl) {
+                  nestedUl.style.display = 'block';
+                }
+              }
+            }
+          } else {
+            console.warn(`Producto pre-cargado encontrado en el árbol de datos, pero el elemento UI no se pudo seleccionar (ID esperada: ${checkboxId}):`, item);
+          }
+        } else {
+          console.warn(`Producto pre-cargado no encontrado en la estructura de productosN o la ruta es incorrecta para:`, item);
+        }
+      });
+      updateSelectedProductsOutput(); // Asegura que el JSON se muestre al cargar
+    }
+
+    /**
+     * Maneja el envío de productos seleccionados al backend.
+     */
+    async function submitSelection() {
+      const productsToSend = flattenSelectedProducts(selectedProducts);
+      const outputDiv = document.getElementById('selectedProductsOutput');
+      const codEjecutivo = document.getElementById('cod_ejecutivo').value;
+
+      // Si no hay productos seleccionados, enviamos un array vacío pero con el cod_ejecutivo
+      // para que el backend sepa de quién limpiar las selecciones.
+      let payload = productsToSend;
+      if (productsToSend.length === 0 && codEjecutivo) {
+        // Si no hay productos, pero tenemos un ejecutivo, enviamos un objeto simple
+        // que el backend pueda usar para identificar al ejecutivo y limpiar sus productos.
+        // El backend debe estar preparado para recibir esto (ver código Python actualizado).
+        payload = [{ cod_ejecutivo: codEjecutivo, compania: null, ramo: null, subramo: null, producto: null, comision_bono: null }];
+      } else if (productsToSend.length === 0 && !codEjecutivo) {
+        outputDiv.textContent = 'Error: No hay productos seleccionados y no se pudo identificar el código de ejecutivo para limpiar la selección.';
+        console.warn('No hay productos seleccionados y no se pudo identificar el código de ejecutivo.');
+        return;
+      }
+
+
+      try {
+        const response = await fetch('/submit_selection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload) // Envía la lista aplanada o el objeto para limpieza
+        });
+
+        if (response.ok) { // Código de estado 2xx
+          const result = await response.json();
+          outputDiv.textContent = `Éxito: ${result.message}\nRespuesta del servidor:\n${JSON.stringify(result, null, 2)}`;
+          console.log('Respuesta del servidor:', result);
+          // Opcional: limpiar la UI o resetear selecciones
+        } else { // Código de estado 4xx o 5xx
+          const errorData = await response.json();
+          outputDiv.textContent = `Error (${response.status}): ${errorData.error || 'Mensaje de error desconocido del servidor'}\nDetalles: ${JSON.stringify(errorData, null, 2)}`;
+          console.error('Error del servidor:', errorData);
+        }
+      } catch (error) {
+        outputDiv.textContent = 'Error de conexión o de procesamiento de datos: ' + error.message;
+        console.error('Error en la solicitud Fetch:', error);
+      }
+    }
+
+    // Asocia la función submitSelection a un botón
+    const submitSelectionBtn = document.getElementById('submitSelectionBtn');
+    if (submitSelectionBtn) {
+      submitSelectionBtn.addEventListener('click', submitSelection);
+    } else {
+      console.warn("No se encontró un botón con el ID 'submitSelectionBtn'. Asegúrate de agregarlo en tu HTML.");
+    }
+
+    // Renderizar el árbol inicial
+    renderTree(productosN, productTreeDiv);
+
+    // Cargar las selecciones iniciales después de que el árbol esté renderizado
+    loadInitialSelections(initialSelectedProducts);
+
+    // Ejecutar la función cuando la página se carga para inicializar el estado de visibilidad
+    verificarOpcionPersonalizado();
+
+    // Ejecutar la función cuando el select cambia
+    const selectTipoS = document.getElementById("TipoS");
+    selectTipoS.addEventListener('change', verificarOpcionPersonalizado);
+  });
+</script>
+{% endblock %}

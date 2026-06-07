@@ -1,0 +1,302 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Editar Carta Aval {% endblock %}
+{% block customCSS %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+
+{% if detalle_CartaAval %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="#" id="back"> <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        EDITAR CARTA AVAL
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form
+        id="formulario_editar_carta_aval"
+        class="form-horizontal mx-auto"
+        method="POST"
+        action="{{ url_for('actualizarCartaAval', id = detalle_CartaAval.Cod_CartaAval ) }}"
+        autocomplete="off"
+        enctype="multipart/form-data">
+        <div class="card-body">
+          {# Hidden input for the unique ID of the Carta Aval, essential for updating #}
+          <input type="hidden" name="Cod_CartaAval" value="{{ detalle_CartaAval.Cod_CartaAval }}">
+          {# Hidden input for Cod_poliza if needed in the backend for context #}
+          <input type="hidden" name="Cod_poliza" value="{{ detalle_CartaAval.Cod_poliza }}">
+
+          <div class="row">
+            <div class="col-md-12">
+              <label for="Cod_poliza" class="form-label">Código Póliza</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Cod_poliza"
+                value="{{ detalle_CartaAval.Cod_poliza }}"
+                readonly />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Diagnostico" class="form-label">Especialidad</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Diagnostico"
+                name="Diagnostico"
+                value="{{ detalle_CartaAval.Diagnostico }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Procedimiento" class="form-label">Procedimiento</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Procedimiento"
+                name="Procedimiento"
+                value="{{ detalle_CartaAval.Procedimiento or '' }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Tipo_Atencion" class="form-label">Tipo de Atención</label>
+              <select
+                id="Tipo_Atencion"
+                class="form-select"
+                name="Tipo_Atencion"
+                aria-label="Tipo de Atención"
+                required>
+                <option value="Cirugia" {% if detalle_CartaAval.Tipo_Atencion == 'Cirugia' %}selected{% endif %}>Cirugía</option>
+                <option value="Estudio" {% if detalle_CartaAval.Tipo_Atencion == 'Estudio' %}selected{% endif %}>Estudio</option>
+                {# Add other types of attention as needed #}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Estado" class="form-label">Estatus</label>
+              <select
+                id="Estado"
+                class="form-select"
+                name="Estado"
+                aria-label="Estatus"
+                required>
+                <option value="En Proceso" {% if detalle_CartaAval.Estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                <option value="Aprobado" {% if detalle_CartaAval.Estado == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                <option value="Declinado" {% if detalle_CartaAval.Estado == 'Declinado' %}selected{% endif %}>Declinado</option>
+                <option value="Cerrado" {% if detalle_CartaAval.Estado == 'Cerrado' %}selected{% endif %}>Cerrado</option>
+                {# Add other statuses as needed #}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Moneda" class="form-label">Moneda</label>
+              <select
+                id="Moneda"
+                class="form-select"
+                name="Moneda"
+                aria-label="Moneda"
+                required>
+                <option value="Dolares" {% if detalle_CartaAval.Moneda == 'Dolares' %}selected{% endif %}>Dólares</option>
+                <option value="Bolivares" {% if detalle_CartaAval.Moneda == 'Bolivares' %}selected{% endif %}>Bolívares</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Monto_solicitado" class="form-label">Monto Solicitado</label>
+              <input
+                type="text" {# Consider type="number" if only numeric input is expected #}
+                class="form-control"
+                id="Monto_solicitado"
+                name="Monto_solicitado"
+                value="{{ detalle_CartaAval.Monto_solicitado }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Monto_aprobado" class="form-label">Monto Aprobado</label>
+              <input
+                type="text" {# Consider type="number" if only numeric input is expected #}
+                class="form-control"
+                id="Monto_aprobado"
+                name="Monto_aprobado"
+                value="{{ detalle_CartaAval.Monto_aprobado }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Monto_aprobadoD" class="form-label">Monto Aprobado USD</label>
+              <input
+                type="text" {# Consider type="number" if only numeric input is expected #}
+                class="form-control"
+                id="Monto_aprobadoD"
+                name="Monto_aprobadoD"
+                value="{{ detalle_CartaAval.Monto_aprobadoD }}"
+                required /> {# Assuming this field is also required for update #}
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Fecha_noti" class="form-label">Fecha Notificación</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Fecha_noti"
+                name="Fecha_noti"
+                value="{{ detalle_CartaAval.Fecha_noti }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_apro" class="form-label">Fecha Aprobación</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Fecha_apro"
+                name="Fecha_apro"
+                value="{{ detalle_CartaAval.Fecha_apro }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Correo" class="form-label">Correo</label>
+              <input
+                type="email"
+                class="form-control"
+                id="Correo"
+                name="Correo"
+                value="{{ detalle_CartaAval.Correo }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="codigo_siniestro" class="form-label">Número de Siniestro</label>
+              <input
+                type="text"
+                class="form-control"
+                id="codigo_siniestro"
+                name="codigo_siniestro"
+                value="{{ detalle_CartaAval.codigo_siniestro }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="MES" class="form-label">Mes</label>
+              <input
+                type="text"
+                class="form-control"
+                id="MES"
+                name="MES"
+                value="{{ detalle_CartaAval.MES }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="NEGOCIO" class="form-label">Negocio</label>
+              <input
+                type="text"
+                class="form-control"
+                id="NEGOCIO"
+                name="NEGOCIO"
+                value="{{ detalle_CartaAval.NEGOCIO }}"  />
+            </div>
+            <div class="col-md-6">
+              <label for="TITULAR" class="form-label">Titular</label>
+              <input
+                type="text"
+                class="form-control"
+                id="TITULAR"
+                name="TITULAR"
+                value="{{ detalle_CartaAval.TITULAR }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="RECLAMANTE" class="form-label">Reclamante</label>
+              <input
+                type="text"
+                class="form-control"
+                id="RECLAMANTE"
+                name="RECLAMANTE"
+                value="{{ detalle_CartaAval.RECLAMANTE }}" />
+            </div>
+            <div class="col-md-6">
+              <label for="REFERIDOR" class="form-label">Referidor</label>
+              <input
+                type="text"
+                class="form-control"
+                id="REFERIDOR"
+                name="REFERIDOR"
+                value="{{ detalle_CartaAval.REFERIDOR }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="ANALISTA" class="form-label">Analista</label>
+              <input
+                type="text"
+                class="form-control"
+                id="ANALISTA"
+                name="ANALISTA"
+                value="{{ detalle_CartaAval.ANALISTA }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-12">
+              <label for="OBSERVACION" class="form-label">Observación</label>
+              <textarea
+                class="form-control"
+                id="OBSERVACION"
+                name="OBSERVACION"
+                rows="3">{{ detalle_CartaAval.OBSERVACION }}</textarea>
+            </div>
+          </div>
+          
+          <div class="mb-3 mt-4 text-center">
+            <button id="miBotonActualizarCartaAval" type="submit" class="btn rounded-pill btn-primary">
+              Guardar Cambios
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Script para el botón de regresar
+  document.getElementById('back').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.history.back();
+  });
+
+  // Opcional: Script para mostrar spinner al enviar el formulario
+  document.getElementById('formulario_editar_carta_aval').addEventListener('submit', function() {
+    document.getElementById('miBotonActualizarCartaAval').style.display = 'none';
+    document.getElementById('spinner').style.display = 'block';
+  });
+</script>
+
+{% else %}
+<h2 class="text-center">No existe la carta aval<hr /></h2>
+{% endif %}
+
+{% endblock %}

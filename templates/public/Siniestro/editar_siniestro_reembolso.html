@@ -1,0 +1,169 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Editar Reembolso {% endblock %}
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+
+{% if detalle_reembolso %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="#" id="back"> <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        EDITAR REEMBOLSO
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form id="formulario_editar_reembolso" class="form-horizontal mx-auto" method="POST"
+        action="{{ url_for('actualizarReembolso', id = detalle_reembolso.cod_reembolso ) }}" autocomplete="off"
+        enctype="multipart/form-data">
+        <div class="card-body">
+          {# Campo oculto para el ID del reembolso, esencial para la actualización #}
+          <input type="hidden" name="cod_reembolso" value="{{ detalle_reembolso.cod_reembolso }}">
+          <input type="hidden" name="cod_poliza" value="{{ detalle_reembolso.Cod_poliza }}">
+
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Cod_poliza" class="form-label">Código Póliza</label>
+              {# Se muestra pero no se puede editar #}
+              <input type="text" class="form-control" id="Cod_poliza" value="{{ detalle_reembolso.Cod_poliza }}"
+                readonly />
+            </div>
+            <div class="col-md-6">
+              <label for="Diagnostico" class="form-label">Diagnóstico</label>
+              <input type="text" class="form-control" id="Diagnostico" name="Diagnostico"
+                value="{{ detalle_reembolso.Diagnostico }}" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Tipo_Atencion" class="form-label">Tipo de Atención</label>
+              <input type="text" class="form-control" id="Tipo_Atencion" name="Tipo_Atencion"
+                value="{{ detalle_reembolso.Tipo_Atencion }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Estado" class="form-label">Status</label>
+              <select id="Estado" class="form-select" name="Estado" aria-label="Status" required>
+                <option value="En Proceso" {% if detalle_reembolso.Estado=='En Proceso' %}selected{% endif %}>En Proceso
+                </option>
+                <option value="Aprobado" {% if detalle_reembolso.Estado=='Aprobado' %}selected{% endif %}>Aprobado
+                </option>
+                <option value="Declinado" {% if detalle_reembolso.Estado=='Declinado' %}selected{% endif %}>Declinado
+                </option>
+                <option value="Cerrado" {% if detalle_reembolso.Estado=='Cerrado' %}selected{% endif %}>Cerrado</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_ocurrencia" class="form-label">Fecha Ocurrencia</label>
+              <input type="date" class="form-control" id="Fecha_ocurrencia" name="Fecha_ocurrencia"
+                value="{{ detalle_reembolso.Fecha_ocurrencia }}" required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Fecha_noti" class="form-label">Fecha Notificación</label>
+              <input type="date" class="form-control" id="Fecha_noti" name="Fecha_noti"
+                value="{{ detalle_reembolso.Fecha_noti }}" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_max" class="form-label">Fecha Máxima</label>
+              <input type="date" class="form-control" id="Fecha_max" name="Fecha_max"
+                value="{{ detalle_reembolso.Fecha_max }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Moneda" class="form-label">Moneda</label>
+              <select id="Moneda" class="form-select" name="Moneda" aria-label="Moneda" required>
+                <option value="Dolares" {% if detalle_reembolso.Moneda=='Dolares' %}selected{% endif %}>Dólares</option>
+                <option value="Bolivares" {% if detalle_reembolso.Moneda=='Bolivares' %}selected{% endif %}>Bolívares
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Monto_solicitado" class="form-label">Monto Solicitado</label>
+              <input type="text" {# Puede ser 'number' si solo se esperan números #} class="form-control"
+                id="Monto_solicitado" name="Monto_solicitado" value="{{ detalle_reembolso.Monto_solicitado }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Monto_pagado" class="form-label">Monto Pagado</label>
+              <input type="text" {# Puede ser 'number' si solo se esperan números #} class="form-control"
+                id="Monto_pagado" name="Monto_pagado" value="{{ detalle_reembolso.Monto_pagado }}" required />
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_pago" class="form-label">Fecha Pago</label>
+              <input type="date" class="form-control" id="Fecha_pago" name="Fecha_pago"
+                value="{{ detalle_reembolso.Fecha_pago }}" />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-4">
+              <label for="Correo" class="form-label">Correo</label>
+              <input type="email" class="form-control" id="Correo" name="Correo" value="{{ detalle_reembolso.Correo }}"
+                required />
+            </div>
+            <div class="col-md-4">
+              <label for="Numero_siniestro" class="form-label">Número de Siniestro</label>
+              <input type="text" class="form-control" id="Numero_siniestro" name="Numero_siniestro"
+                value="{{ detalle_reembolso.codigo_siniestro }}" required />
+            </div>
+            <div class="col-md-4">
+              <label for="monto_dolares" class="form-label">Monto en Dólares</label>
+              <input type="text" class="form-control" id="monto_dolares" name="monto_dolares"
+                value="{{ detalle_reembolso.monto_dolares }}" />
+            </div>
+          </div>
+
+          <div class="mb-3 mt-4 text-center">
+            <button id="miBotonActualizar" type="submit" class="btn rounded-pill btn-primary">
+              Guardar Cambios
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Script para el botón de regresar (si usas historial del navegador)
+  document.getElementById('back').addEventListener('click', function (e) {
+    e.preventDefault();
+    window.history.back();
+  });
+
+  // Opcional: Script para mostrar spinner al enviar el formulario
+  document.getElementById('formulario_editar_reembolso').addEventListener('submit', function () {
+    document.getElementById('miBotonActualizar').style.display = 'none';
+    document.getElementById('spinner').style.display = 'block';
+  });
+</script>
+
+{% else %}
+<h2 class="text-center">No existe el reembolso
+  <hr />
+</h2>
+{% endif %}
+
+{% endblock %}

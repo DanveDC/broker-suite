@@ -1,0 +1,561 @@
+{% extends 'public/base_cpanel.html' %}
+
+{% block title %}Gestionar Póliza Pendiente{% endblock %}
+
+{% block customCSS %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        --success-gradient: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+    }
+
+    .form-card {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: #f8f9fc;
+        padding: 1rem 1.5rem;
+        border-left: 5px solid #4e73df;
+        margin-bottom: 1.5rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .section-title {
+        color: #4e73df;
+        font-weight: 700;
+        margin-bottom: 0;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+
+    .info-banner {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4e5e7a;
+        font-size: 0.85rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #d1d3e2;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #bac8f3;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.1);
+    }
+
+    .btn-save {
+        background: var(--success-gradient);
+        border: none;
+        padding: 0.8rem 2rem;
+        font-weight: 700;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(28, 200, 138, 0.3);
+    }
+
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+        border-radius: 8px !important;
+        border: 1px solid #d1d3e2 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 40px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-11">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('polizas_pendientes') }}" class="btn btn-light rounded-circle me-3 shadow-sm">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold mb-0">Completar Registro de Póliza</h2>
+                    <p class="text-muted mb-0">Regularización de movimiento para Póliza {{ detalle.nro_poliza }}</p>
+                </div>
+            </div>
+
+            <!-- Banner Informativo -->
+            <div class="info-banner shadow-sm">
+                <div class="row align-items-center">
+                    <div class="col-md-6 border-end border-white border-opacity-25">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                                <i class="bi bi-receipt fs-3"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white-50">CLIENTE REPORTADO</h6>
+                                <h4 class="mb-0 fw-bold text-white">{{ detalle.nombre_cliente }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 ps-md-5">
+                        <h6 class="mb-0 text-white-50">COMPAÑÍA REPORTADA</h6>
+                        <h4 class="mb-0 fw-bold text-uppercase text-white">{{ detalle.compania or 'N/A' }}</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Global -->
+            <form action="/registrar-desde-pendiente" method="POST" id="mainForm">
+                <input type="hidden" name="id_pendiente" value="{{ detalle.id }}">
+                <input type="hidden" id="Hramo" name="Hramo">
+                <input type="hidden" id="base_type" name="base"
+                    value="{{ 'nacional' if (detalle.moneda == 'BOLIVARES' or detalle.compania and detalle.compania.upper() in ['MERCANTIL', 'CARACAS', 'OCEANICA', 'ESTAR SEGUROS', 'PIRAMIDE', 'LA INTERNACIONAL', 'UNIVERSITAS', 'BANESCO']) else 'internacional' }}">
+
+                <div class="card form-card mb-4 shadow-sm">
+                    <div class="card-body p-4 p-md-5">
+
+                        <!-- SECCIÓN 1: ASEGURADO -->
+                        <div class="section-header">
+                            <h5 class="section-title"><i class="bi bi-person-check me-2"></i> Datos del Asegurado</h5>
+                        </div>
+
+                        <div class="row g-3 mb-5">
+                            <div class="col-md-3">
+                                <label class="form-label">Identificación</label>
+                                <div class="input-group">
+                                    <select class="form-select" name="tipo" style="max-width: 80px;">
+                                        <option value="V">V</option>
+                                        <option value="J">J</option>
+                                        <option value="M">M</option>
+                                        <option value="E">E</option>
+                                    </select>
+                                    <input type="text" class="form-control" name="Cedula_asegurado" placeholder="Número"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Primer Nombre</label>
+                                <input type="text" class="form-control" name="nombre_asegurado"
+                                    value="{{ detalle.nombre_cliente.split(' ')[0] if detalle.nombre_cliente else '' }}"
+                                    required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Segundo Nombre</label>
+                                <input type="text" class="form-control" name="nombre_asegurado2">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Primer Apellido</label>
+                                <input type="text" class="form-control" name="apellido_asegurado" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Segundo Apellido</label>
+                                <input type="text" class="form-control" name="apellido_asegurado2">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sexo</label>
+                                <select class="form-select" name="sexo_asegurado">
+                                    <option value="">Seleccione...</option>
+                                    <option value="1">Masculino</option>
+                                    <option value="2">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">F. Nacimiento</label>
+                                <input type="date" class="form-control" name="fecha_nacimiento">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email_asegurado"
+                                    placeholder="email@ext.com">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Teléfono</label>
+                                <div class="input-group">
+                                    <select class="form-select" name="prefijo_telefono" style="max-width: 90px;">
+                                        <option value="414">414</option>
+                                        <option value="424">424</option>
+                                        <option value="412">412</option>
+                                        <option value="416">416</option>
+                                        <option value="212">212</option>
+                                    </select>
+                                    <input type="text" class="form-control" name="telefono_asegurado_numero"
+                                        placeholder="1234567">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Profesión</label>
+                                <select class="form-select" name="Profesion">
+                                    <option value="Profesion BR">Profesion BR</option>
+                                    <option value="Profesion MR">Profesion MR</option>
+                                    <option value="Profesion AR">Profesion AR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Estado/Localidad</label>
+                                <select class="form-select" name="localidad">
+                                    <option value="Amazonas">Amazonas</option>
+                                    <option value="Anzoátegui">Anzoátegui</option>
+                                    <option value="Apure">Apure</option>
+                                    <option value="Aragua">Aragua</option>
+                                    <option value="Barinas">Barinas</option>
+                                    <option value="Bolívar">Bolívar</option>
+                                    <option value="Carabobo">Carabobo</option>
+                                    <option value="Cojedes">Cojedes</option>
+                                    <option value="Delta Amacuro">Delta Amacuro</option>
+                                    <option value="Dependencias Federales">Dependencias Federales</option>
+                                    <option value="Distrito Capital" selected>Distrito Capital</option>
+                                    <option value="Falcón">Falcón</option>
+                                    <option value="Guárico">Guárico</option>
+                                    <option value="La Guaira">La Guaira</option>
+                                    <option value="Lara">Lara</option>
+                                    <option value="Mérida">Mérida</option>
+                                    <option value="Miranda">Miranda</option>
+                                    <option value="Monagas">Monagas</option>
+                                    <option value="Nueva Esparta">Nueva Esparta</option>
+                                    <option value="Portuguesa">Portuguesa</option>
+                                    <option value="Sucre">Sucre</option>
+                                    <option value="Táchira">Táchira</option>
+                                    <option value="Trujillo">Trujillo</option>
+                                    <option value="Yaracuy">Yaracuy</option>
+                                    <option value="Zulia">Zulia</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Canal de Registro</label>
+                                <select class="form-select" name="Canal">
+                                    <option value="Cara a cara">Cara a Cara/convencional</option>
+                                    <option value="Internet">Internet</option>
+                                    <option value="Correos con dominios privados">Correos con dominios privados</option>
+                                    <option value="Correos con dominios publicos">Correos con dominios publicos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ejecutivo</label>
+                                <select class="form-select select2-search" name="Ejecutivo" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for e in ejecutivos %}
+                                    <option value="{{ e.cod_ejecutivo }}">{{ e.Nombre }} {{ e.Apellido }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: PÓLIZA -->
+                        <div class="section-header">
+                            <h5 class="section-title"><i class="bi bi-file-earmark-medical me-2"></i> Detalles de la
+                                Póliza</h5>
+                        </div>
+
+                        <div class="row g-3 mb-5">
+                            <div class="col-md-4">
+                                <label class="form-label">Número de Póliza</label>
+                                <input type="text" class="form-control fw-bold" name="numero_poliza"
+                                    value="{{ detalle.nro_poliza }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Compañía</label>
+                                <select class="form-select select2-search" id="companyS" name="company" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for c in companias %}
+                                    <option value="{{ c.Nombre }}" {% if detalle.compania and (detalle.compania.upper()
+                                        in c.Nombre.upper() or c.Nombre.upper() in detalle.compania.upper())
+                                        %}selected{% endif %}>{{ c.Nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tomador</label>
+                                <input type="text" class="form-control" name="Tomador"
+                                    value="{{ detalle.nombre_cliente }}">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Ramo</label>
+                                <select class="form-select select2-search" id="mySelect" name="Ramo" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Persona">Persona</option>
+                                    <option value="Auto">Auto</option>
+                                    <option value="Patrimonial">Patrimonial</option>
+                                    <option value="Fianza">Fianza</option>
+                                    <option value="Viaje">Viaje</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sub-Ramo</label>
+                                <select class="form-select select2-search" id="subRamo" name="SubRamo" required>
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Producto / Plan</label>
+                                <select class="form-select select2-search" id="producto" name="producto" required>
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Cobertura</label>
+                                <input type="text" class="form-control" name="Cobertura"
+                                    value="{{ detalle.descripcion or 'COBERTURA BASICA' }}">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Emisión</label>
+                                <input type="date" class="form-control" name="fecha_emision"
+                                    value="{{ detalle.fecha_cobro.strftime('%Y-%m-%d') if detalle.fecha_cobro else '' }}"
+                                    required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Frecuencia de Pago</label>
+                                <select class="form-select" name="Frecuencia" required>
+                                    <option value="1">Anual</option>
+                                    <option value="2">Mensual</option>
+                                    <option value="3">Trimestral</option>
+                                    <option value="4">Semestral</option>
+                                    <option value="5">Cuatrimestral</option>
+                                    <option value="6">Bimensual</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Prima Total ($)</label>
+                                {% set prima_val = detalle.monto_prima|default(0)|float %}
+                                <input type="text" class="form-control" id="prima" name="prima"
+                                    value="{{ '{:,.2f}'.format(prima_val).replace(',', 'X').replace('.', ',').replace('X', '.') }}"
+                                    required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Canal de Venta</label>
+                                <select class="form-select" name="Tipo_venta">
+                                    <option value="1">Emisión Tradicional</option>
+                                    <option value="2">Venta Interna</option>
+                                    <option value="3">Pago Directo</option>
+                                    <option value="4">Tercerizados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: ESPECÍFICOS (DINÁMICOS) -->
+                        <div id="dynamic-section" style="display: none;">
+                            <div class="section-header">
+                                <h5 class="section-title"><i class="bi bi-plus-circle me-2"></i> Información Adicional
+                                    del Ramo</h5>
+                            </div>
+                            <div class="row g-3 mb-5">
+                                <!-- AUTO -->
+                                <div class="col-md-3 dynamic-field" id="camposAuto">
+                                    <label class="form-label">Marca</label>
+                                    <input type="text" class="form-control" name="Marca">
+                                </div>
+                                <div class="col-md-3 dynamic-field" id="camposAuto3">
+                                    <label class="form-label">Modelo</label>
+                                    <input type="text" class="form-control" name="Modelo">
+                                </div>
+                                <div class="col-md-3 dynamic-field" id="camposAuto2">
+                                    <label class="form-label">Año</label>
+                                    <input type="number" class="form-control" name="Ano" min="1980" max="2030">
+                                </div>
+                                <div class="col-md-3 dynamic-field" id="camposAuto4">
+                                    <label class="form-label">Placa</label>
+                                    <input type="text" class="form-control" name="placa">
+                                </div>
+                                <!-- PATRIMONIO -->
+                                <div class="col-md-12 dynamic-field" id="camposPatrimonio">
+                                    <label class="form-label">Dirección del Riesgo</label>
+                                    <input type="text" class="form-control" name="direccion">
+                                </div>
+                                <!-- VIAJE -->
+                                <div class="col-md-4 dynamic-field" id="camposViaje">
+                                    <label class="form-label">Nro. de Pasaporte</label>
+                                    <input type="text" class="form-control" name="pasaporte">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="d-flex justify-content-between align-items-center bg-light p-4 rounded-3 mt-4">
+                            <div class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i> Al procesar, se creará la nueva póliza y se
+                                vinculará la comisión correspondiente.
+                            </div>
+                            <button type="submit" class="btn btn-save text-white px-5 shadow-sm">
+                                <i class="bi bi-check-lg me-2"></i> REGISTRAR Y VINCULAR COBRO
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customJS %}
+<!-- Reusamos lógica de carga de ramos/productos -->
+<script>
+    $(document).ready(function () {
+        $('.select2-search').select2({
+            width: '100%',
+            placeholder: $(this).data('placeholder')
+        });
+
+        const productosI = {
+            'MERCANTIL PANAMÁ': { 'Persona': { 'SALUD': ['INTEGRAL', 'VITAL'], 'VIDA': ['VIDA A TERMINO'] } },
+            'VUMI': { 'Persona': { 'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP'] } },
+            'LA REGIONAL': { 'Persona': { 'SALUD': ['MEDICARE CLASSIC'], 'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'CONTINENTAL': { 'Viaje': { 'ANUALES MULTIVIAJES': ['CORPORATIVO'], 'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'], 'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'], 'ESTUDIANTES': ['ESTUDIANTES'] } },
+            'AFIANAUCO': { 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'AMERICAN FIDELITY': { 'Persona': { 'VIDA': ['VIDA'] } },
+            'PAN-AMERICAN': { 'Persona': { 'VIDA': ['VIDA'] } }
+        };
+
+        const productosN = {
+            'MERCANTIL': { 'Persona': { 'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'], 'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'], 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA/PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRUA'], 'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'] }, 'Viaje': { 'POR DIAS': ['POR DIAS'] } },
+            'ESTAR SEGUROS': { 'Persona': { 'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'], 'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'], 'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'], 'VIDA': ['VIDA TEMPORAL'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'LA INTERNACIONAL': { 'Persona': { 'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'CARACAS': { 'Persona': { 'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'BANESCO': { 'Persona': { 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] } },
+            'UNIVERSITAS': { 'Persona': { 'SALUD': ['SALUD INDIVIDUAL'], 'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Mascotas': { 'MASCOTAS': ['MASCOTAS PLUS'] } },
+            'OCEANICA': { 'Persona': { 'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'], 'VIDA': ['Temporal', 'A termino'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] }, 'Patrimonial': { 'COMBINADO EMPRESARIAL': ['EMPRESAS'], 'COMBINADO RESIDENCIAL': ['HOGAR'], 'EMBARCACIONES': ['EMBARCACIONES'], 'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'], 'RCG': ['RCG'], 'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'], 'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'], 'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL'] }, 'Fianzas': { 'FIANZAS': ['FIANZAS'], 'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'], 'LABORAL': ['LABORAL'], 'LICITACION': ['LICITACION'] } },
+            'PIRAMIDE': { 'Persona': { 'SALUD': ['HCM INDIVIDUAL'], 'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'] }, 'Auto': { 'CA / PT': ['CA', 'PT'], 'RCV': ['RCV', 'RCV + GRÚA'], 'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS'] } },
+            'SEGUROS VENEZUELA': {
+                'Persona': {
+                    'SALUD': ['ORO', 'PLATA', 'BRONCE'],
+                    'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
+                    'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
+                    'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
+                    'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
+                },
+                'Auto': {
+                    'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
+                    'PERDIDA TOTAL': ['PERDIDA TOTAL'],
+                    'RCV': ['RCV']
+                }
+            }
+        };
+
+        const base = '{{ base | default("nacional") }}';
+        const productos = (base === "nacional") ? productosN : productosI;
+
+        function normalizeText(text) {
+            return text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : '';
+        }
+
+        function findCompanyKey(selectedCompania) {
+            const norm = normalizeText(selectedCompania);
+            if (!norm) return null;
+            if (productos[norm]) return norm;
+            return Object.keys(productos).find(k => norm.includes(normalizeText(k)) || normalizeText(k).includes(norm));
+        }
+
+        function updateDynamicFields() {
+            const ramo = $('#mySelect').val();
+            $('#Hramo').val(ramo);
+
+            $('.dynamic-field').hide();
+            $('#dynamic-section').hide();
+
+            if (ramo === 'Auto') {
+                $('#camposAuto, #camposAuto2, #camposAuto3, #camposAuto4').show();
+                $('#dynamic-section').show();
+            } else if (ramo === 'Patrimonial') {
+                $('#camposPatrimonio').show();
+                $('#dynamic-section').show();
+            } else if (ramo === 'Viaje') {
+                $('#camposViaje').show();
+                $('#dynamic-section').show();
+            }
+        }
+
+        $('#mySelect').on('change', function () {
+            updateDynamicFields();
+            updateSubRamo();
+        });
+
+        $('#companyS').on('change', updateSubRamo);
+
+        function updateSubRamo() {
+            const cia = $('#companyS').val();
+            const ramo = $('#mySelect').val() === 'Fianza' ? 'Fianzas' : $('#mySelect').val();
+            const ciaKey = findCompanyKey(cia);
+
+            const $sub = $('#subRamo');
+            const $prod = $('#producto');
+
+            $sub.empty().append('<option value="">Seleccione...</option>');
+            $prod.empty().append('<option value="">Seleccione...</option>');
+
+            if (ciaKey && productos[ciaKey] && productos[ciaKey][ramo]) {
+                Object.keys(productos[ciaKey][ramo]).forEach(s => {
+                    $sub.append(`<option value="${s}">${s}</option>`);
+                });
+            }
+            $sub.trigger('change');
+        }
+
+        $('#subRamo').on('change', function () {
+            const cia = $('#companyS').val();
+            const ramo = $('#mySelect').val() === 'Fianza' ? 'Fianzas' : $('#mySelect').val();
+            const sub = $(this).val();
+            const ciaKey = findCompanyKey(cia);
+
+            const $prod = $('#producto');
+            $prod.empty().append('<option value="">Seleccione...</option>');
+
+            if (ciaKey && productos[ciaKey] && productos[ciaKey][ramo] && productos[ciaKey][ramo][sub]) {
+                productos[ciaKey][ramo][sub].forEach(p => {
+                    $prod.append(`<option value="${p}">${p}</option>`);
+                });
+            }
+            $prod.trigger('change');
+        });
+
+        // Prima Formatting (Mismo script que form_poliza)
+        const primaInput = document.getElementById('prima');
+        let rawValue = primaInput.value.replace(/\D/g, '') || '0';
+
+        const formatRawValue = (val) => {
+            const padded = val.padStart(3, '0');
+            const int = padded.slice(0, -2);
+            const dec = padded.slice(-2);
+            return new Intl.NumberFormat('de-DE').format(parseInt(int, 10)) + ',' + dec;
+        };
+
+        primaInput.addEventListener('keydown', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
+            e.preventDefault();
+            if (e.key >= '0' && e.key <= '9') {
+                rawValue = (rawValue === '0') ? e.key : rawValue + e.key;
+            } else if (e.key === 'Backspace') {
+                rawValue = rawValue.slice(0, -1) || '0';
+            }
+            primaInput.value = formatRawValue(rawValue);
+        });
+
+        // Initialize
+        updateDynamicFields();
+        updateSubRamo();
+    });
+</script>
+{% endblock %}

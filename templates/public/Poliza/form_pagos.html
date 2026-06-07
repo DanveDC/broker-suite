@@ -1,0 +1,291 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Registrar pago {% endblock %}
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-header border-bottom">
+        <h3 class="card-title text-center fw-bold mb-0">REGISTRAR PAGO</h3>
+    </div>
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-md-10">
+            <form id="formulario" class="form-horizontal mx-auto" method="POST" action="/form-registrar-pago"
+                autocomplete="off" enctype="multipart/form-data">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Moneda" class="form-label">Moneda</label>
+                                <select id="Moneda" class="form-select" name="moneda"
+                                    aria-label="Default select example">
+                                    <option selected>Seleccione</option>
+                                    <option value="$">Dolar</option>
+                                    <option value="BS">Bolivar</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Fecha" class="form-label">Fecha pago</label>
+                                <input class="form-control" type="date" name="fecha" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Metodo" class="form-label">Metodo de pago</label>
+                                <select id="Metodo" class="form-select" name="Metodo"
+                                    aria-label="Default select example">
+                                    <option selected>Seleccione</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="tasaAndBsContainer" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="MontoBs" class="form-label">Monto Bs</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="MontoBs" name="MontoBs">
+                                            <span class="input-group-text">Bs</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="Tasa" class="form-label">Tasa</label>
+                                        <input class="form-control" type="float" name="Tasa" id="TasaInput"
+                                            value="{{ dolar }}" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Monto" class="form-label">Monto</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="Monto" name="Monto" value="{{ monto }}"
+                                readonly>
+                            <span class="input-group-text">$</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nro_cuota" class="form-label">Nro de Cuota</label>
+                                <input type="number" class="form-control" id="nro_cuota" name="nro_cuota"
+                                    value="{{ siguiente_cuota }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nro_recibo" class="form-label">Nro Recibo / Referencia</label>
+                                <input type="text" class="form-control" id="nro_recibo" name="nro_recibo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="cod_renovacion" name="renovacion">
+
+                    <div class="mb-3 mt-4 text-center">
+                        {% if advertencia_comision %}
+                        <button type="submit" class="btn rounded-pill btn-warning" id="boton">Realizar pago de todas
+                            formas</button>
+                        <a href="{{ url_for('registrar_comision', id=cod_renovacion) }}"
+                            class="btn rounded-pill btn-info">Registrar comisión manual</a>
+                        {% else %}
+                        <button type="submit" class="btn rounded-pill btn-primary" id="boton">Realizar Pago</button>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+
+<script>
+    const boton1 = document.getElementById('boton');
+    const formulario = document.getElementById('formulario'); // Reemplaza 'tuFormulario' con el ID real de tu formulario
+
+
+    formulario.addEventListener('submit', function () {
+        if (boton1) {
+            boton1.disabled = true;
+            boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+        }
+    });
+
+</script>
+
+<script>
+    const cod_renovacion = document.getElementById('cod_renovacion');
+    if (cod_renovacion) {
+        cod_renovacion.value = JSON.parse('{{ cod_renovacion | tojson }}');
+    }
+
+    const moneda = document.getElementById('Moneda');
+    const boton = document.getElementById('boton');
+    if (boton) boton.disabled = true;
+
+    const tasaAndBsContainer = document.getElementById('tasaAndBsContainer');
+    const tasaInput = document.getElementById('TasaInput');
+    const montoBsInput = document.getElementById('MontoBs');
+    const montoUsdInput = document.getElementById('Monto');
+
+    if (moneda) {
+        moneda.addEventListener('change', function () {
+            const selectedValue = moneda.value;
+            const selectElement = document.getElementById('Metodo');
+
+            if (selectedValue == "BS") {
+                selectElement.innerHTML = '';
+                selectElement.innerHTML += '<option value="transferencia">Transferencia</option>';
+                selectElement.innerHTML += '<option value="pago movil">Pago movil</option>';
+                if (boton) boton.disabled = false;
+
+                tasaAndBsContainer.style.display = "block";
+                montoBsInput.setAttribute('required', '');
+                tasaInput.setAttribute('required', '');
+            }
+            else if (selectedValue == "$") {
+                selectElement.innerHTML = '';
+                selectElement.innerHTML += '<option value="Efectivo">Efectivo</option>';
+                selectElement.innerHTML += '<option value="Zelle">Zelle</option>';
+                selectElement.innerHTML += '<option value="Zinli">Zinli</option>';
+                selectElement.innerHTML += '<option value="Tarjeta credito">Tarjeta de credito</option>';
+                if (boton) boton.disabled = false;
+
+                tasaAndBsContainer.style.display = "none";
+                montoBsInput.removeAttribute('required');
+                tasaInput.removeAttribute('required');
+            }
+            else {
+                selectElement.innerHTML = '<option selected>Seleccione</option>';
+                if (boton) boton.disabled = true;
+
+                tasaAndBsContainer.style.display = "none";
+                montoBsInput.removeAttribute('required');
+                tasaInput.removeAttribute('required');
+            }
+        });
+    }
+
+    if (montoBsInput && montoUsdInput) {
+        montoBsInput.addEventListener('input', function () {
+            // Function to parse formatted numbers (e.g. 1.234,56) if needed, based on existing setupCurrencyInput
+            // But here we might just get raw input depending on setupCurrencyInput behavior.
+            // Assuming setupCurrencyInput handles formatting, we need to extract the raw number.
+            // If setupCurrencyInput is applied to MontoBs, the visual value is formatted.
+
+            let bsValueStr = montoBsInput.value;
+            // Basic cleaning if not using the complex formatter yet or if simply parsing:
+            // The setupCurrencyInput uses 'de-DE' format (dots for thousands, comma for decimals)
+            // We need to convert it to standard float.
+
+            let bsValue = 0;
+            if (bsValueStr.includes(',')) {
+                bsValue = parseFloat(bsValueStr.replace(/\./g, '').replace(',', '.'));
+            } else {
+                bsValue = parseFloat(bsValueStr);
+            }
+
+            let usdValueStr = montoUsdInput.value; // Assuming this is also formatted or raw?
+            // Line 59: value="{{ monto }}". It likely comes as a standard float string or formatted.
+            // Let's assume standard float from server, but check if JS modifies it.
+
+            let usdValue = parseFloat(usdValueStr);
+
+            if (!isNaN(bsValue) && !isNaN(usdValue) && usdValue !== 0) {
+                const calculatedTasa = bsValue / usdValue;
+                // Format tasa to display correctly (maybe user wants precision)
+                // Let's stick with standard float representation for the input value
+                tasaInput.value = calculatedTasa.toFixed(2);
+                // Optionally trigger input event on tasaInput if it has listeners
+                tasaInput.dispatchEvent(new Event('input'));
+            } else {
+                tasaInput.value = '';
+            }
+        });
+    }
+
+
+
+
+</script>
+
+<script>
+    function setupCurrencyInput(inputElement) {
+        let rawValue = '0';
+        if (inputElement.value) {
+            const numericValue = parseFloat(inputElement.value.replace(',', '.'));
+            if (!isNaN(numericValue)) {
+                rawValue = Math.round(numericValue * 100).toString();
+            }
+        }
+
+        const formatRawValue = () => {
+            const paddedValue = rawValue.padStart(3, '0');
+            const integerPart = paddedValue.slice(0, -2);
+            const decimalPart = paddedValue.slice(-2);
+            const formattedInteger = new Intl.NumberFormat('de-DE').format(parseInt(integerPart, 10));
+            return `${formattedInteger},${decimalPart}`;
+        };
+
+        if (inputElement.value) {
+            inputElement.value = formatRawValue();
+        }
+
+        inputElement.addEventListener('focus', (e) => {
+            if (e.target.readOnly) return;
+            e.target.value = formatRawValue();
+            setTimeout(() => e.target.select(), 0);
+        });
+
+        inputElement.addEventListener('blur', (e) => {
+            if (e.target.readOnly) return;
+            if (rawValue === '0') {
+                e.target.value = '';
+            } else {
+                e.target.value = formatRawValue();
+            }
+        });
+
+        inputElement.addEventListener('keydown', (e) => {
+            if (e.target.readOnly) return;
+            e.preventDefault();
+
+            if (e.key >= '0' && e.key <= '9') {
+                if (rawValue === '0') {
+                    rawValue = e.key;
+                } else {
+                    rawValue += e.key;
+                }
+            } else if (e.key === 'Backspace') {
+                rawValue = rawValue.slice(0, -1) || '0';
+            } else if (e.key === 'Delete') {
+                rawValue = '0';
+            } else if (e.key === '.') {
+                return;
+            }
+            inputElement.value = formatRawValue();
+            inputElement.dispatchEvent(new Event('input'));
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        setupCurrencyInput(document.querySelector('input[name="Tasa"]'));
+        const montoBs = document.getElementById('MontoBs');
+        if (montoBs) setupCurrencyInput(montoBs);
+    });
+</script>
+{% endblock %}

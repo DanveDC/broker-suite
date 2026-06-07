@@ -1,0 +1,177 @@
+{% extends 'public/base_cpanel.html' %}
+{% block title %} Editar Siniestro Automóvil {% endblock %}
+{% block customCSS %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+{% block body %}
+
+{% if detalle_siniestro %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="#" id="back"> <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        EDITAR SINIESTRO DE AUTOMÓVIL
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form
+        id="formulario_editar_siniestro_auto"
+        class="form-horizontal mx-auto"
+        method="POST"
+        action="{{ url_for('actualizarSiniestroAuto', id = detalle_siniestro.Cod_siniestroA ) }}" {# Cod_siniestroA #}
+        autocomplete="off"
+        enctype="multipart/form-data">
+        <div class="card-body">
+          {# Hidden input for the unique ID of the Siniestro, essential for updating #}
+          <input type="hidden" name="Cod_siniestroA" value="{{ detalle_siniestro.Cod_siniestroA }}">
+          {# Hidden input for Cod_poliza if needed in the backend for context #}
+          <input type="hidden" name="Cod_poliza" value="{{ detalle_siniestro.Cod_poliza }}">
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Cod_poliza" class="form-label">Código Póliza</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Cod_poliza"
+                value="{{ detalle_siniestro.Cod_poliza }}"
+                readonly />
+            </div>
+            <div class="col-md-6">
+              <label for="Numero_Siniestro" class="form-label">Número de Siniestro</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Numero_Siniestro"
+                name="Numero_siniestro"
+                value="{{ detalle_siniestro.Numero_siniestro }}"
+                readonly />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Fecha_ocurrencia" class="form-label">Fecha Ocurrencia</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Fecha_ocurrencia"
+                name="Fecha_ocurrencia"
+                value="{{ detalle_siniestro.Fecha_ocurrencia }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Fecha_noti" class="form-label">Fecha Notificación</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Fecha_noti"
+                name="Fecha_noti"
+                value="{{ detalle_siniestro.Fecha_noti }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Fecha_inspec" class="form-label">Fecha Inspección</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Fecha_inspec"
+                name="Fecha_inspec"
+                value="{{ detalle_siniestro.Fecha_inspec }}" /> {# Asumiendo no requerido #}
+            </div>
+            <div class="col-md-6">
+              <label for="Estado" class="form-label">Estado</label>
+              <select
+                id="Estado"
+                class="form-select"
+                name="Estado"
+                aria-label="Estado"
+                required>
+                <option value="Abierto" {% if detalle_siniestro.Estado == 'Abierto' %}selected{% endif %}>Abierto</option>
+                <option value="Cerrado" {% if detalle_siniestro.Estado == 'Cerrado' %}selected{% endif %}>Cerrado</option>
+                <option value="En Proceso" {% if detalle_siniestro.Estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                <option value="Rechazado" {% if detalle_siniestro.Estado == 'Rechazado' %}selected{% endif %}>Rechazado</option>
+                {# Agrega más estados según necesites para siniestro de auto #}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Monto_orden" class="form-label">Monto Orden</label>
+              <input
+                type="text" {# Consider type="number" #}
+                class="form-control"
+                id="Monto_orden"
+                name="Monto_orden"
+                value="{{ detalle_siniestro.Monto_orden }}"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Correo" class="form-label">Correo</label>
+              <input
+                type="email"
+                class="form-control"
+                id="Correo"
+                name="Correo"
+                value="{{ detalle_siniestro.Correo }}"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-12"> {# Descripción ocupa la fila completa #}
+              <label for="Descripcion" class="form-label">Descripción</label>
+              <textarea
+                class="form-control"
+                id="Descripcion"
+                name="Descripcion"
+                rows="3"
+                required>{{ detalle_siniestro.Descripcion }}</textarea>
+            </div>
+          </div>
+
+          <div class="mb-3 mt-4 text-center">
+            <button id="miBotonActualizarSiniestro" type="submit" class="btn rounded-pill btn-primary">
+              Guardar Cambios
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <div id="spinner" style="display: none;">Cargando...</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Script para el botón de regresar
+  document.getElementById('back').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.history.back();
+  });
+
+  // Opcional: Script para mostrar spinner al enviar el formulario
+  document.getElementById('formulario_editar_siniestro_auto').addEventListener('submit', function() {
+    document.getElementById('miBotonActualizarSiniestro').style.display = 'none';
+    document.getElementById('spinner').style.display = 'block';
+  });
+</script>
+
+{% else %}
+<h2 class="text-center">No existe el siniestro <hr /></h2>
+{% endif %}
+
+{% endblock %}

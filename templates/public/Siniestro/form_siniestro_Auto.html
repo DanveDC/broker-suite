@@ -1,0 +1,164 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %} Registrar Siniestro auto movil {% endblock %}
+<!---->
+{% block customCSS %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename ='assets/css/file.css') }}" />
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card" style="border-radius: 0px !important">
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="/lista-de-polizas">
+          <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        Registro de Siniestro Automovil
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form
+        id="formulario"
+        class="form-horizontal mx-auto"
+        method="POST"
+        action="/form-registrar-siniestroAuto"
+        autocomplete="off"
+        enctype="multipart/form-data">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Fecha_inspeccion" class="form-label">
+                Fecha inspeccion
+              </label>
+              <input
+                type="date"
+                name="Fecha_inspeccion"
+                class="form-control"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="fecha ocurrencia" class="form-label">
+                Fecha ocurrencia
+              </label>
+              <input
+                class="form-control"
+                type="date"
+                name="Fecha_ocurrencia"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Status" class="form-label">
+                Status
+              </label>
+              <input
+                class="form-control"
+                type="text"
+                name="Status"
+                required />
+            </div>
+              <div class="col-md-6">
+              <label for="Monto_solicitado" class="form-label">
+                Monto orden
+              </label>
+              <input
+                class="form-control"
+                type="text"
+                name="Monto_orden"
+                required />
+            </div>
+          </div>
+
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="fecha_noti" class="form-label">
+                Fecha notificada
+              </label>
+              <input
+                class="form-control"
+                type="date"
+                name="Fecha_notificada"
+                required />
+            </div>
+            <div class="col-md-6">
+              <label for="Descripcion" class="form-label">
+                Descripcion
+              </label>
+              <input
+                class="form-control"
+                type="text"
+                name="Descripcion"
+                required />
+            </div>
+          </div>
+          
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Correo" class="form-label">
+                Correo
+              </label>
+              <input
+                class="form-control"
+                type="text"
+                name="correo"
+                required />
+            </div>
+                            
+            </div>
+          
+          <div class="row mt-2">
+            <input type="hidden" id="cod" name="cod_poliza">
+          </div>
+
+          
+              <div class="mb-3 mt-4 text-center">
+                <button id="miBoton" type="submit" class="btn rounded-pill btn-primary">
+                  Guardar registro ahora
+                  <i class="bi bi-arrow-clockwise"></i>
+                </button>
+              </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block customJS %}
+<script src="{{ url_for('static', filename ='assets/customJS/file.js') }}"></script>
+
+
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario');  
+  
+  
+  formulario.addEventListener('submit', function() {
+    boton1.disabled = true;
+    boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+     
+  });
+   
+  </script>
+  
+
+
+<script>
+
+const campoOculto = document.getElementById('cod');
+const cod = JSON.parse('{{ cod_poliza | tojson }}');
+campoOculto.value = cod;
+console.log(cod);
+
+</script>
+
+{% endblock %}
