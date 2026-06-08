@@ -35,7 +35,7 @@ def solicitar_recuperacion(email_user):
                     return None
 
                 cursor.execute(
-                    "DELETE FROM password_resets WHERE email_user = %s AND created_at < NOW() - INTERVAL '1 hour'",
+                    "DELETE FROM password_resets WHERE email_user = %s AND created_at < NOW() - INTERVAL 1 HOUR",
                     (email_user,)
                 )
                 cursor.execute(

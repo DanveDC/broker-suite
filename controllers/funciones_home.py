@@ -335,7 +335,7 @@ def procesar_form_ejecutivo(dataForm):
 
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:           
-                sql = "INSERT INTO ejecutivo (CI, Nombre, Nombre2, Apellido, Apellido2, Correo, Telefono, Tipo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING cod_ejecutivo"
+                sql = "INSERT INTO ejecutivo (CI, Nombre, Nombre2, Apellido, Apellido2, Correo, Telefono, Tipo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
                 valores = (
                     dataForm['CI'],
                     dataForm['Nombre'],
@@ -348,7 +348,7 @@ def procesar_form_ejecutivo(dataForm):
                 )
                 cursor.execute(sql, valores)
                 conexion_MySQLdb.commit()
-                return {'success': True, 'message': 'Ejecutivo registrado exitosamente.', 'data': cursor.fetchone()[0]}
+                return {'success': True, 'message': 'Ejecutivo registrado exitosamente.', 'data': cursor.lastrowid}
 
     except Exception as e:
         return {'success': False, 'message': f'Error inesperado en procesar_form_ejecutivo: {str(e)}'}
@@ -613,7 +613,7 @@ def procesar_form_pago(dataForm):
                 fecha_pago_inicial_str = dataForm['fecha']
 
                 # 1. Insertar el primer pago (el que se está registrando)
-                sql_insert_pago = "INSERT INTO pago (Cod_renovacion, Moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, recibo, nro_cuota) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING Cod_pago"
+                sql_insert_pago = "INSERT INTO pago (Cod_renovacion, Moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, recibo, nro_cuota) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 tasa_str = dataForm.get('Tasa')
                 tasa = None
                 if tasa_str and moneda != "$":
@@ -631,7 +631,7 @@ def procesar_form_pago(dataForm):
                 
                 valores_primer_pago = (cod_renovacion, moneda, fecha_pago_inicial_str, dataForm['Metodo'], tasa, dataForm['Monto'], fecha_pago_inicial_str, 'PAGADO', nro_recibo, nro_cuota)
                 cursor.execute(sql_insert_pago, valores_primer_pago)
-                last_insert_id = cursor.fetchone()[0]
+                last_insert_id = cursor.lastrowid
 
                 # 2. Obtener datos de la renovación para calcular cuotas
                 sql_frecuencia = "SELECT Frecuencia, Prima, p.ramo FROM renovacion JOIN poliza p ON renovacion.cod_poliza = p.cod_poliza WHERE Cod_renovacion = %s"
@@ -1647,11 +1647,11 @@ def insertar_registros_excel(data_to_insert):
                             # Pero primero, verificar si es un pago muy antiguo para evitar duplicar por error
                             # Por ahora, creamos la renovación basada en la fecha del pago (asumiendo que es fecha inicio contrato)
                             
-                            sql_ins_renovacion = "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, comision) VALUES (%s, %s, %s, %s, %s, %s) RETURNING Cod_renovacion"
+                            sql_ins_renovacion = "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, comision) VALUES (%s, %s, %s, %s, %s, %s)"
                             frecuencia = 1 if raw.get('FRECUENCIA') == 'ANUAL' else None
                             prima_sanitizada = sanitizar_numero(raw.get('PRIMA TOTAL (SIN IGTF)') or item.get('prima'), 0.0)
                             cursor.execute(sql_ins_renovacion, (cod_poliza, prima_sanitizada, frecuencia, fecha_emision_raw, fecha_vencimiento.date(), 0.15))
-                            renovacion_id = cursor.fetchone()[0]
+                            renovacion_id = cursor.lastrowid
 
 
                         # 4. Pago (Robustez y Gaps)
@@ -1671,9 +1671,9 @@ def insertar_registros_excel(data_to_insert):
                             recibo = item.get('recibo') or item.get('nro_recibo')
                             
                             tasa_val = sanitizar_numero(raw.get('TASA DE CAMBIO'), 0.0)
-                            sql_ins_pago = "INSERT INTO pago (Cod_renovacion, moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, nro_cuota, recibo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING Cod_pago"
+                            sql_ins_pago = "INSERT INTO pago (Cod_renovacion, moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, nro_cuota, recibo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                             cursor.execute(sql_ins_pago, (renovacion_id, item.get('moneda'), fecha_emision_raw, "Pago Directo", tasa_val, monto_cobro, fecha_emision_raw, "PAGADO", nro_cuota, recibo))
-                            last_pago_id = cursor.fetchone()[0]
+                            last_pago_id = cursor.lastrowid
                             
                             # Commission processing
                             procesar_comision2(last_pago_id, 3)
@@ -1845,10 +1845,10 @@ def insertar_unico_registro_generico(item):
                     frecuencia = 1 if str(raw.get('FRECUENCIA', '')).upper() == 'ANUAL' else None
                     cursor.execute(
                         "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, comision) "
-                        "VALUES (%s, %s, %s, %s, %s, %s) RETURNING Cod_renovacion",
+                        "VALUES (%s, %s, %s, %s, %s, %s)",
                         (cod_poliza, raw_prima, frecuencia, fecha_emision_raw, fecha_vencimiento.date(), 0.15)
                     )
-                    renovacion_id = cursor.fetchone()[0]
+                    renovacion_id = cursor.lastrowid
                     ids['renovacion'] = renovacion_id
                     step('Renovación', 'ok', f'ID {renovacion_id} ({fecha_emision_raw} → {fecha_vencimiento.date()})')
                 else:
@@ -1866,11 +1866,11 @@ def insertar_unico_registro_generico(item):
                 if not pago_existe:
                     cursor.execute(
                         "INSERT INTO pago (Cod_renovacion, moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, nro_cuota, recibo) "
-                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING Cod_pago",
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                         (renovacion_id, moneda, fecha_emision_raw, 'Pago Directo',
                          tasa_val, monto_cobro, fecha_emision_raw, 'PAGADO', nro_cuota, recibo)
                     )
-                    pago_id = cursor.fetchone()[0]
+                    pago_id = cursor.lastrowid
                     ids['pago'] = pago_id
                     step('Pago', 'ok', f'ID {pago_id}, monto {moneda} {monto_cobro}')
 
@@ -2362,10 +2362,9 @@ def insertar_mercantil_data(data_to_insert):
                             sql_renovacion = """
                                 INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, cobertura, comision)
                                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-                                RETURNING Cod_renovacion
                             """
                             cursor.execute(sql_renovacion, (item['poliza'], pol['prima'], frec_val, fecha_e, fecha_v, pol['cobertura'], 0.15))
-                            renovacion_id = cursor.fetchone()[0]
+                            renovacion_id = cursor.lastrowid
 
                         # 4. Pagos
                         frec_val = frec_map.get(str(pol['frecuencia']).upper(), 1)
@@ -2401,13 +2400,12 @@ def insertar_mercantil_data(data_to_insert):
                                 sql_new_ren = """
                                     INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, cobertura, comision)
                                     VALUES (%s, %s, %s, %s, %s, %s, %s)
-                                    RETURNING Cod_renovacion
                                 """
                                 cursor.execute(sql_new_ren, (item['poliza'], pol['prima'], frec_val, target_start_str, target_venc_dt.strftime('%Y-%m-%d'), pol['cobertura'], 0.15))
-                                target_renov_id = cursor.fetchone()[0]
+                                target_renov_id = cursor.lastrowid
 
                             nro_cuota = pago.get('nro_cuota', 1)
-                            
+
                             # Buscar pago existente para decidir entre INSERT o UPDATE
                             cursor.execute("SELECT Cod_pago, estado FROM pago WHERE Cod_renovacion = %s AND nro_cuota = %s AND monto = %s", (target_renov_id, nro_cuota, pago['monto']))
                             pago_db = cursor.fetchone()
@@ -2418,10 +2416,9 @@ def insertar_mercantil_data(data_to_insert):
                                 sql_pago = """
                                     INSERT INTO pago (Cod_renovacion, moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, nro_cuota, recibo)
                                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                                    RETURNING Cod_pago
                                 """
                                 cursor.execute(sql_pago, (target_renov_id, pago['moneda'], f_cobro_raw, pago['metodo'] or 'PAGO DIRECTO', pago['tasa'], pago['monto'], f_cobro_raw, status_pago, nro_cuota, pago.get('recibo')))
-                                procesar_comision2(cursor.fetchone()[0], 3, item['poliza'])
+                                procesar_comision2(cursor.lastrowid, 3, item['poliza'])
                             elif str(pago_db['estado']).strip().upper() != str(status_pago).strip().upper():
                                 # Actualizar estado si cambió
                                 sql_update_pago = "UPDATE pago SET estado = %s, fecha_pagada = %s WHERE Cod_pago = %s"
@@ -2540,13 +2537,12 @@ def insertar_unico_registro_mercantil(item):
                         sql_new_ren = """
                             INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, Fecha_vencimiento, cobertura, comision)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)
-                            RETURNING Cod_renovacion
                         """
                         cursor.execute(sql_new_ren, (item['poliza'], pol['prima'], frec_val, target_start_str, target_venc_dt.strftime('%Y-%m-%d'), pol['cobertura'], 0.15))
-                        target_renov_id = cursor.fetchone()[0]
+                        target_renov_id = cursor.lastrowid
 
                     nro_cuota = pago.get('nro_cuota', 1)
-                    
+
                     # Buscar pago existente
                     cursor.execute("SELECT Cod_pago, estado FROM pago WHERE Cod_renovacion = %s AND nro_cuota = %s AND monto = %s", (target_renov_id, nro_cuota, pago['monto']))
                     pago_db = cursor.fetchone()
@@ -2556,10 +2552,9 @@ def insertar_unico_registro_mercantil(item):
                         sql_pago = """
                             INSERT INTO pago (Cod_renovacion, moneda, fecha, Metodo_pago, tasa, monto, fecha_pagada, estado, nro_cuota, recibo)
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            RETURNING Cod_pago
                         """
                         cursor.execute(sql_pago, (target_renov_id, pago['moneda'], f_cobro_raw, pago['metodo'] or 'PAGO DIRECTO', pago['tasa'], pago['monto'], f_cobro_raw, status_pago, nro_cuota, pago.get('recibo')))
-                        procesar_comision2(cursor.fetchone()[0], 3)
+                        procesar_comision2(cursor.lastrowid, 3)
                     elif str(pago_db['estado']).strip().upper() != str(status_pago).strip().upper() and str(status_pago).strip().upper() == 'PAGADO':
                         # Actualizar solo si el nuevo estado es PAGADO y el anterior era distinto (ej: PROCESO)
                         sql_update_pago = "UPDATE pago SET estado = %s, fecha_pagada = %s WHERE Cod_pago = %s"
@@ -4959,10 +4954,10 @@ def lista_Pagos(cod):
                         p.Cod_renovacion, p.cod_pago, p.moneda, p.fecha, r.cod_poliza, r.frecuencia, r.prima, 
                         p.monto, p.estado, p.fecha_pagada, p.nro_cuota, p.recibo, p.Metodo_pago, p.tasa,
                         co.Nombre as Nombre_compania,
-                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')), '||')
+                        (SELECT GROUP_CONCAT(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
-                    FROM pago p 
-                    INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion 
+                    FROM pago p
+                    INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion
                     INNER JOIN poliza po ON r.cod_poliza = po.cod_poliza
                     INNER JOIN compania co ON po.Cod_compania = co.Cod_compania
                     WHERE r.Cod_renovacion=%s 
@@ -5011,11 +5006,11 @@ def cobranza():
                         a.CI,
                         a.Nombre as Nombre_asegurado,
                         a.Apellido as Apellido_asegurado,
-                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')), '||')
+                        (SELECT GROUP_CONCAT(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
-                    FROM pago p 
-                    INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion 
-                    INNER JOIN poliza po ON r.cod_poliza = po.cod_poliza 
+                    FROM pago p
+                    INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion
+                    INNER JOIN poliza po ON r.cod_poliza = po.cod_poliza
                     INNER JOIN compania co ON po.Cod_compania = co.Cod_compania
                     INNER JOIN asegurado a ON po.CI_asegurado = a.CI
                     ORDER BY CAST(p.nro_cuota AS INTEGER) ASC;
@@ -5652,7 +5647,7 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
                     conditions.append(
                         f"p.estado NOT IN ('PAGADO', 'ANULADO')"
                         f" AND p.fecha < CURRENT_DATE"
-                        f" AND (p.fecha + ({grace_case}) * INTERVAL '1 day') >= CURRENT_DATE"
+                        f" AND DATE_ADD(p.fecha, INTERVAL ({grace_case}) DAY) >= CURRENT_DATE"
                     )
 
                 where_clause = ""
@@ -5678,7 +5673,7 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
                         p.Metodo_pago, p.fecha_pagada, p.tasa,
                         a.Nombre as Nombre_asegurado, a.Apellido as Apellido_asegurado, a.CI,
                         ({sub_query_proximo}) as es_proximo,
-                        (SELECT STRING_AGG(CONCAT(COALESCE(c.descripcion, 'COMISION'), ' (', COALESCE(c.monto_d, 0), '$) - ', COALESCE(c.Estado, 'COBRADA')), '||')
+                        (SELECT GROUP_CONCAT(CONCAT(COALESCE(c.descripcion, 'COMISION'), ' (', COALESCE(c.monto_d, 0), '$) - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
                 """ + base_joins + where_clause + """
                     ORDER BY p.fecha DESC
@@ -6053,15 +6048,15 @@ def NotaCartaAval(titulo, observaciones, id,cod,tipo,fecha):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 if tipo == 1:
-                    querySQL = "insert into nota_cartaAval (Cod_CartaAval,Observaciones,titulo,fecha) values (%s,%s,%s,%s) RETURNING idnota_cartaAval"
+                    querySQL = "insert into nota_cartaAval (Cod_CartaAval,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 elif tipo == 2:
-                    querySQL = "insert into nota_Reembolso (Cod_Reembolso,Observaciones,titulo,fecha) values (%s,%s,%s,%s) RETURNING idnota_Reembolso"
+                    querySQL = "insert into nota_Reembolso (Cod_Reembolso,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 else:
-                    querySQL = "insert into nota_Auto (Cod_Auto,Observaciones,titulo,fecha) values (%s,%s,%s,%s) RETURNING idnota_Auto"
+                    querySQL = "insert into nota_Auto (Cod_Auto,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 print("probando")
                 cursor.execute(querySQL, (cod,observaciones,titulo,fecha))
                 print("probando 2")
-                nuevo_id = cursor.fetchone()[0]
+                nuevo_id = cursor.lastrowid
                 conexion_MySQLdb.commit()
                 resultado = nuevo_id
 
@@ -7728,14 +7723,13 @@ def crear_bloque_comision(data):
                     pass
 
                 sql = """
-                    INSERT INTO bloque_pago_comision 
-                    (numero_egreso, referencia_bancaria, fecha_movimiento, monto_total, compania, codigo_banco, fecha_creacion) 
+                    INSERT INTO bloque_pago_comision
+                    (numero_egreso, referencia_bancaria, fecha_movimiento, monto_total, compania, codigo_banco, fecha_creacion)
                     VALUES (%s, %s, %s, %s, %s, %s, NOW())
-                    RETURNING id_bloque
                 """
                 cursor.execute(sql, (egreso, ref, fecha, monto_total, compania, codigo_banco))
                 conexion_MySQLdb.commit()
-                return {'success': True, 'id_bloque': cursor.fetchone()[0]}
+                return {'success': True, 'id_bloque': cursor.lastrowid}
     except Exception as e:
         print(f"Error creando bloque comision: {e}")
         return {'success': False, 'message': str(e)}
@@ -8142,12 +8136,11 @@ def sql_add_comision_config(data):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 sql = """
-                    INSERT INTO comisiones_config 
-                    (compania, ramo, subramo, producto, tipo_ejecutivo, porcentajes, cod_ejecutivo) 
+                    INSERT INTO comisiones_config
+                    (compania, ramo, subramo, producto, tipo_ejecutivo, porcentajes, cod_ejecutivo)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
                 """
-                
+
                 # Handle empty cod_ejecutivo
                 cod_ejecutivo = data.get('cod_ejecutivo')
                 if cod_ejecutivo == '':
@@ -8156,7 +8149,7 @@ def sql_add_comision_config(data):
                 valores = (data['compania'], data['ramo'], data['subramo'], data['producto'], data['tipo_ejecutivo'], porcentajes_str, cod_ejecutivo)
                 cursor.execute(sql, valores)
                 conexion_MySQLdb.commit()
-                return cursor.fetchone()[0]
+                return cursor.lastrowid
     except Exception as e:
         print(f"Error en la función sql_add_comision_config: {e}")
         return None
@@ -8360,9 +8353,9 @@ def procesar_registro_desde_pendiente(dataForm):
                 
                 fecha_vencimiento = fecha_emision_dt + timedelta(days=365)
                 
-                sql_renov = "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, cobertura, Fecha_vencimiento) VALUES (%s, %s, %s, %s, %s, %s) RETURNING Cod_renovacion"
+                sql_renov = "INSERT INTO renovacion (Cod_poliza, Prima, Frecuencia, Fecha_contrato, cobertura, Fecha_vencimiento) VALUES (%s, %s, %s, %s, %s, %s)"
                 cursor.execute(sql_renov, (cod_poliza, prima_float, dataForm.get('Frecuencia') or 1, fecha_emision_raw, dataForm.get('Cobertura'), fecha_vencimiento))
-                cod_renovacion = cursor.fetchone()[0]
+                cod_renovacion = cursor.lastrowid
 
                 # 4. Ramo Específico
                 ramo = dataForm.get('Ramo')
@@ -8407,23 +8400,23 @@ def procesar_registro_desde_pendiente(dataForm):
                 moneda_pago = '$' if 'DOLAR' in mon_excel or '$' in mon_excel else 'Bs'
                 
                 from dateutil.relativedelta import relativedelta
-                sql_ins_pago = "INSERT INTO pago (Cod_renovacion, Moneda, fecha, monto, estado, nro_cuota) VALUES (%s, %s, %s, %s, %s, %s) RETURNING Cod_pago"
+                sql_ins_pago = "INSERT INTO pago (Cod_renovacion, Moneda, fecha, monto, estado, nro_cuota) VALUES (%s, %s, %s, %s, %s, %s)"
                 new_cod_pago = None
-                
+
                 for i in range(1, num_pagos_total + 1):
                     offset_meses = (i - 1) * intervalo_meses
                     fecha_siguiente_pago = fecha_emision_dt + relativedelta(months=offset_meses)
-                    
+
                     cursor.execute(sql_ins_pago, (
-                        cod_renovacion, 
-                        moneda_pago, 
-                        fecha_siguiente_pago.strftime('%Y-%m-%d'), 
-                        monto_cuota, 
-                        'EN PROCESO', 
+                        cod_renovacion,
+                        moneda_pago,
+                        fecha_siguiente_pago.strftime('%Y-%m-%d'),
+                        monto_cuota,
+                        'EN PROCESO',
                         i
                     ))
                     if i == 1:
-                        new_cod_pago = cursor.fetchone()[0]
+                        new_cod_pago = cursor.lastrowid
                 
                 # 6. Vincular Comisión y Borrar Pendiente
                 sql_upd_com = "UPDATE comision SET Cod_pago = %s, cod_ejecutivo = %s WHERE id_bloque = %s AND nro_recibo_externo = %s AND (Cod_pago = 0 OR Cod_pago IS NULL)"
