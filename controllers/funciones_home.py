@@ -678,7 +678,7 @@ def procesar_form_pago(dataForm):
                 # 6. Insertar los pagos restantes como pendientes solo si no existen
                 if num_pagos_total > 1:
                     try:
-                        fecha_primer_pago = datetime.datetime.strptime(fecha_pago_inicial_str, 'YYYY-MM-DD')
+                        fecha_primer_pago = datetime.datetime.strptime(fecha_pago_inicial_str, '%Y-%m-%d')
                         # 'nro_cuota' es el número de la cuota que se está registrando ahora
                         nro_cuota_actual = int(nro_cuota)
                         
@@ -691,7 +691,7 @@ def procesar_form_pago(dataForm):
                                 fecha_siguiente_pago = fecha_primer_pago + relativedelta(months=offset_meses)
                                 
                                 sql_insert_siguiente_pago = "INSERT INTO pago (Cod_renovacion, Moneda, fecha, monto, estado, nro_cuota) VALUES (%s, %s, %s, %s, %s, %s)"
-                                valores_siguiente_pago = (cod_renovacion, moneda, fecha_siguiente_pago.strftime('YYYY-MM-DD'), monto_cuota, 'EN PROCESO', i)
+                                valores_siguiente_pago = (cod_renovacion, moneda, fecha_siguiente_pago.strftime('%Y-%m-%d'), monto_cuota, 'EN PROCESO', i)
                                 cursor.execute(sql_insert_siguiente_pago, valores_siguiente_pago)
                                 cuotas_existentes.add(i)
                     except Exception as e:
@@ -1003,7 +1003,7 @@ def procesar_comision2(cod_pago, referidor, cod_poliza=None):
             with conexion_MySQLdb.cursor() as cursor:
                 # Asegurar columna cod_poliza
                 try:
-                    cursor.execute("ALTER TABLE comision ADD COLUMN cod_poliza VARCHAR(100) DEFAULT NULL")
+                    cursor.execute("ALTER TABLE comision ADD COLUMN IF NOT EXISTS cod_poliza VARCHAR(100) DEFAULT NULL")
                 except:
                     pass
 
@@ -1038,7 +1038,7 @@ def procesar_form_poliza(dataForm):
 
         Ramo = dataForm['Ramo']
         try:
-            fecha_emision = datetime.datetime.strptime(dataForm['fecha_emision'], 'YYYY-MM-DD')
+            fecha_emision = datetime.datetime.strptime(dataForm['fecha_emision'], '%Y-%m-%d')
             fecha_vencimiento = fecha_emision + timedelta(days=365)
         except (ValueError, TypeError):
             return {'success': False, 'message': 'Formato de fecha de emisión inválido.'}
@@ -1207,7 +1207,7 @@ def procesar_excel_preview(file):
                     dt = r['Fecha_contrato']
                     if hasattr(dt, 'date'): dt = dt.date()
                     elif isinstance(dt, str):
-                        try: dt = datetime.datetime.strptime(dt[:10], 'YYYY-MM-DD').date()
+                        try: dt = datetime.datetime.strptime(dt[:10], '%Y-%m-%d').date()
                         except: pass
                     renovaciones_db.add((str(r['Cod_poliza']), dt))
 
@@ -1436,7 +1436,7 @@ def procesar_excel_stream(file):
                     dt = r['Fecha_contrato']
                     if hasattr(dt, 'date'): dt = dt.date()
                     elif isinstance(dt, str):
-                        try: dt = datetime.datetime.strptime(dt[:10], 'YYYY-MM-DD').date()
+                        try: dt = datetime.datetime.strptime(dt[:10], '%Y-%m-%d').date()
                         except: pass
                     renovaciones_db.add((str(r['Cod_poliza']), dt))
 
@@ -1586,7 +1586,7 @@ def insertar_registros_excel(data_to_insert):
                         tipo_ci = item['tipo_ci']
                         cod_poliza = item['poliza']
                         fecha_emision_raw = item['fecha_emision']
-                        fecha_emision_dt = datetime.datetime.strptime(fecha_emision_raw, 'YYYY-MM-DD')
+                        fecha_emision_dt = datetime.datetime.strptime(fecha_emision_raw, '%Y-%m-%d')
                         fecha_vencimiento = fecha_emision_dt + relativedelta(years=1)
                         
                         # 1. Asegurado (Crear o Actualizar si es necesario - por ahora solo creamos si no existe)
@@ -1743,7 +1743,7 @@ def insertar_unico_registro_generico(item):
 
                 # Fecha
                 try:
-                    fecha_emision_dt  = datetime.datetime.strptime(fecha_emision_raw, 'YYYY-MM-DD')
+                    fecha_emision_dt  = datetime.datetime.strptime(fecha_emision_raw, '%Y-%m-%d')
                     fecha_vencimiento = fecha_emision_dt + relativedelta(years=1)
                 except ValueError as e:
                     return {'success': False, 'message': f'Fecha de emisión inválida: {fecha_emision_raw}', 'report': report, 'ids': ids}
@@ -1832,10 +1832,10 @@ def insertar_unico_registro_generico(item):
                     if isinstance(sd, datetime.datetime): sd = sd.date()
                     if isinstance(ed, datetime.datetime): ed = ed.date()
                     if isinstance(sd, str): 
-                        try: sd = datetime.datetime.strptime(sd[:10], 'YYYY-MM-DD').date()
+                        try: sd = datetime.datetime.strptime(sd[:10], '%Y-%m-%d').date()
                         except: continue
                     if isinstance(ed, str):
-                        try: ed = datetime.datetime.strptime(ed[:10], 'YYYY-MM-DD').date()
+                        try: ed = datetime.datetime.strptime(ed[:10], '%Y-%m-%d').date()
                         except: continue
                     if (sd - relativedelta(months=1)) <= fecha_pago_date <= (ed + relativedelta(months=1)):
                         renovacion_id = ren['Cod_renovacion']
@@ -2083,7 +2083,7 @@ def procesar_mercantil_preview(file):
                     parts = fecha_emision_str.split('/')
                     if len(parts[0]) == 4: fecha_emision_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
                     else: fecha_emision_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
-                fecha_e_dt = datetime.datetime.strptime(fecha_emision_str, 'YYYY-MM-DD')
+                fecha_e_dt = datetime.datetime.strptime(fecha_emision_str, '%Y-%m-%d')
             except:
                 fecha_e_dt = datetime.datetime.now()
 
@@ -2139,7 +2139,7 @@ def procesar_mercantil_preview(file):
 
                 es_anterior = False
                 try:
-                    f_cobro_dt = datetime.datetime.strptime(f_cobro_raw, 'YYYY-MM-DD')
+                    f_cobro_dt = datetime.datetime.strptime(f_cobro_raw, '%Y-%m-%d')
                     # Detección inteligente: solo es anterior si la fecha es MUY lejana (> 90 días)
                     # o si hay evidencia de conflicto (mismo nro de cuota con distinto monto)
                     if f_cobro_dt < (fecha_e_dt - datetime.timedelta(days=90)):
@@ -2341,7 +2341,7 @@ def insertar_mercantil_data(data_to_insert):
                         # 3. Renovación
                         renovacion_id = None
                         try:
-                            fecha_e_dt = datetime.datetime.strptime(fecha_e, 'YYYY-MM-DD')
+                            fecha_e_dt = datetime.datetime.strptime(fecha_e, '%Y-%m-%d')
                             fecha_v = fecha_e_dt + relativedelta(years=1)
                         except:
                             fecha_e_dt = datetime.date.today()
@@ -2374,7 +2374,7 @@ def insertar_mercantil_data(data_to_insert):
                             
                             try:
                                 if f_cobro_raw and str(f_cobro_raw).lower() != 'nan':
-                                    f_cobro_dt = datetime.datetime.strptime(str(f_cobro_raw).split(' ')[0], 'YYYY-MM-DD')
+                                    f_cobro_dt = datetime.datetime.strptime(str(f_cobro_raw).split(' ')[0], '%Y-%m-%d')
                                 else:
                                     f_cobro_raw = None # Asegurar NULL para la BD
                                     f_cobro_dt = fecha_e_dt # Fallback solo para lógica de renovación
@@ -2388,7 +2388,7 @@ def insertar_mercantil_data(data_to_insert):
                             else:
                                 target_start_dt = fecha_e_dt
                                 
-                            target_start_str = target_start_dt.strftime('YYYY-MM-DD')
+                            target_start_str = target_start_dt.strftime('%Y-%m-%d')
                             
                             # Buscar o crear la renovación correspondiente
                             cursor.execute("SELECT Cod_renovacion FROM renovacion WHERE Cod_poliza = %s AND Fecha_contrato = %s", (item['poliza'], target_start_str))
@@ -2500,7 +2500,7 @@ def insertar_unico_registro_mercantil(item):
 
                 # 3. Renovación
                 try:
-                    fecha_e_dt = datetime.datetime.strptime(fecha_e, 'YYYY-MM-DD')
+                    fecha_e_dt = datetime.datetime.strptime(fecha_e, '%Y-%m-%d')
                     fecha_v = fecha_e_dt + relativedelta(years=1)
                 except:
                     fecha_e_dt = datetime.date.today()
@@ -2514,7 +2514,7 @@ def insertar_unico_registro_mercantil(item):
                     
                     try:
                         if f_cobro_raw and str(f_cobro_raw).lower() != 'nan':
-                            f_cobro_dt = datetime.datetime.strptime(str(f_cobro_raw).split(' ')[0], 'YYYY-MM-DD')
+                            f_cobro_dt = datetime.datetime.strptime(str(f_cobro_raw).split(' ')[0], '%Y-%m-%d')
                         else:
                             f_cobro_raw = None
                             f_cobro_dt = fecha_e_dt
@@ -2527,7 +2527,7 @@ def insertar_unico_registro_mercantil(item):
                     else:
                         target_start_dt = fecha_e_dt
                         
-                    target_start_str = target_start_dt.strftime('YYYY-MM-DD')
+                    target_start_str = target_start_dt.strftime('%Y-%m-%d')
                     
                     # Buscar o crear la renovación correspondiente
                     cursor.execute("SELECT Cod_renovacion FROM renovacion WHERE Cod_poliza = %s AND Fecha_contrato = %s", (item['poliza'], target_start_str))
@@ -2789,7 +2789,7 @@ def sql_lista_siniestros():
                 querySQL = (f"""
                         SELECT
                             p.Cod_poliza,
-                            "Carta Aval" AS tipo_siniestro,
+                            'Carta Aval' AS tipo_siniestro,
                             TO_CHAR(ca.Fecha_noti, 'DD-MM-YYYY') AS fecha_inicio,
                             ca.Estado AS estado_siniestro,
                             ca.Cod_CartaAval AS codigo, -- Esta columna se mapea a 'codigo'
@@ -2874,7 +2874,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                 querySQL = ("""
                         SELECT
                             p.Cod_poliza,
-                            "Carta Aval" AS tipo_siniestro,
+                            'Carta Aval' AS tipo_siniestro,
                             TO_CHAR(ca.Fecha_noti, 'DD-MM-YYYY') AS fecha_inicio,
                             ca.Estado AS estado_siniestro,
                             ca.Cod_CartaAval as codigo
@@ -3321,7 +3321,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                 base_query_parts = {
                     'carta_aval': """
                         SELECT
-                            p.Cod_poliza, "Carta Aval" AS tipo_siniestro,
+                            p.Cod_poliza, 'Carta Aval' AS tipo_siniestro,
                             TO_CHAR(ca.Fecha_noti, 'DD-MM-YYYY') AS fecha_inicio,
                             ca.Estado AS estado_siniestro, ca.Cod_CartaAval AS codigo,
                             a.Nombre AS nombre_asegurado, a.Apellido AS apellido_asegurado,
@@ -3398,18 +3398,18 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
 
                     if anio and meses:
                         placeholders = ', '.join(['%s'] * len(meses))
-                        where_conditions.append(f"YEAR({date_col}) = %s AND MONTH({date_col}) IN ({placeholders})")
+                        where_conditions.append(f"EXTRACT(YEAR FROM {date_col}) = %s AND EXTRACT(MONTH FROM {date_col}) IN ({placeholders})")
                         print("prime")
                         part_params.append(anio)
                         part_params.extend(meses)
                     elif anio:
                         print("rajois")
-                        where_conditions.append(f"YEAR({date_col}) = %s")
+                        where_conditions.append(f"EXTRACT(YEAR FROM {date_col}) = %s")
                         part_params.append(anio)
                     elif meses:
                         print("alo")
                         placeholders = ', '.join(['%s'] * len(meses))
-                        where_conditions.append(f"MONTH({date_col}) IN ({placeholders})")
+                        where_conditions.append(f"EXTRACT(MONTH FROM {date_col}) IN ({placeholders})")
                         part_params.extend(meses)
 
                     if where_conditions:
@@ -3506,10 +3506,10 @@ def obtener_polizas_filtradas(ano=None, mes=None, rango_inicio=None, rango_fin=N
                 
                 params = []
                 if ano and mes:
-                    querySQL += " AND YEAR(r.Fecha_contrato) = %s AND MONTH(r.Fecha_contrato) = %s"
+                    querySQL += " AND EXTRACT(YEAR FROM r.Fecha_contrato) = %s AND EXTRACT(MONTH FROM r.Fecha_contrato) = %s"
                     params.extend([ano, mes])
                 elif ano:
-                    querySQL += " AND YEAR(r.Fecha_contrato) = %s"
+                    querySQL += " AND EXTRACT(YEAR FROM r.Fecha_contrato) = %s"
                     params.append(ano)
                 elif rango_inicio and rango_fin:
                     querySQL += " AND r.Fecha_contrato BETWEEN %s AND %s"
@@ -4221,10 +4221,10 @@ def procesar_actualizacion_form_reembolso(data):
 
                 # Convert date strings to datetime objects for database insertion if your DB expects it
                 # Or ensure your database driver handles string dates correctly (MySQLdb usually does)
-                fecha_ocurrencia_dt = datetime.strptime(fecha_ocurrencia, 'YYYY-MM-DD').date()
-                fecha_noti_dt = datetime.strptime(fecha_noti, 'YYYY-MM-DD').date()
-                fecha_max_dt = datetime.strptime(fecha_max, 'YYYY-MM-DD').date() if fecha_max else None
-                fecha_pago_dt = datetime.strptime(fecha_pago, 'YYYY-MM-DD').date() if fecha_pago else None
+                fecha_ocurrencia_dt = datetime.strptime(fecha_ocurrencia, '%Y-%m-%d').date()
+                fecha_noti_dt = datetime.strptime(fecha_noti, '%Y-%m-%d').date()
+                fecha_max_dt = datetime.strptime(fecha_max, '%Y-%m-%d').date() if fecha_max else None
+                fecha_pago_dt = datetime.strptime(fecha_pago, '%Y-%m-%d').date() if fecha_pago else None
 
 
                 querySQL = """
@@ -4534,8 +4534,8 @@ def procesar_actualizacion_poliza_persona(dataForm, cod_poliza):
                 # 3. Calcular nueva fecha de vencimiento si cambia la emisión
                 fecha_vencimiento_form = None
                 if fecha_emision_form:
-                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, 'YYYY-MM-DD')
-                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('YYYY-MM-DD')
+                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, '%Y-%m-%d')
+                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
                 # 4. Actualizar renovacion
                 sql_renovacion_update = """
@@ -4626,8 +4626,8 @@ def procesar_actualizacion_poliza_auto(form_data, cod_poliza):
                 # 3. Calcular nueva fecha de vencimiento
                 fecha_vencimiento_form = None
                 if fecha_emision_form:
-                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, 'YYYY-MM-DD')
-                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('YYYY-MM-DD')
+                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, '%Y-%m-%d')
+                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
                 # 4. Actualizar renovacion
                 sql_renovacion_update = """
@@ -4708,8 +4708,8 @@ def procesar_actualizacion_poliza_patrimonial(dataForm, cod_poliza):
                 # 3. Calcular nueva fecha de vencimiento si cambia la emisión
                 fecha_vencimiento_form = None
                 if fecha_emision_form:
-                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, 'YYYY-MM-DD')
-                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('YYYY-MM-DD')
+                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, '%Y-%m-%d')
+                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
                 # 4. Actualizar renovacion
                 sql_renovacion_update = """
@@ -4792,8 +4792,8 @@ def procesar_actualizacion_poliza_viaje(dataForm, cod_poliza):
                 # 3. Calcular nueva fecha de vencimiento
                 fecha_vencimiento_form = None
                 if fecha_emision_form:
-                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, 'YYYY-MM-DD')
-                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('YYYY-MM-DD')
+                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, '%Y-%m-%d')
+                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
                 # 4. Actualizar renovacion
                 sql_renovacion_update = """
@@ -4875,8 +4875,8 @@ def procesar_actualizacion_poliza_fianza(dataForm, cod_poliza):
                 # 3. Calcular nueva fecha de vencimiento
                 fecha_vencimiento_form = None
                 if fecha_emision_form:
-                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, 'YYYY-MM-DD')
-                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('YYYY-MM-DD')
+                    fecha_dt = datetime.datetime.strptime(fecha_emision_form, '%Y-%m-%d')
+                    fecha_vencimiento_form = (fecha_dt + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
                 # 4. Actualizar renovacion
                 sql_renovacion_update = """
@@ -4959,7 +4959,7 @@ def lista_Pagos(cod):
                         p.Cod_renovacion, p.cod_pago, p.moneda, p.fecha, r.cod_poliza, r.frecuencia, r.prima, 
                         p.monto, p.estado, p.fecha_pagada, p.nro_cuota, p.recibo, p.Metodo_pago, p.tasa,
                         co.Nombre as Nombre_compania,
-                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
+                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')), '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
                     FROM pago p 
                     INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion 
@@ -5011,7 +5011,7 @@ def cobranza():
                         a.CI,
                         a.Nombre as Nombre_asegurado,
                         a.Apellido as Apellido_asegurado,
-                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
+                        (SELECT STRING_AGG(CONCAT('PAGO: ', COALESCE(c.monto_pago, 0), '$ | RECIBIDA: ', COALESCE(c.monto_d, 0), '$ | EJEC: ', COALESCE(c.bono, 0), '$ - ', COALESCE(c.Estado, 'COBRADA')), '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
                     FROM pago p 
                     INNER JOIN renovacion r ON p.Cod_renovacion = r.Cod_renovacion 
@@ -5540,11 +5540,11 @@ def obtener_pagos_filtrados(pago, comision, mes=None, asegurado_id=None, ano=Non
                 params = []
 
                 if mes:
-                    conditions.append("MONTH(p.fecha) = %s")
+                    conditions.append("EXTRACT(MONTH FROM p.fecha) = %s")
                     params.append(mes)
                 
                 if ano:
-                    conditions.append("YEAR(p.fecha) = %s")
+                    conditions.append("EXTRACT(YEAR FROM p.fecha) = %s")
                     params.append(ano)
 
                 if asegurado_id:
@@ -5620,11 +5620,11 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
                 params = []
 
                 if mes:
-                    conditions.append("MONTH(p.fecha) = %s")
+                    conditions.append("EXTRACT(MONTH FROM p.fecha) = %s")
                     params.append(mes)
                 
                 if ano:
-                    conditions.append("YEAR(p.fecha) = %s")
+                    conditions.append("EXTRACT(YEAR FROM p.fecha) = %s")
                     params.append(ano)
 
                 if asegurado_id:
@@ -5651,8 +5651,8 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
                     """
                     conditions.append(
                         f"p.estado NOT IN ('PAGADO', 'ANULADO')"
-                        f" AND p.fecha < CURDATE()"
-                        f" AND DATE_ADD(p.fecha, INTERVAL ({grace_case}) DAY) >= CURDATE()"
+                        f" AND p.fecha < CURRENT_DATE"
+                        f" AND (p.fecha + ({grace_case}) * INTERVAL '1 day') >= CURRENT_DATE"
                     )
 
                 where_clause = ""
@@ -5678,7 +5678,7 @@ def obtener_pagos_datatable(start, length, mes=None, ano=None, asegurado_id=None
                         p.Metodo_pago, p.fecha_pagada, p.tasa,
                         a.Nombre as Nombre_asegurado, a.Apellido as Apellido_asegurado, a.CI,
                         ({sub_query_proximo}) as es_proximo,
-                        (SELECT STRING_AGG(CONCAT(COALESCE(c.descripcion, 'COMISION'), ' (', COALESCE(c.monto_d, 0), '$) - ', COALESCE(c.Estado, 'COBRADA')) SEPARATOR '||')
+                        (SELECT STRING_AGG(CONCAT(COALESCE(c.descripcion, 'COMISION'), ' (', COALESCE(c.monto_d, 0), '$) - ', COALESCE(c.Estado, 'COBRADA')), '||')
                          FROM comision c WHERE c.Cod_pago = p.cod_pago) as comisiones_info
                 """ + base_joins + where_clause + """
                     ORDER BY p.fecha DESC
@@ -5717,10 +5717,10 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
                     CASE
                         WHEN r.estado = 'anulada' THEN 'Anulada'
                         WHEN r.estado = 'traspasada' THEN 'Traspasada'
-                        WHEN r.Fecha_vencimiento <= CURDATE() AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS', 'Auto', 'AUTO', 'Patrimonial', 'PATRIMONIAL', 'Fianza', 'FIANZA', 'FIANZAS', 'Viaje', 'VIAJE', 'VIAJES') 
+                        WHEN r.Fecha_vencimiento <= CURRENT_DATE AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS', 'Auto', 'AUTO', 'Patrimonial', 'PATRIMONIAL', 'Fianza', 'FIANZA', 'FIANZAS', 'Viaje', 'VIAJE', 'VIAJES') 
                              AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS', 'Viaje', 'VIAJE', 'VIAJES') THEN 'Finalizada'
-                        WHEN r.Fecha_vencimiento > CURDATE() AND {tiene_pago_sql} THEN 'Vigente'
-                        WHEN r.Fecha_vencimiento > CURDATE() AND NOT ({tiene_pago_sql}) THEN 'Pendiente'
+                        WHEN r.Fecha_vencimiento > CURRENT_DATE AND {tiene_pago_sql} THEN 'Vigente'
+                        WHEN r.Fecha_vencimiento > CURRENT_DATE AND NOT ({tiene_pago_sql}) THEN 'Pendiente'
                         ELSE 'Vencida'
                     END
                 """
@@ -6019,11 +6019,11 @@ def obtener_proyeccion_cobranza(year):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = """
-                    SELECT MONTH(fecha) as mes, SUM(monto) as total
+                    SELECT EXTRACT(MONTH FROM fecha) as mes, SUM(monto) as total
                     FROM pago
-                    WHERE YEAR(fecha) = %s
-                    GROUP BY MONTH(fecha)
-                    ORDER BY MONTH(fecha)
+                    WHERE EXTRACT(YEAR FROM fecha) = %s
+                    GROUP BY EXTRACT(MONTH FROM fecha)
+                    ORDER BY EXTRACT(MONTH FROM fecha)
                 """
                 cursor.execute(querySQL, (year,))
                 proyeccion = cursor.fetchall()
@@ -6429,12 +6429,12 @@ def generar_pdf_comisiones(comisiones, rangoFechas=None, ejecutivo=None, nota=No
                     except (ValueError, IndexError):
                         try:
                             # Intenta parsear la fecha en el formato esperado 'YYYY-MM-DD'
-                            fecha_dt = datetime.datetime.strptime(fecha_obj, 'YYYY-MM-DD').date()
+                            fecha_dt = datetime.datetime.strptime(fecha_obj, '%Y-%m-%d').date()
                             fecha_str = fecha_dt.strftime('%d/%m/%y')
                         except ValueError:
                             try:
                                 # Intenta con otro formato si el primero falla
-                                fecha_dt = datetime.datetime.strptime(fecha_obj, 'DD-MM-YYYY').date()
+                                fecha_dt = datetime.datetime.strptime(fecha_obj, '%d-%m-%Y').date()
                                 fecha_str = fecha_dt.strftime('%d/%m/%y')
                             except ValueError:
                                 # Si todos los intentos de parseo fallan, usa el string original
@@ -6707,7 +6707,7 @@ def generar_recibo_pdf_ejecutivo(comisiones, rangoFechas=None, ejecutivo_nombre=
                         fecha_str = fecha_dt.strftime('%d/%m/%Y')
                     except (ValueError, IndexError):
                         try:
-                            fecha_str = datetime.datetime.strptime(fecha_obj, 'YYYY-MM-DD').strftime('%d/%m/%Y')
+                            fecha_str = datetime.datetime.strptime(fecha_obj, '%Y-%m-%d').strftime('%d/%m/%Y')
                         except ValueError:
                             fecha_str = fecha_obj
                 elif isinstance(fecha_obj, (datetime.date, datetime.datetime)):
@@ -6856,7 +6856,7 @@ def obtener_filtros_dashboard():
                 ejecutivos = cursor.fetchall()
 
                 # Obtener Años (de los pagos)
-                cursor.execute("SELECT DISTINCT YEAR(fecha) as ano FROM pago WHERE fecha IS NOT NULL ORDER BY ano DESC")
+                cursor.execute("SELECT DISTINCT EXTRACT(YEAR FROM fecha) as ano FROM pago WHERE fecha IS NOT NULL ORDER BY ano DESC")
                 anos = cursor.fetchall()
 
                 return {
@@ -6894,12 +6894,12 @@ def obtener_datos_dashboard(filtros):
                 cuota1_clauses = [
                     "p.nro_cuota = 1",
                     "UPPER(p.estado) = 'PAGADO'",
-                    "YEAR(p.fecha_pagada) = %s"
+                    "EXTRACT(YEAR FROM p.fecha_pagada) = %s"
                 ]
                 cuota1_params = [ano_actual_f]
 
                 if filtros.get('mes'):
-                    cuota1_clauses.append("MONTH(p.fecha_pagada) = %s")
+                    cuota1_clauses.append("EXTRACT(MONTH FROM p.fecha_pagada) = %s")
                     cuota1_params.append(int(filtros['mes']))
                 if filtros.get('compania_id'):
                     cuota1_clauses.append("po.Cod_compania = %s")
@@ -6917,11 +6917,11 @@ def obtener_datos_dashboard(filtros):
                 cuota1_clauses_ant = [
                     "p.nro_cuota = 1",
                     "UPPER(p.estado) = 'PAGADO'",
-                    "YEAR(p.fecha_pagada) = %s"
+                    "EXTRACT(YEAR FROM p.fecha_pagada) = %s"
                 ]
                 cuota1_params_ant = [ano_anterior]
                 if filtros.get('mes'):
-                    cuota1_clauses_ant.append("MONTH(p.fecha_pagada) = %s")
+                    cuota1_clauses_ant.append("EXTRACT(MONTH FROM p.fecha_pagada) = %s")
                     cuota1_params_ant.append(int(filtros['mes']))
                 if filtros.get('compania_id'):
                     cuota1_clauses_ant.append("po.Cod_compania = %s")
@@ -6998,21 +6998,21 @@ def obtener_datos_dashboard(filtros):
 
                 # ── 4. Tendencia Mensual (fecha_pagada cuota 1) ───────────────
                 tendencia_query = f"""
-                    SELECT MONTH(p.fecha_pagada) AS mes, SUM(r.Prima) AS total
+                    SELECT EXTRACT(MONTH FROM p.fecha_pagada) AS mes, SUM(r.Prima) AS total
                     {base_join}
                     {cuota1_where}
-                    GROUP BY MONTH(p.fecha_pagada)
-                    ORDER BY MONTH(p.fecha_pagada)
+                    GROUP BY EXTRACT(MONTH FROM p.fecha_pagada)
+                    ORDER BY EXTRACT(MONTH FROM p.fecha_pagada)
                 """
                 cursor.execute(tendencia_query, tuple(cuota1_params))
                 tendencia_mensual = cursor.fetchall()
 
                 tendencia_query_ant = f"""
-                    SELECT MONTH(p.fecha_pagada) AS mes, SUM(r.Prima) AS total
+                    SELECT EXTRACT(MONTH FROM p.fecha_pagada) AS mes, SUM(r.Prima) AS total
                     {base_join}
                     {cuota1_where_ant}
-                    GROUP BY MONTH(p.fecha_pagada)
-                    ORDER BY MONTH(p.fecha_pagada)
+                    GROUP BY EXTRACT(MONTH FROM p.fecha_pagada)
+                    ORDER BY EXTRACT(MONTH FROM p.fecha_pagada)
                 """
                 cursor.execute(tendencia_query_ant, tuple(cuota1_params_ant))
                 tendencia_mensual_ant = cursor.fetchall()
@@ -7112,17 +7112,17 @@ def obtener_datos_dashboard(filtros):
 
                 # ── 9. Eficiencia de Cobro ────────────────────────────────────
                 try:
-                    efic_clauses = ["YEAR(p.fecha) = %s"]
+                    efic_clauses = ["EXTRACT(YEAR FROM p.fecha) = %s"]
                     efic_params  = [ano_actual_f]
                     if filtros.get('mes'):
-                        efic_clauses.append("MONTH(p.fecha) = %s")
+                        efic_clauses.append("EXTRACT(MONTH FROM p.fecha) = %s")
                         efic_params.append(int(filtros['mes']))
                     efic_where = "WHERE " + " AND ".join(efic_clauses)
 
-                    cobradas_month_clause = "YEAR(p.fecha_pagada) = %s"
+                    cobradas_month_clause = "EXTRACT(YEAR FROM p.fecha_pagada) = %s"
                     cobradas_params = [ano_actual_f]
                     if filtros.get('mes'):
-                        cobradas_month_clause += " AND MONTH(p.fecha_pagada) = %s"
+                        cobradas_month_clause += " AND EXTRACT(MONTH FROM p.fecha_pagada) = %s"
                         cobradas_params.append(int(filtros['mes']))
 
                     efficiency_query = f"""
@@ -7151,9 +7151,9 @@ def obtener_datos_dashboard(filtros):
                             SELECT COUNT(*) AS ext_count, SUM(p.monto) AS ext_monto
                             FROM pago p
                             WHERE UPPER(p.estado) = 'PAGADO'
-                              AND YEAR(p.fecha_pagada)  = %s
-                              AND MONTH(p.fecha_pagada) = %s
-                              AND (MONTH(p.fecha) != %s OR YEAR(p.fecha) != %s)
+                              AND EXTRACT(YEAR FROM p.fecha_pagada)  = %s
+                              AND EXTRACT(MONTH FROM p.fecha_pagada) = %s
+                              AND (EXTRACT(MONTH FROM p.fecha) != %s OR EXTRACT(YEAR FROM p.fecha) != %s)
                         """
                         cursor.execute(recaud_ext_query, (
                             ano_actual_f, int(filtros['mes']),
@@ -7192,15 +7192,15 @@ def obtener_datos_dashboard(filtros):
                     claims_query = """
                         SELECT 'Carta Aval' AS tipo, COUNT(DISTINCT ca.Cod_CartaAval) AS total
                         FROM Carta_aval ca
-                        WHERE YEAR(ca.Fecha_noti) = %s
+                        WHERE EXTRACT(YEAR FROM ca.Fecha_noti) = %s
                         UNION ALL
                         SELECT 'Reembolso' AS tipo, COUNT(DISTINCT re.cod_reembolso) AS total
                         FROM Reembolso re
-                        WHERE YEAR(re.Fecha_ocurrencia) = %s
+                        WHERE EXTRACT(YEAR FROM re.Fecha_ocurrencia) = %s
                         UNION ALL
                         SELECT 'Siniestro Auto' AS tipo, COUNT(DISTINCT sa.Cod_siniestroA) AS total
                         FROM AutomovilSiniestro sa
-                        WHERE YEAR(sa.Fecha_ocurrencia) = %s
+                        WHERE EXTRACT(YEAR FROM sa.Fecha_ocurrencia) = %s
                     """
                     cursor.execute(claims_query, (ano_actual_f, ano_actual_f, ano_actual_f))
                     siniestros_tipo = cursor.fetchall()
@@ -7926,7 +7926,7 @@ def sql_reporte_sudaseg(mes, ano):
                     LEFT JOIN compania c ON p.Cod_compania = c.Cod_compania
                     LEFT JOIN comision com ON pag.Cod_pago = com.Cod_pago
                     LEFT JOIN bloque_pago_comision bpc ON com.id_bloque = bpc.id_bloque
-                    WHERE MONTH(pag.fecha) = %s AND YEAR(pag.fecha) = %s
+                    WHERE EXTRACT(MONTH FROM pag.fecha) = %s AND EXTRACT(YEAR FROM pag.fecha) = %s
                     AND pag.estado = 'PAGADO'
                 """
                 cursor.execute(querySQL, (mes, ano))
@@ -8354,7 +8354,7 @@ def procesar_registro_desde_pendiente(dataForm):
 
                 fecha_emision_raw = dataForm.get('fecha_emision')
                 try:
-                    fecha_emision_dt = datetime.datetime.strptime(fecha_emision_raw, 'YYYY-MM-DD')
+                    fecha_emision_dt = datetime.datetime.strptime(fecha_emision_raw, '%Y-%m-%d')
                 except:
                     fecha_emision_dt = datetime.datetime.now()
                 
@@ -8417,7 +8417,7 @@ def procesar_registro_desde_pendiente(dataForm):
                     cursor.execute(sql_ins_pago, (
                         cod_renovacion, 
                         moneda_pago, 
-                        fecha_siguiente_pago.strftime('YYYY-MM-DD'), 
+                        fecha_siguiente_pago.strftime('%Y-%m-%d'), 
                         monto_cuota, 
                         'EN PROCESO', 
                         i
@@ -8490,7 +8490,7 @@ def procesar_siniestros_excel(file):
                             
                             # Convert dates to string representation
                             for col in df.select_dtypes(include=['datetime64', 'datetimetz']).columns:
-                                df[col] = df[col].dt.strftime('YYYY-MM-DD')
+                                df[col] = df[col].dt.strftime('%Y-%m-%d')
                             
                             df = df.replace({pd.NA: None, float('nan'): None})
                             sheet_data = df.to_dict('records')
