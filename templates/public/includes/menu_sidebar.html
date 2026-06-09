@@ -143,28 +143,28 @@
         <div data-i18n="Boxicons">Comisiones</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {% if request.path == '/lista-de-comisiones' %} active {% endif %}">
-          <a href="/lista-de-comisiones" class="menu-link">
-            <i class="menu-icon bi bi-list-ul"></i>
-            <div data-i18n="Tables">Lista de Comisiones</div>
-          </a>
-        </li>
         <li class="menu-item {% if request.path == '/comisiones-beta' %} active {% endif %}">
           <a href="{{ url_for('comisiones_beta', reset=1) }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-test-tube"></i>
-            <div data-i18n="Comisiones (beta)">Comisiones (beta)</div>
+            <i class="menu-icon bi bi-inbox-fill"></i>
+            <div data-i18n="Comisiones Recibidas">Comisiones Recibidas</div>
           </a>
         </li>
         <li class="menu-item {% if request.path == '/comisiones/transacciones' %} active {% endif %}">
           <a href="/comisiones/transacciones" class="menu-link">
-            <i class="menu-icon bi bi-wallet2"></i>
+            <i class="menu-icon bi bi-clock-history"></i>
             <div data-i18n="Transacciones">Transacciones</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.path == '/lista-de-comisiones' %} active {% endif %}">
+          <a href="/lista-de-comisiones" class="menu-link">
+            <i class="menu-icon bi bi-people-fill"></i>
+            <div data-i18n="Liquidacion Ejecutivos">Liquidación Ejecutivos</div>
           </a>
         </li>
         <li class="menu-item {% if request.path == '/gestionar-comisiones-config' %} active {% endif %}">
           <a href="/gestionar-comisiones-config" class="menu-link">
             <i class="menu-icon bi bi-gear-fill"></i>
-            <div data-i18n="Configuración">Configuración de Comisiones</div>
+            <div data-i18n="Configuracion">Configuración</div>
           </a>
         </li>
       </ul>
