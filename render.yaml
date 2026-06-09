@@ -3,7 +3,7 @@ services:
     name: broker-suite
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --no-cache-dir -r requirements.txt
     startCommand: python wsgi.py
     envVars:
       - key: SECRET_KEY
