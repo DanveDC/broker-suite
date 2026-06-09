@@ -1,17 +1,17 @@
 import os
-import ssl
 from urllib.parse import urlparse
-import mysql.connector
+import pymysql
+import pymysql.cursors
 
 
 class MysqlDictConnection:
-    """Wraps mysql.connector connection to always return dict cursors."""
+    """Wraps pymysql connection so cursor() always returns dict rows."""
 
     def __init__(self, conn):
         self._conn = conn
 
     def cursor(self, cursor_factory=None, dictionary=None):
-        return self._conn.cursor(dictionary=True)
+        return self._conn.cursor()
 
     def commit(self):
         self._conn.commit()
@@ -46,6 +46,11 @@ def connectionBD():
             database = parsed.path.lstrip('/')
             port = parsed.port or 3306
 
+            use_ssl = (
+                os.environ.get('MYSQL_SSL', '').lower() in ('1', 'true')
+                or (host and any(s in host for s in ('tidb', 'tidbcloud', 'planetscale', 'aiven')))
+            )
+
             connect_args = dict(
                 host=host,
                 user=user,
@@ -53,35 +58,28 @@ def connectionBD():
                 database=database,
                 port=port,
                 charset='utf8mb4',
-                collation='utf8mb4_unicode_ci',
+                cursorclass=pymysql.cursors.DictCursor,
+                autocommit=False,
             )
 
-            # TiDB Serverless and other cloud MySQL providers require SSL
-            use_ssl = (
-                os.environ.get('MYSQL_SSL', '').lower() in ('1', 'true')
-                or (host and any(s in host for s in ('tidb', 'tidbcloud', 'planetscale', 'aiven')))
-            )
             if use_ssl:
                 ssl_ca = '/etc/ssl/certs/ca-certificates.crt'
                 if not os.path.exists(ssl_ca):
                     ssl_ca = '/etc/ssl/cert.pem'
-                if os.path.exists(ssl_ca):
-                    connect_args['ssl_ca'] = ssl_ca
-                    connect_args['ssl_verify_identity'] = True
-                else:
-                    connect_args['ssl_disabled'] = False
+                connect_args['ssl'] = {'ca': ssl_ca} if os.path.exists(ssl_ca) else {'ssl': True}
         else:
             connect_args = dict(
                 host=os.environ.get('DB_HOST', 'localhost'),
                 user=os.environ.get('DB_USER', 'root'),
                 password=os.environ.get('DB_PASSWORD', ''),
-                database=os.environ.get('DB_NAME', 'Cabal'),
+                database=os.environ.get('DB_NAME', 'cabal'),
                 port=int(os.environ.get('DB_PORT', 3306)),
                 charset='utf8mb4',
-                collation='utf8mb4_unicode_ci',
+                cursorclass=pymysql.cursors.DictCursor,
+                autocommit=False,
             )
 
-        conn = mysql.connector.connect(**connect_args)
+        conn = pymysql.connect(**connect_args)
         print("Conexión exitosa a la BD")
         return MysqlDictConnection(conn)
 
