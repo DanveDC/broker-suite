@@ -73,6 +73,7 @@ body {
 
 /* Content offset — pushes main content past the collapsed sidebar */
 .layout-page {
+  padding-left: 0 !important;
   margin-left: var(--sidebar-collapsed) !important;
   width: calc(100% - var(--sidebar-collapsed)) !important;
   transition: none;
