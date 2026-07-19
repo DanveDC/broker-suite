@@ -7028,26 +7028,24 @@ def obtener_datos_dashboard(filtros):
                 cursor.execute(ejecutivos_query, tuple(cuota1_params))
                 top_ejecutivos_raw = cursor.fetchall()
 
+                # Totales del año anterior para TODOS los ejecutivos en una sola query
+                # (antes: una query por cada uno de los top-10 dentro del loop)
+                ant_ejecutivos_query = f"""
+                    SELECT e.cod_ejecutivo, SUM(r.Prima) AS total_ant
+                    {base_join}
+                    {cuota1_where_ant}
+                    GROUP BY e.cod_ejecutivo
+                """
+                cursor.execute(ant_ejecutivos_query, tuple(cuota1_params_ant))
+                total_ant_by_ejecutivo = {
+                    r['cod_ejecutivo']: float(r['total_ant'] or 0) for r in cursor.fetchall()
+                }
+
                 top_ejecutivos = []
                 for ejec in top_ejecutivos_raw:
                     cod = ejec['cod_ejecutivo']
                     total_actual = float(ejec['total_actual'] or 0)
-
-                    ant_clauses_e = list(cuota1_clauses_ant)
-                    ant_params_e  = list(cuota1_params_ant)
-                    if cod:
-                        ant_clauses_e.append("e.cod_ejecutivo = %s")
-                        ant_params_e.append(cod)
-                    ant_where_e = "WHERE " + " AND ".join(ant_clauses_e)
-
-                    ant_q = f"""
-                        SELECT SUM(r.Prima) AS total_ant
-                        {base_join}
-                        {ant_where_e}
-                    """
-                    cursor.execute(ant_q, tuple(ant_params_e))
-                    ant_row = cursor.fetchone()
-                    total_ant_ejec = float(ant_row['total_ant'] or 0) if ant_row else 0.0
+                    total_ant_ejec = total_ant_by_ejecutivo.get(cod, 0.0)
 
                     crecimiento_prima = round(total_actual - total_ant_ejec, 2)
                     yoy_pct = round(
@@ -8454,10 +8452,23 @@ def procesar_siniestros_excel(file):
         
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
+                # Precargar todas las pólizas una sola vez (antes: hasta 3 queries por fila del Excel)
+                cursor.execute("SELECT Cod_poliza, Cod_compania FROM poliza")
+                polizas_by_exact = {}
+                polizas_by_clean = {}
+                polizas_by_clean_nozero = {}
+                for p in cursor.fetchall():
+                    cod = p['Cod_poliza']
+                    polizas_by_exact[cod] = p
+                    clean = cod.replace("-", "").replace(" ", "")
+                    polizas_by_clean.setdefault(clean, p)
+                    nozero = clean[1:] if clean.startswith("0") else clean
+                    polizas_by_clean_nozero.setdefault(nozero, p)
+
                 for sheet_name in sheets:
                     # check case-insensitive match using "in" to allow variations like "Reembolsos"
                     is_match = any(target.lower() in sheet_name.lower() for target in target_sheets)
-                    
+
                     # Si la hoja coincide o si es la única hoja en el archivo (asumimos Reembolso por defecto)
                     if is_match or len(sheets) == 1:
                         try:
@@ -8489,7 +8500,23 @@ def procesar_siniestros_excel(file):
                             sheet_data = df.to_dict('records')
                             
                             seen_in_file = set() # (company_id, siniestro_code)
-                            
+
+                            # Determinar la tabla una sola vez por hoja (antes: recalculado en cada fila)
+                            tbl = "reembolso"
+                            cn = sheet_name.lower()
+                            if "carta aval" in cn: tbl = "carta_aval"
+                            elif "automovil" in cn: tbl = "automovilsiniestro"
+                            if not is_match and len(sheets) == 1: tbl = "reembolso"
+
+                            # Precargar siniestros ya existentes para esta tabla (antes: 1 query por fila)
+                            cursor.execute(f"""
+                                SELECT t.codigo_siniestro AS codigo, p.Cod_compania AS compania
+                                FROM {tbl} t JOIN poliza p ON t.Cod_poliza = p.Cod_poliza
+                            """)
+                            siniestros_existentes = set(
+                                (r['compania'], str(r['codigo']).strip()) for r in cursor.fetchall()
+                            )
+
                             for row in sheet_data:
                                 row_search = {}
                                 for k, v in row.items():
@@ -8500,7 +8527,7 @@ def procesar_siniestros_excel(file):
 
                                 poliza = row_search.get('POLIZA') or row_search.get('NUMERO DE POLIZA') or next((v for k,v in row_search.items() if 'POLIZA' in k), None)
                                 siniestro_cod = row_search.get('SINIESTRO') or row_search.get('CODIGO SINIESTRO') or row_search.get('CODIGO_SINIESTRO') or next((v for k,v in row_search.items() if 'SINIESTRO' in k), None)
-                                
+
                                 row['existe_poliza'] = False
                                 row['ya_existe_siniestro'] = False
                                 row['duplicate_in_file'] = False
@@ -8509,26 +8536,17 @@ def procesar_siniestros_excel(file):
                                 if poliza is not None:
                                     poliza_str = str(poliza).strip()
                                     if poliza_str:
-                                        cursor.execute("SELECT Cod_poliza, Cod_compania FROM poliza WHERE Cod_poliza = %s", (poliza_str,))
-                                        p_data = cursor.fetchone()
-                                        
+                                        p_data = polizas_by_exact.get(poliza_str)
+
                                         # Si no hace match directo, intentamos limpiando guiones y espacios
                                         if not p_data:
                                             poliza_clean = poliza_str.replace("-", "").replace(" ", "")
-                                            cursor.execute("SELECT Cod_poliza, Cod_compania FROM poliza WHERE REPLACE(REPLACE(Cod_poliza, '-', ''), ' ', '') = %s", (poliza_clean,))
-                                            p_data = cursor.fetchone()
+                                            p_data = polizas_by_clean.get(poliza_clean)
 
                                             # Si sigue sin hacer match, intentamos quitando un '0' inicial si existe
                                             if not p_data:
                                                 poliza_sin_cero = poliza_clean[1:] if poliza_clean.startswith("0") else poliza_clean
-                                                query = """
-                                                    SELECT Cod_poliza, Cod_compania FROM poliza 
-                                                    WHERE IF(LEFT(REPLACE(REPLACE(Cod_poliza, '-', ''), ' ', ''), 1) = '0', 
-                                                             SUBSTRING(REPLACE(REPLACE(Cod_poliza, '-', ''), ' ', ''), 2), 
-                                                             REPLACE(REPLACE(Cod_poliza, '-', ''), ' ', '')) = %s
-                                                """
-                                                cursor.execute(query, (poliza_sin_cero,))
-                                                p_data = cursor.fetchone()
+                                                p_data = polizas_by_clean_nozero.get(poliza_sin_cero)
 
                                         if p_data:
                                             row['existe_poliza'] = True
@@ -8540,31 +8558,15 @@ def procesar_siniestros_excel(file):
                                     sc_str = str(siniestro_cod).strip()
                                     if sc_str:
                                         # Check if already in the DB for THIS company
-                                        # Determine table based on sheet
-                                        tbl = "reembolso"
-                                        cn = sheet_name.lower()
-                                        if "carta aval" in cn: tbl = "carta_aval"
-                                        elif "automovil" in cn: tbl = "automovilsiniestro"
-                                        
-                                        # If it's single sheet and not matching, fallback to reembolso
-                                        if not is_match and len(sheets) == 1: tbl = "reembolso"
-                                        
-                                        sql_check = f"""
-                                            SELECT count(*) as total 
-                                            FROM {tbl} t 
-                                            JOIN poliza p ON t.Cod_poliza = p.Cod_poliza 
-                                            WHERE p.Cod_compania = %s AND t.codigo_siniestro = %s
-                                        """
-                                        cursor.execute(sql_check, (company_id, sc_str))
-                                        if cursor.fetchone()['total'] > 0:
+                                        if (company_id, sc_str) in siniestros_existentes:
                                             row['ya_existe_siniestro'] = True
-                                        
+
                                         # Check if duplicate within the same Excel file
                                         file_key = (company_id, sc_str)
                                         if file_key in seen_in_file:
                                             row['duplicate_in_file'] = True
                                         seen_in_file.add(file_key)
-                                         
+
                             final_sheet_name = sheet_name if is_match else "Reembolso"
                             data[final_sheet_name] = sheet_data
                         except Exception as e:

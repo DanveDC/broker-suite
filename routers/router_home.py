@@ -625,7 +625,7 @@ def filtrar_siniestros():
         # request.json serÃ¡ None si el Content-Type no es 'application/json'
         # o si el cuerpo no es JSON vÃ¡lido.
         data = request.json
-        print(f"request.json (datos parseados): {data}")
+        print(f"filtrar-siniestros: {len(data) if data else 0} filtros recibidos")
 
         if data is None:
             print("ADVERTENCIA: request.json es None. El cuerpo de la solicitud no es JSON vÃ¡lido o el Content-Type no es 'application/json'.")
