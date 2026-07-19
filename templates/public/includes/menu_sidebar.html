@@ -53,7 +53,7 @@
 
 
     <li
-      class="menu-item {% if request.path == '/registrar-poliza' or request.path == '/lista-de-polizas' or request.path == '/polizas-pendientes' %} active open {% endif %}">
+      class="menu-item {% if request.path == '/registrar-poliza' or request.path == '/lista-de-polizas' %} active open {% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon bi bi-file-text-fill"></i>
         <div data-i18n="Boxicons">Pólizas</div>
@@ -69,15 +69,6 @@
           <a href="/lista-de-polizas" class="menu-link">
             <i class="menu-icon bi bi-list-ul"></i>
             <div data-i18n="Tables">Lista de pólizas</div>
-          </a>
-        </li>
-        <li class="menu-item {% if request.path == '/polizas-pendientes' %} active {% endif %}">
-          <a href="{{ url_for('polizas_pendientes') }}" class="menu-link">
-            <i class="menu-icon bi bi-exclamation-triangle-fill"></i>
-            <div data-i18n="Pólizas Pendientes">Pólizas Pendientes</div>
-            {% if conteo_pendientes and conteo_pendientes > 0 %}
-            <div class="badge bg-danger rounded-pill ms-auto">{{ conteo_pendientes }}</div>
-            {% endif %}
           </a>
         </li>
       </ul>
@@ -146,7 +137,7 @@
         <li class="menu-item {% if request.path == '/comisiones-beta' %} active {% endif %}">
           <a href="{{ url_for('comisiones_beta', reset=1) }}" class="menu-link">
             <i class="menu-icon bi bi-inbox-fill"></i>
-            <div data-i18n="Comisiones Recibidas">Comisiones Recibidas</div>
+            <div data-i18n="Registro de Comisión Recibida">Registro de Comisión Recibida</div>
           </a>
         </li>
         <li class="menu-item {% if request.path == '/comisiones/transacciones' %} active {% endif %}">
@@ -240,32 +231,6 @@
       </a>
     </li>
     {% endif %}
-
-    {% if session['permisos'] == 'Administracion' or session['permisos'] == 'dev' %}
-    <li
-      class="menu-item {% if request.path == '/upload' or request.path == '/upload_mercantil' %} active open {% endif %}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon bi bi-cloud-arrow-up-fill"></i>
-        <div data-i18n="Carga Masiva">Carga Masiva</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {% if request.path == '/upload' %} active {% endif %}">
-          <a href="/upload" class="menu-link">
-            <i class="menu-icon bi bi-upload"></i>
-            <div data-i18n="Carga">Carga</div>
-          </a>
-        </li>
-        <li class="menu-item {% if request.path == '/upload_mercantil' %} active {% endif %}">
-          <a href="{{ url_for('view_upload_mercantil') }}" class="menu-link">
-            <i class="menu-icon bi bi-file-earmark-bar-graph"></i>
-            <div data-i18n="Carga(P)">Carga(P)</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-    {% endif %}
-
-
 
     <li class="menu-item">
       <a href="{{ url_for('cerraSesion') }}" class="menu-link">

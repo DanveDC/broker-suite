@@ -128,93 +128,11 @@
                     <div class="mb-4">
                         <i class="bi bi-cloud-upload text-primary" style="font-size: 4rem;"></i>
                     </div>
-                    <h3 class="fw-bold mb-3">Carga de Movimientos</h3>
-                    <p class="text-muted mb-5">Selecciona la aseguradora para procesar el archivo de relación de
-                        comisiones.</p>
+                    <h3 class="fw-bold mb-3">Registro de Comisión Recibida de la Compañía</h3>
+                    <p class="text-muted mb-5">Registra manualmente la comisión recibida de la compañía.</p>
 
                     <div class="row g-4 justify-content-center">
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-caracas-btn" style="border-left-color: #ce1126;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">S. Caracas</h5>
-                                    <small class="text-muted">Excel</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm" id="show-star-btn"
-                                style="border-left-color: #1cc88a;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Star Seguros</h5>
-                                    <small class="text-muted">Excel</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-mercantil-btn" style="border-left-color: #004b93;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Mercantil</h5>
-                                    <small class="text-muted">PDF</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-internacional-btn" style="border-left-color: #36b9cc;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Internacional</h5>
-                                    <small class="text-muted">PDF</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-oceanica-btn" style="border-left-color: #f6c23e;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Oceánica</h5>
-                                    <small class="text-muted">PDF</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-piramide-btn" style="border-left-color: #6c757d;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Pirámide</h5>
-                                    <small class="text-muted">PDF</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-venezuela-btn" style="border-left-color: #1a1a1a;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Venezuela</h5>
-                                    <small class="text-muted">Excel</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-universitas-btn" style="border-left-color: #ffc107;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Universitas</h5>
-                                    <small class="text-muted">Excel</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
-                                id="show-banesco-btn" style="border-left-color: #e31837;">
-                                <div class="card-body p-2">
-                                    <h5 class="fw-bold text-dark">Banesco</h5>
-                                    <small class="text-muted">PDF</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
+                        <div class="col-md-4">
                             <div class="card h-100 stats-card p-3 cursor-pointer border-0 shadow-sm"
                                 data-bs-toggle="modal" data-bs-target="#manualCommissionModal"
                                 style="border-left-color: #6f42c1;">
@@ -231,69 +149,6 @@
         </div>
     </div>
 
-    <!-- Hidden Forms Container -->
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            {% set forms = [
-            {'id': 'caracas-form', 'title': 'Seguros Caracas', 'action': '/upload-comisiones-caracas', 'name':
-            'file_caracas', 'color': 'danger', 'accept': '.pdf'},
-            {'id': 'star-form', 'title': 'Star Seguros', 'action': '/upload-comisiones-star', 'name': 'file_star',
-            'color': 'success', 'accept': '.xlsx, .xls'},
-            {'id': 'internacional-form', 'title': 'Internacional', 'action': '/upload-comisiones-internacional', 'name':
-            'file_internacional', 'color': 'info', 'accept': '.pdf'},
-            {'id': 'oceanica-form', 'title': 'Oceánica', 'action': '/upload-comisiones-oceanica', 'name':
-            'file_oceanica', 'color': 'warning', 'accept': '.pdf'},
-            {'id': 'mercantil-form', 'title': 'Mercantil', 'action': '/upload-comisiones-mercantil', 'name':
-            'file_mercantil_pdf', 'color': 'primary', 'accept': '.pdf'},
-            {'id': 'piramide-form', 'title': 'Pirámide Seguros', 'action': '/upload-comisiones-piramide', 'name':
-            'file_piramide', 'color': 'secondary', 'accept': '.pdf'},
-            {'id': 'venezuela-form', 'title': 'Seguros Venezuela', 'action': '/upload-comisiones-venezuela', 'name':
-            'file_venezuela', 'color': 'dark', 'accept': '.xlsx, .xls'},
-            {'id': 'universitas-form', 'title': 'Universitas Seguros', 'action': '/upload-comisiones-universitas', 'name':
-            'file_universitas', 'color': 'warning', 'accept': '.xlsx, .xls'},
-            {'id': 'banesco-form', 'title': 'Banesco Seguros', 'action': '/upload-comisiones-banesco', 'name':
-            'file_banesco', 'color': 'danger', 'accept': '.pdf'}
-            ] %}
-
-            {% for form in forms %}
-            <div id="{{ form.id }}" class="upload-section mt-4" style="display: none;">
-                <div class="card commission-card border-left-{{ form.color }}">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="card-title text-{{ form.color }} mb-0 fw-bold">
-                                <i
-                                    class="bi bi-file-earmark-{% if form.accept == '.pdf' %}pdf{% else %}excel{% endif %}"></i>
-                                {{ form.title }}
-                            </h4>
-                            <button class="btn btn-sm btn-light back-btn"><i class="bi bi-x-lg"></i></button>
-                        </div>
-                        <form action="{{ form.action }}" method="post" enctype="multipart/form-data">
-                            <div class="row align-items-end g-3">
-                                {% if form.extra %}
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Fecha de Pago</label>
-                                    <input type="date" class="form-control" name="fecha_pago" required>
-                                </div>
-                                {% endif %}
-                                <div class="col-md">
-                                    <label class="form-label fw-bold">Seleccionar Archivo</label>
-                                    <input class="form-control" type="file" id="file-input-{{ form.id }}"
-                                        name="{{ form.name }}" accept="{{ form.accept }}" required>
-                                </div>
-                                <div class="col-md-auto">
-                                    <button type="submit" class="btn btn-{{ form.color }} px-4 shadow-sm"
-                                        id="btn-{{ form.id }}" disabled>
-                                        <i class="bi bi-upload"></i> Procesar
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
     {% endif %}
 
     <!-- RESULTS CONTAINER -->
@@ -684,73 +539,6 @@
             if (isNaN(d1) || isNaN(d2)) return 999999;
             return Math.abs(d1 - d2);
         };
-        const setupNav = () => {
-            const btns = {
-                'show-caracas-btn': 'caracas-form',
-                'show-star-btn': 'star-form',
-                'show-internacional-btn': 'internacional-form',
-                'show-oceanica-btn': 'oceanica-form',
-                'show-mercantil-btn': 'mercantil-form',
-                'show-piramide-btn': 'piramide-form',
-                'show-venezuela-btn': 'venezuela-form',
-                'show-universitas-btn': 'universitas-form',
-                'show-banesco-btn': 'banesco-form'
-            };
-
-            Object.keys(btns).forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                const formId = btns[btnId];
-                if (btn) {
-                    btn.addEventListener('click', () => {
-                        const container = document.getElementById('selection-container');
-                        const targetForm = document.getElementById(formId);
-                        if (container) container.style.display = 'none';
-                        if (targetForm) {
-                            targetForm.style.display = 'block';
-                            // Ensure it's not hidden by other means
-                            targetForm.classList.remove('d-none');
-                        }
-                    });
-                }
-            });
-
-            document.querySelectorAll('.back-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const container = document.getElementById('selection-container');
-                    if (container) container.style.display = 'flex';
-                    document.querySelectorAll('.upload-section').forEach(s => {
-                        s.style.display = 'none';
-                        const fileInput = s.querySelector('input[type="file"]');
-                        if (fileInput) fileInput.value = ''; // Limpiar archivo al volver atrás
-                    });
-                });
-            });
-
-            // Limpiar inputs de archivos al cargar la página
-            document.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
-        };
-        setupNav();
-
-        // --- File Inputs & Form Submission ---
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            input.addEventListener('change', function () {
-                const btnId = 'btn-' + this.closest('.upload-section').id;
-                const btn = document.getElementById(btnId);
-                if (btn) btn.disabled = !this.files.length;
-            });
-        });
-
-        // Add loading state to upload forms
-        document.querySelectorAll('.upload-section form').forEach(form => {
-            form.addEventListener('submit', function () {
-                const btn = this.querySelector('button[type="submit"]');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
-                }
-            });
-        });
-
         // --- Data ---
         window.allMatchedData = JSON.parse('{{ (matched_data | tojson | safe) if matched_data else "[]" }}');
 
