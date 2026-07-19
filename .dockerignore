@@ -1,0 +1,13 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+*.env
+temp_data/*
+docs/
+BD/
+render.yaml
