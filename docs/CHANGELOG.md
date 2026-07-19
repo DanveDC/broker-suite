@@ -6,6 +6,20 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Sin versionar] — 2026-07-18
+
+### Cambiado
+
+- **Base de datos:** revertida la migración a Postgres (intento abandonado) y consolidado el acceso a MySQL/TiDB Cloud vía PyMySQL (`conexion/conexionBD.py`). Se eliminaron las dependencias `psycopg2`/`pg8000` de `requirements.txt`.
+- **Comisiones (beta):** simplificado el flujo de carga a **solo Carga Manual**. Se removieron del sidebar las tarjetas de carga por aseguradora (Star, Caracas, Mercantil, Internacional, Oceánica, Pirámide, Venezuela, Universitas, Banesco); las rutas de esos parsers siguen existiendo en el backend pero ya no están enlazadas desde el menú.
+- **Sidebar:** el ítem "Comisiones Recibidas" se renombró a **"Registro de Comisión Recibida"**. Se removió el sub-ítem "Pólizas Pendientes" de la sección Pólizas. Se removió el módulo "Carga Masiva" del menú (las rutas `/upload` y `/upload_mercantil` siguen existiendo, solo quedaron sin acceso desde la UI).
+
+### Agregado
+
+- Soporte de despliegue con **Docker**: `Dockerfile` (`python:3.11-slim`, con `ca-certificates` para TLS contra TiDB), `.dockerignore` y `docker-compose.yml` (servicio único `app`, variables desde `.env` local). Es una alternativa adicional a Render.com, no un reemplazo.
+
+---
+
 ## [1.0.0] — 2024
 
 ### Lanzamiento inicial

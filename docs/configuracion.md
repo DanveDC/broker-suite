@@ -14,65 +14,41 @@ Edite `.env` con los valores de su entorno. **Nunca confirme `.env` en un reposi
 
 ## Base de datos
 
-### `DB_HOST`
+BrokerCore se conecta a MySQL/TiDB Cloud mediante PyMySQL (`conexion/conexionBD.py`), usando **una única credencial compartida** para toda la aplicación. Hay dos formas de configurarla; la aplicación usa la primera que encuentre:
+
+### `DATABASE_URL` / `MYSQL_URL`
 
 | Campo | Valor |
 |---|---|
-| Descripción | Hostname o dirección IP del servidor MySQL |
-| Ejemplo | `localhost` |
-| Requerido | Sí |
+| Descripción | URL de conexión completa. Si está presente, tiene prioridad sobre las variables discretas de abajo. Se acepta cualquiera de los dos nombres. |
+| Ejemplo | `mysql://usuario:contraseña@host:4000/brokercore` |
+| Requerido | No (recomendado en producción / Render) |
 
-Para instalaciones locales use `localhost` o `127.0.0.1`. Para bases de datos remotas, use la IP o hostname del servidor.
+Se parsea con `urlparse`: host, usuario, contraseña, base de datos y puerto se extraen de la URL. Es la variable que usa el despliegue en Render (se configura manualmente como secret en el dashboard) y el `docker-compose.yml` local.
 
 ---
 
-### `DB_PORT`
+### `MYSQL_SSL`
 
 | Campo | Valor |
 |---|---|
-| Descripción | Puerto TCP del servidor MySQL |
-| Ejemplo | `3306` |
-| Requerido | No (por defecto: `3306`) |
+| Descripción | Fuerza la conexión TLS/SSL a la base de datos |
+| Ejemplo | `true` |
+| Requerido | No |
 
-Cambie este valor solo si MySQL está configurado en un puerto no estándar.
+Se activa automáticamente sin necesidad de esta variable si el host de `DATABASE_URL`/`MYSQL_URL` contiene `tidb`, `tidbcloud`, `planetscale` o `aiven` (caso de TiDB Cloud). Configúrela explícitamente en `true` si su proveedor requiere SSL y no cae en esa detección automática.
 
 ---
 
-### `DB_NAME`
+### `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
 
 | Campo | Valor |
 |---|---|
-| Descripción | Nombre de la base de datos de BrokerCore |
-| Ejemplo | `brokercore` |
-| Requerido | Sí |
+| Descripción | Variables discretas de conexión, usadas solo si **no** hay `DATABASE_URL` ni `MYSQL_URL` definida |
+| Ejemplo | `DB_HOST=localhost`, `DB_USER=root`, `DB_PASSWORD=...`, `DB_NAME=brokercore`, `DB_PORT=3306` |
+| Requerido | Solo si no se usa `DATABASE_URL`/`MYSQL_URL` |
 
-La base de datos debe existir antes de iniciar la aplicación. Créela siguiendo el [Paso 5 de la guía de instalación](./instalacion.md).
-
----
-
-### `DB_FALLBACK_USER`
-
-| Campo | Valor |
-|---|---|
-| Descripción | Usuario MySQL de respaldo, utilizado para operaciones del sistema (creación de usuarios, consultas administrativas) |
-| Ejemplo | `admin_brokercore` |
-| Requerido | Sí |
-
-Este usuario se usa en operaciones donde la sesión de usuario no está disponible (por ejemplo, durante el proceso de login, creación de nuevos usuarios, restablecimiento de contraseñas). Debe tener permisos amplios sobre la base de datos.
-
-> **Seguridad:** Este usuario debe tener una contraseña robusta. Nunca use `root` como usuario de respaldo.
-
----
-
-### `DB_FALLBACK_PASSWORD`
-
-| Campo | Valor |
-|---|---|
-| Descripción | Contraseña del usuario MySQL de respaldo |
-| Ejemplo | `M1_C0ntr4s3ñ4_S3gur4!` |
-| Requerido | Sí |
-
-Debe coincidir con la contraseña del usuario `DB_FALLBACK_USER` en MySQL.
+Pensadas para desarrollo local contra un MySQL propio. `DB_PORT` por defecto es `3306` y `DB_USER` por defecto es `root` si no se especifica.
 
 ---
 
@@ -156,7 +132,20 @@ chown brokercore_user:brokercore_user .env
 Si sospecha que `SECRET_KEY` o las credenciales de base de datos han sido comprometidas:
 
 1. Genere nuevos valores.
-2. Actualice `.env`.
+2. Actualice `.env` (o el secret de `DATABASE_URL` en Render, o el `.env` local de Docker).
 3. Reinicie el servidor de la aplicación.
 4. En el caso de `SECRET_KEY`, avise a los usuarios que deberán iniciar sesión nuevamente.
-5. En el caso de contraseñas de base de datos, actualícelas también en MySQL con `ALTER USER`.
+5. En el caso de la contraseña de base de datos, cámbiela en el proveedor (TiDB Cloud, MySQL propio, etc.) y actualice la variable de conexión correspondiente.
+
+---
+
+## Docker
+
+Además de Render, BrokerCore puede levantarse localmente o en cualquier entorno con Docker mediante el `Dockerfile` y `docker-compose.yml` del repositorio.
+
+```bash
+cp .env.example .env   # completar con las variables reales (DATABASE_URL/MYSQL_URL, SECRET_KEY, etc.)
+docker compose up --build
+```
+
+`docker-compose.yml` define un único servicio `app`, construye la imagen desde el `Dockerfile` (`python:3.11-slim`), mapea el puerto `8000` y lee las variables de entorno desde el `.env` local (nunca se commitea). Ver [tecnico/despliegue.md](./tecnico/despliegue.md) para más detalle.

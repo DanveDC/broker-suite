@@ -11,14 +11,13 @@ BrokerCore es un sistema de gestión integral diseñado específicamente para co
 - **Asegurados** — Registro y búsqueda de personas aseguradas por cédula de identidad.
 - **Pólizas** — Gestión del ciclo completo de pólizas (Persona/HCM, Auto, Patrimonial, Viaje, Fianza), incluyendo renovaciones, pagos y anulaciones.
 - **Siniestros** — Seguimiento de reclamaciones: Carta Aval, Reembolso médico y Siniestro de Auto.
-- **Comisiones** — Carga y procesamiento de reportes de comisiones por aseguradora (9 compañías soportadas), emparejamiento automático con pólizas y generación de reportes por ejecutivo.
+- **Comisiones** — Registro de comisiones recibidas de las aseguradoras (carga manual) y generación de reportes por ejecutivo.
 - **Cobranza** — Seguimiento de cobros de primas, proyección anual y exportación a Excel.
 - **Ejecutivos** — CRUD de ejecutivos de ventas.
 - **Compañías** — CRUD de compañías aseguradoras.
 - **Empleados** — Gestión de empleados internos con foto.
 - **Usuarios y Roles** — Administración de accesos: Administración, Gerencia, Operaciones, Ventas.
 - **Dashboard** — Panel de control con visualizaciones (ApexCharts) de ventas y operaciones.
-- **Carga Masiva** — Importación de datos desde archivos CSV/Excel con flujo de previsualización.
 - **Reportes** — Generación del reporte regulatorio Sudaseg.
 
 ---
@@ -43,6 +42,13 @@ BrokerCore está diseñado para corredoras de seguros venezolanas que necesitan:
 
 ## Índice de documentación
 
+### Presentación
+
+| Documento | Descripción |
+|---|---|
+| [RESUMEN-EJECUTIVO.md](./RESUMEN-EJECUTIVO.md) | Resumen de una página: problema, módulos, stack y estado actual |
+| [DEMO-GUION.md](./DEMO-GUION.md) | Guión paso a paso para la demo en vivo |
+
 ### Guías de usuario
 
 | Documento | Descripción |
@@ -63,6 +69,7 @@ BrokerCore está diseñado para corredoras de seguros venezolanas que necesitan:
 | [tecnico/base-de-datos.md](./tecnico/base-de-datos.md) | Esquema de base de datos y relaciones |
 | [tecnico/despliegue.md](./tecnico/despliegue.md) | Despliegue en desarrollo y producción |
 | [tecnico/seguridad.md](./tecnico/seguridad.md) | Postura de seguridad y recomendaciones |
+| [tecnico/limitaciones-conocidas.md](./tecnico/limitaciones-conocidas.md) | Deuda técnica conocida y próximos pasos |
 
 ### Instalación y configuración
 

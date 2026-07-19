@@ -8,12 +8,37 @@ Esta guía cubre la instalación completa de BrokerCore desde cero, incluyendo d
 
 | Componente | Versión mínima | Notas |
 |---|---|---|
-| Python | 3.10+ | Se recomienda 3.11 |
-| MySQL | 8.0+ | Debe tener acceso root o usuario con privilegios de creación |
+| Python | 3.11 | Coincide con `runtime.txt` y la imagen Docker (`python:3.11-slim`) |
+| MySQL / TiDB Cloud | 8.0+ compatible | Puede ser un MySQL propio o una instancia de TiDB Cloud (recomendado, es lo que usa producción) |
 | pip | Incluido con Python | Actualizar con `pip install --upgrade pip` |
 | Git | Cualquier versión reciente | Opcional si se entrega como ZIP |
+| Docker + Docker Compose | Opcional | Solo si sigue la ruta de instalación con Docker (ver más abajo) |
 
-**Sistema operativo:** Linux (recomendado para producción) o Windows (desarrollo y producción con waitress).
+**Sistema operativo:** Linux (recomendado para producción) o Windows (desarrollo y producción con waitress). También puede saltarse todo lo relativo al entorno virtual con la instalación vía Docker.
+
+---
+
+## Instalación con Docker (alternativa rápida)
+
+Si tiene Docker instalado, esta es la vía más rápida para levantar BrokerCore sin preocuparse por el entorno virtual ni la versión de Python:
+
+```bash
+git clone <url-del-repositorio> broker-suite
+cd broker-suite
+cp .env.example .env
+```
+
+Edite `.env` con al menos `DATABASE_URL` (o `MYSQL_URL`) apuntando a su base de datos (TiDB Cloud o MySQL propio) y `SECRET_KEY`. Luego:
+
+```bash
+docker compose up --build
+```
+
+Esto construye la imagen (`python:3.11-slim`, con `ca-certificates` instalado para soportar TLS contra TiDB), instala `requirements.txt` y arranca la aplicación con `python wsgi.py` en el puerto `8000`. La base de datos y su esquema (`BD/`) deben existir de antemano — Docker no las crea por usted, solo levanta la aplicación.
+
+La aplicación queda disponible en `http://localhost:8000`. Continúe en el [Paso 9 — Verificar el inicio de sesión](#paso-9-verificar-el-inicio-de-sesión) (necesitará un primer usuario administrador; ver [Paso 7](#paso-7-crear-el-primer-usuario-en-la-tabla-users) más abajo, que aplica igual con o sin Docker).
+
+Si prefiere la instalación manual paso a paso (entorno virtual + pip), continúe con la siguiente sección.
 
 ---
 
@@ -59,7 +84,7 @@ Con el entorno virtual activo:
 pip install -r requirements.txt
 ```
 
-Este comando instala Flask, mysql-connector-python, pandas, openpyxl, reportlab, waitress y el resto de las dependencias del proyecto.
+Este comando instala Flask, PyMySQL, pandas, openpyxl, reportlab, waitress y el resto de las dependencias del proyecto.
 
 ---
 
@@ -71,14 +96,20 @@ Copie el archivo de ejemplo y edítelo:
 cp .env.example .env
 ```
 
-Abra `.env` en un editor de texto y complete cada variable. Consulte [`docs/configuracion.md`](./configuracion.md) para la descripción detallada de cada una. Como mínimo, configure:
+Abra `.env` en un editor de texto y complete cada variable. Consulte [`docs/configuracion.md`](./configuracion.md) para la descripción detallada de cada una. Como mínimo, configure una de las dos formas de conexión a la base de datos:
 
 ```dotenv
+# Opción A: URL de conexión completa (recomendado, usado en producción)
+DATABASE_URL=mysql://usuario:contraseña@host:puerto/brokercore
+MYSQL_SSL=true
+
+# Opción B: variables discretas (alternativa para MySQL local)
 DB_HOST=localhost
 DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=contraseña_segura
 DB_NAME=brokercore
-DB_FALLBACK_USER=admin_brokercore
-DB_FALLBACK_PASSWORD=contraseña_segura
+
 SECRET_KEY=cambie_esto_por_una_clave_aleatoria_larga
 ```
 
@@ -121,27 +152,7 @@ mysql -u root -p brokercore < BD/migration_002.sql
 
 ---
 
-## Paso 7 — Crear el primer usuario MySQL administrador
-
-BrokerCore utiliza un modelo de autenticación acoplado a MySQL: cada usuario de la aplicación es también un usuario real de MySQL con los permisos correspondientes a su rol. Esto permite que los controles de acceso se apliquen a nivel de base de datos.
-
-Conéctese a MySQL como root y cree el usuario administrador:
-
-```sql
--- Crear el usuario MySQL para el primer administrador
-CREATE USER 'correo@ejemplo.com'@'localhost' IDENTIFIED BY 'contraseña_del_usuario';
-
--- Otorgar todos los privilegios necesarios para el rol Administración
-GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON brokercore.* TO 'correo@ejemplo.com'@'localhost';
-
-FLUSH PRIVILEGES;
-```
-
-> **Nota:** El nombre de usuario MySQL debe ser exactamente la dirección de correo electrónico que usará el administrador para iniciar sesión en BrokerCore.
-
----
-
-## Paso 8 — Crear el primer usuario en la tabla `users`
+## Paso 7 — Crear el primer usuario en la tabla `users`
 
 La tabla `users` de la aplicación almacena los metadatos del usuario y el hash de su contraseña para verificación. Debe crear el registro manualmente para el primer administrador.
 
@@ -149,26 +160,15 @@ Ejecute el siguiente script Python desde el directorio raíz del proyecto (con e
 
 ```python
 from werkzeug.security import generate_password_hash
-import mysql.connector
-import os
-from dotenv import load_dotenv
+from conexion.conexionBD import connectionBD
 
-load_dotenv()
-
-conn = mysql.connector.connect(
-    host=os.getenv('DB_HOST'),
-    port=int(os.getenv('DB_PORT', 3306)),
-    database=os.getenv('DB_NAME'),
-    user=os.getenv('DB_FALLBACK_USER'),
-    password=os.getenv('DB_FALLBACK_PASSWORD')
-)
-
+conn = connectionBD()
 cursor = conn.cursor()
 
-email = 'correo@ejemplo.com'          # Debe coincidir con el usuario MySQL del paso anterior
+email = 'correo@ejemplo.com'
 nombre = 'Administrador'
 apellido = 'Principal'
-password = 'contraseña_del_usuario'   # Misma contraseña del usuario MySQL
+password = 'contraseña_del_usuario'
 rol = 'Administracion'
 
 password_hash = generate_password_hash(password)
@@ -195,7 +195,7 @@ python crear_admin.py
 
 ---
 
-## Paso 9 — Iniciar el servidor de desarrollo
+## Paso 8 — Iniciar el servidor de desarrollo
 
 ```bash
 python run.py
@@ -205,7 +205,7 @@ El servidor quedará disponible en `http://localhost:5600`. Verifique en la term
 
 ---
 
-## Paso 10 — Verificar el inicio de sesión
+## Paso 9 — Verificar el inicio de sesión
 
 1. Abra `http://localhost:5600` en el navegador.
 2. Ingrese el correo electrónico y la contraseña del administrador creado.
@@ -217,22 +217,15 @@ Si la autenticación falla, revise la sección de [Solución de problemas](#solu
 
 ## Despliegue en producción
 
-Para entornos de producción, BrokerCore incluye `wsgi.py` que utiliza **waitress** como servidor WSGI. Waitress es compatible con Linux y Windows.
+La producción actual de BrokerCore corre en **Render.com** (ver `render.yaml`), y también puede desplegarse con **Docker** de forma portable. Ambas opciones, más la alternativa manual con Nginx + systemd, están documentadas en [`docs/tecnico/despliegue.md`](./tecnico/despliegue.md).
 
-### Usando waitress directamente
+Para entornos de producción, BrokerCore incluye `wsgi.py` que utiliza **waitress** como servidor WSGI. Waitress es compatible con Linux y Windows.
 
 ```bash
 python wsgi.py
 ```
 
-Esto inicia el servidor en el puerto `8000` (configurable en `wsgi.py`).
-
-### Usando waitress detrás de Nginx (recomendado)
-
-Consulte la guía completa en [`docs/tecnico/despliegue.md`](./tecnico/despliegue.md), que incluye:
-- Configuración de Nginx como proxy inverso.
-- Configuración de SSL/HTTPS.
-- Gestión del proceso con systemd (Linux) o como servicio de Windows.
+Esto inicia el servidor en el puerto `8000` (configurable con la variable `PORT`).
 
 ---
 
@@ -247,20 +240,13 @@ source venv/bin/activate   # Linux
 pip install -r requirements.txt
 ```
 
-### Error: `mysql.connector.errors.ProgrammingError: Access denied for user`
+### Error: `pymysql.err.OperationalError: (1045, "Access denied for user ...")`
 
-Las credenciales en `.env` son incorrectas, o el usuario MySQL no fue creado con los permisos correctos. Verifique:
-
-```sql
--- En MySQL, verificar permisos del usuario
-SHOW GRANTS FOR 'correo@ejemplo.com'@'localhost';
-```
+Las credenciales en `.env` son incorrectas: revise `DATABASE_URL`/`MYSQL_URL`, o `DB_USER`/`DB_PASSWORD` si está usando las variables discretas. Recuerde que es una única credencial compartida por toda la aplicación, no una por usuario.
 
 ### Error al iniciar sesión: `Credenciales inválidas`
 
-Causas comunes:
-1. El hash de contraseña en `users` no corresponde a la contraseña del usuario MySQL. Ambas deben ser la misma contraseña.
-2. El correo electrónico en `users.email_user` no coincide exactamente con el usuario MySQL (incluyendo mayúsculas/minúsculas).
+Causa común: el hash de contraseña almacenado en `users.pass_user` no corresponde a la contraseña ingresada. Verifique que el registro se haya creado con `generate_password_hash` y que esté comparando contra la contraseña correcta.
 
 ### Error: `Can't connect to MySQL server`
 

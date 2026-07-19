@@ -4,12 +4,9 @@
 
 ## Modelo de usuarios en BrokerCore
 
-BrokerCore utiliza un modelo de autenticación acoplado a MySQL: cuando se crea un usuario en la aplicación, el sistema también crea automáticamente un usuario real en el servidor MySQL con los permisos correspondientes a su rol. Esto significa que los controles de acceso operan en dos niveles:
+BrokerCore gestiona los usuarios enteramente a nivel de aplicación: un usuario es un registro en la tabla `users` con nombre, correo, contraseña (hasheada) y un rol (`permisos`). No existe ninguna cuenta MySQL asociada — todas las conexiones a la base de datos usan la misma credencial configurada por variables de entorno, sin importar quién esté logueado.
 
-1. **Nivel aplicación:** BrokerCore verifica el rol y oculta o restringe las secciones correspondientes.
-2. **Nivel base de datos:** El usuario MySQL del empleado solo tiene los permisos de SQL (SELECT, INSERT, UPDATE, DELETE) que corresponden a su rol.
-
-Esto implica que eliminar un usuario en BrokerCore también elimina su cuenta en MySQL.
+El control de acceso es responsabilidad exclusiva de la aplicación: en cada ruta y en cada plantilla, BrokerCore compara `session['permisos']` contra el rol requerido para decidir si muestra u oculta una sección, o si permite ejecutar una acción.
 
 ---
 
@@ -17,10 +14,12 @@ Esto implica que eliminar un usuario en BrokerCore también elimina su cuenta en
 
 | Rol | Operaciones permitidas | Módulos disponibles |
 |---|---|---|
-| **Administración** | SELECT, INSERT, UPDATE, DELETE sobre toda la base de datos | Todos los módulos, incluyendo Usuarios, Comisiones, Carga Masiva y Reportes |
-| **Gerencia** | SELECT, INSERT, UPDATE, DELETE | Todos excepto gestión de Usuarios. Acceso completo a Comisiones y Reportes. |
-| **Operaciones** | SELECT, INSERT, UPDATE, DELETE | Asegurados, Pólizas, Siniestros, Cobranza, Ejecutivos, Compañías. Sin acceso a Comisiones ni Usuarios. |
-| **Ventas** | Solo SELECT | Todos los módulos de consulta. No puede crear ni modificar ningún registro. |
+| **Administración** | Crear, editar y eliminar en todos los módulos | Todos los módulos, incluyendo Usuarios, Comisiones y Reportes |
+| **Gerencia** | Crear, editar y eliminar | Todos excepto gestión de Usuarios. Acceso completo a Comisiones y Reportes. |
+| **Operaciones** | Crear, editar y eliminar | Asegurados, Pólizas, Siniestros, Cobranza, Ejecutivos, Compañías. Sin acceso a Comisiones ni Usuarios. |
+| **Ventas** | Solo consulta | Todos los módulos de consulta. No puede crear ni modificar ningún registro. |
+
+> Estas restricciones son controles de la capa de aplicación (verificación de `session['permisos']` en cada ruta), no privilegios de base de datos. Ver [tecnico/base-de-datos.md](../tecnico/base-de-datos.md).
 
 ---
 
@@ -39,12 +38,9 @@ Esto implica que eliminar un usuario en BrokerCore también elimina su cuenta en
 
 4. Haga clic en **Crear Usuario**.
 
-Al confirmar, el sistema realiza automáticamente:
-- Inserta el registro en la tabla `users` con el hash de la contraseña.
-- Crea el usuario en MySQL con el correo como nombre de usuario.
-- Otorga los privilegios MySQL correspondientes al rol seleccionado.
+Al confirmar, el sistema inserta el registro en la tabla `users` con el hash de la contraseña (werkzeug, método scrypt) y el rol seleccionado. No se crea ni se modifica ninguna cuenta de base de datos: es una operación puramente de aplicación.
 
-> **Importante:** El correo electrónico no puede cambiarse una vez creado el usuario, ya que es el nombre de usuario MySQL. Si es necesario cambiar el correo, se debe eliminar el usuario y crear uno nuevo.
+> **Nota:** El correo electrónico es el nombre de usuario para iniciar sesión. Cambiarlo no tiene restricciones a nivel de base de datos, pero verifique que sea único.
 
 ---
 
@@ -56,11 +52,7 @@ Al confirmar, el sistema realiza automáticamente:
 2. Ingrese la nueva contraseña en el campo correspondiente.
 3. Guarde los cambios.
 
-El sistema actualiza simultáneamente:
-- El hash en la tabla `users` de la aplicación.
-- La contraseña real del usuario MySQL con `ALTER USER`.
-
-Ambas deben mantenerse sincronizadas para que el login funcione correctamente.
+El sistema actualiza el hash de la contraseña en la tabla `users` de la aplicación. No hay ninguna cuenta de base de datos que sincronizar.
 
 ### Como usuario (cambiar su propia contraseña)
 
@@ -76,9 +68,7 @@ Ambas deben mantenerse sincronizadas para que el login funcione correctamente.
 1. En el listado de usuarios, haga clic en el botón **Eliminar** junto al usuario.
 2. Confirme la acción en el diálogo de confirmación.
 
-El sistema eliminará:
-- El registro en la tabla `users`.
-- El usuario MySQL correspondiente (con `DROP USER`).
+El sistema elimina el registro correspondiente en la tabla `users`. Es una baja definitiva (no un campo de estado/inactivo): no hay forma de recuperar el usuario desde la interfaz una vez eliminado.
 
 > **Atención:** Esta acción es irreversible. Si el usuario tiene registros asociados en el sistema (pólizas como ejecutivo responsable, comisiones, etc.), esos registros se conservan pero el usuario ya no podrá iniciar sesión.
 

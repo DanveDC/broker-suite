@@ -10,7 +10,7 @@ BrokerCore define cuatro roles de usuario. El rol se asigna al crear el usuario 
 
 | Rol | Descripción | Acceso |
 |---|---|---|
-| **Administración** | Administrador del sistema | Acceso completo: gestión de usuarios, comisiones, carga masiva, reportes y todas las operaciones. |
+| **Administración** | Administrador del sistema | Acceso completo: gestión de usuarios, comisiones, reportes y todas las operaciones. |
 | **Gerencia** | Directivos y gerentes | Acceso a comisiones, reportes y consulta de toda la información operativa. |
 | **Operaciones** | Personal operativo | CRUD completo sobre pólizas, siniestros y asegurados (crear, editar, eliminar). Sin acceso a gestión de usuarios ni comisiones. |
 | **Ventas** | Ejecutivos de ventas | Solo lectura. Pueden consultar asegurados, pólizas y siniestros, pero no modificar nada. |

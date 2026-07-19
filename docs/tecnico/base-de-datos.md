@@ -2,11 +2,11 @@
 
 ## Visión general del diseño
 
-BrokerCore utiliza **MySQL 8.0** con SQL directo (sin ORM). El esquema sigue un modelo relacional tradicional con algunas particularidades:
+BrokerCore utiliza **MySQL / TiDB Cloud** con SQL directo (sin ORM), accedido vía **PyMySQL**. El esquema sigue un modelo relacional tradicional con algunas particularidades:
 
 - Las **relaciones entre tablas existen semánticamente** (se leen juntas con JOINs) pero no se han declarado con FOREIGN KEY constraints en todos los casos. Las integridades referenciales son responsabilidad de la capa de aplicación.
 - El **sistema de auditoría** se implementa mediante triggers de MySQL que escriben en la tabla `bitacora`.
-- Los **usuarios de la aplicación** son también usuarios reales de MySQL, lo cual es parte central del modelo de autenticación.
+- La conexión a la base de datos se hace con **una única credencial compartida** configurada por variables de entorno (`DATABASE_URL`/`MYSQL_URL`, o las discretas `DB_HOST`/`DB_USER`/`DB_PASSWORD`/`DB_NAME`/`DB_PORT`). Los usuarios de la aplicación **no** tienen una cuenta MySQL propia — ver la sección [Acceso a la base de datos](#acceso-a-la-base-de-datos-y-modelo-de-usuarios) más abajo.
 
 ---
 
@@ -66,7 +66,7 @@ Las notas de seguimiento de cada tipo de siniestro se almacenan en tablas separa
 
 | Tabla | Propósito | Columnas clave |
 |---|---|---|
-| `users` | Usuarios de la aplicación | `id`, `name_surname`, `email_user`, `pass_user` (hash bcrypt), `permisos` (rol) |
+| `users` | Usuarios de la aplicación | `id`, `name_surname`, `email_user`, `pass_user` (hash scrypt vía werkzeug), `permisos` (rol) |
 | `password_resets` | Tokens para recuperación de contraseña | `id`, `email`, `token`, `created_at`, `expires_at` |
 | `ejecutivo` | Ejecutivos de ventas | `id_ejecutivo`, `nombre`, `apellido`, `email` |
 | `compania` | Compañías aseguradoras | `id_compania`, `nombre`, `rif`, `contacto` |
@@ -123,9 +123,9 @@ El registro incluye:
 - Tabla afectada y tipo de operación.
 - Representación JSON (o delimitada) de los datos anteriores y posteriores.
 - Timestamp de la operación.
-- El usuario MySQL activo en ese momento (que corresponde al email del usuario de la aplicación).
+- El usuario de aplicación asociado a la operación, cuando el trigger o la capa de aplicación lo registra.
 
-Esto proporciona trazabilidad completa de todas las modificaciones sin ninguna acción requerida del código de aplicación.
+Esto proporciona trazabilidad de las modificaciones sin depender de una cuenta MySQL individual por usuario (no existe tal cosa — ver más abajo).
 
 Para consultar la bitácora directamente:
 
@@ -139,22 +139,18 @@ LIMIT 50;
 
 ---
 
-## Usuarios MySQL como mecanismo de acceso
+## Acceso a la base de datos y modelo de usuarios
 
-Cada usuario de la aplicación tiene un usuario MySQL correspondiente cuyo nombre de usuario es su dirección de email. Los permisos se asignan al momento de crear el usuario:
+BrokerCore usa **una sola conexión de base de datos compartida por toda la aplicación**, configurada por variables de entorno y abierta con PyMySQL (`conexion/conexionBD.py`, función `connectionBD()`):
 
-```sql
--- Rol Operaciones: CRUD completo
-GRANT SELECT, INSERT, UPDATE, DELETE ON brokercore.* TO 'email@empresa.com'@'localhost';
+- Si existe `DATABASE_URL` o `MYSQL_URL`, se parsean con `urlparse` para obtener host, usuario, contraseña, base de datos y puerto.
+- Si no existe ninguna de las dos, se usan las variables discretas `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`.
+- SSL se activa automáticamente si `MYSQL_SSL=true`, o si el host contiene `tidb`, `tidbcloud`, `planetscale` o `aiven` (caso típico de TiDB Cloud en producción).
+- No hay connection pooling: cada request abre una conexión PyMySQL nueva y la cierra al terminar.
 
--- Rol Ventas: solo lectura
-GRANT SELECT ON brokercore.* TO 'email@empresa.com'@'localhost';
+**No existen usuarios MySQL individuales por usuario de la aplicación.** No hay `CREATE USER`, `GRANT`, `DROP USER` ni `ALTER USER` en ningún punto del código. Los roles (`dev`, `Administracion`, `Gerencia`, `Operaciones`, `Ventas`) son un campo (`permisos`) en la tabla `users`, y el control de acceso se resuelve enteramente en la capa de aplicación comparando `session['permisos']` contra el rol requerido en cada ruta/template. Todas las queries, sin importar el rol del usuario logueado, se ejecutan con la misma credencial de base de datos.
 
--- Rol Administración: acceso completo
-GRANT ALL PRIVILEGES ON brokercore.* TO 'email@empresa.com'@'localhost';
-```
-
-Este diseño delega parte del control de acceso al propio motor de base de datos.
+Para el detalle de cómo se gestionan los usuarios de la aplicación (alta, edición, baja), ver [guia-usuario/usuarios-y-roles.md](../guia-usuario/usuarios-y-roles.md).
 
 ---
 
@@ -164,7 +160,8 @@ Este diseño delega parte del control de acceso al propio motor de base de datos
 |---|---|---|
 | SQL directo sin ORM | Control total sobre las queries, sin overhead de abstracción | Mayor verbosidad, sin migraciones automáticas |
 | FK sin constraints declarados | Flexibilidad para operaciones masivas y migraciones | Posibilidad de datos huérfanos si la aplicación falla |
-| Usuarios MySQL = usuarios de la app | Aprovecha el sistema de permisos de MySQL nativamente | Alta complejidad en gestión de usuarios; la contraseña debe sincronizarse manualmente |
+| Credencial única compartida, roles solo a nivel de aplicación | Modelo simple, no depende de sincronizar cuentas MySQL con altas/bajas de usuarios de la app | El control de acceso depende enteramente de que la capa de aplicación lo aplique correctamente en cada ruta |
+| Sin connection pooling | Simplicidad de implementación (una conexión PyMySQL por request) | Overhead de conexión en alta concurrencia |
 | Triggers para bitácora | Auditoria garantizada independientemente de la aplicación | Overhead por cada operación; no es visible desde la UI |
 | CI como PK de asegurado | La cédula es el identificador natural en el contexto venezolano | No permite cédulas duplicadas; errores de carga son difíciles de corregir |
 
@@ -192,3 +189,5 @@ python scripts/nombre_script.py
 ```bash
 mysqldump -u root -p brokercore > backup_antes_migracion_$(date +%Y%m%d).sql
 ```
+
+> **En producción (TiDB Cloud):** el cliente `mysql`/`mysqldump` es compatible con el protocolo de TiDB. Apunte los mismos comandos al host, puerto, usuario y base de datos de su instancia de TiDB Cloud (`--host`, `--port`, `--user`, `--ssl-mode=REQUIRED` según corresponda) en lugar de `-u root -p` sobre `localhost`.

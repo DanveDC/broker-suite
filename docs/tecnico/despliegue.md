@@ -1,10 +1,69 @@
 # Guía de Despliegue — BrokerCore
 
-Esta guía cubre el despliegue de BrokerCore en entornos de desarrollo y producción, incluyendo configuración de Nginx como proxy inverso y notas específicas para Linux y Windows.
+Esta guía cubre el despliegue de BrokerCore en entornos de desarrollo y producción. Hay tres rutas de despliegue soportadas, en orden de uso recomendado:
+
+1. **Render.com** — producción actual.
+2. **Docker** — alternativa portable, para levantar el mismo entorno en cualquier máquina o proveedor con soporte de contenedores.
+3. **Manual (Nginx + systemd)** — alternativa bare-metal, para quien necesita o prefiere administrar el servidor directamente.
 
 ---
 
-## Modo desarrollo
+## Despliegue en Render.com (producción actual)
+
+BrokerCore está desplegado en producción en [Render](https://render.com), configurado por el archivo `render.yaml` en la raíz del repositorio:
+
+```yaml
+services:
+  - type: web
+    name: broker-suite
+    env: python
+    buildCommand: "pip install --no-cache-dir -r requirements.txt"
+    startCommand: "python wsgi.py"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: MYSQL_SSL
+        value: "true"
+```
+
+Notas:
+- `SECRET_KEY` se genera automáticamente por Render al crear el servicio.
+- `DATABASE_URL` es un secret que se configura manualmente en el dashboard de Render (no vive en el repositorio). Apunta típicamente a una instancia de TiDB Cloud.
+- `MYSQL_SSL=true` fuerza la conexión TLS, requerida por TiDB Cloud.
+- Render maneja HTTPS y el proceso del servidor (reinicios, logs) automáticamente; no hace falta configurar Nginx ni systemd en esta ruta.
+
+Para desplegar cambios: hacer push a la rama conectada en Render (o el deploy manual desde el dashboard), Render reconstruye la imagen y reinicia el servicio.
+
+---
+
+## Despliegue con Docker (alternativa portable)
+
+El repositorio incluye `Dockerfile`, `.dockerignore` y `docker-compose.yml` para levantar BrokerCore en cualquier entorno con Docker, como alternativa a Render.
+
+**`Dockerfile`:** parte de `python:3.11-slim` (misma versión que `runtime.txt`), instala `ca-certificates` (necesario para que PyMySQL pueda validar TLS contra TiDB Cloud), instala `requirements.txt` y ejecuta `python wsgi.py`. Expone el puerto de la variable `$PORT` (por defecto `8000`).
+
+**`docker-compose.yml`:** define un único servicio `app`, que construye la imagen desde el `Dockerfile`, mapea el puerto `8000` al host, y lee las variables de entorno desde un archivo `.env` local (gitignored, nunca se commitea).
+
+```bash
+cp .env.example .env
+# completar DATABASE_URL/MYSQL_URL, SECRET_KEY, MYSQL_SSL, etc.
+
+docker compose up --build
+```
+
+La aplicación queda disponible en `http://localhost:8000`. Para correrla en segundo plano: `docker compose up --build -d`. Para detenerla: `docker compose down`.
+
+Esta ruta no requiere entorno virtual de Python ni instalar dependencias en el host — todo corre dentro del contenedor.
+
+---
+
+## Despliegue manual (Nginx + systemd, bare-metal)
+
+Esta es la alternativa para quien necesita administrar el servidor directamente, sin Render ni Docker.
+
+### Modo desarrollo
 
 El servidor de desarrollo está configurado en `run.py`:
 
@@ -26,7 +85,7 @@ La aplicación queda disponible en `http://localhost:5600`.
 
 ---
 
-## Modo producción con waitress
+### Modo producción con waitress
 
 `wsgi.py` configura waitress como servidor WSGI de producción. Waitress es compatible con Linux y Windows y no requiere software adicional del sistema operativo.
 
@@ -41,21 +100,21 @@ Waitress maneja múltiples workers y es adecuado para carga moderada. Para tráf
 
 ---
 
-## Nginx como proxy inverso (Linux)
+### Nginx como proxy inverso (Linux)
 
 Se recomienda poner Nginx delante de waitress para:
 - Terminar SSL (HTTPS).
 - Servir archivos estáticos directamente sin pasar por Python.
 - Manejar reconexiones y keep-alive de forma más eficiente.
 
-### Instalación de Nginx
+#### Instalación de Nginx
 
 ```bash
 sudo apt update
 sudo apt install nginx
 ```
 
-### Configuración del sitio
+#### Configuración del sitio
 
 Cree el archivo de configuración del sitio:
 
@@ -138,7 +197,7 @@ sudo systemctl reload nginx
 
 ---
 
-## Gestión del proceso con systemd (Linux)
+### Gestión del proceso con systemd (Linux)
 
 Para que BrokerCore inicie automáticamente con el servidor y se reinicie ante fallos, cree un servicio systemd:
 
@@ -183,7 +242,7 @@ sudo journalctl -u brokercore -f
 
 ---
 
-## Despliegue en Windows
+### Despliegue en Windows
 
 En Windows, waitress funciona de forma nativa. Para ejecutarlo como servicio de Windows, use **NSSM (Non-Sucking Service Manager)**:
 
@@ -199,7 +258,7 @@ nssm start BrokerCore
 
 ---
 
-## Permisos de carpetas de archivos
+### Permisos de carpetas de archivos
 
 BrokerCore escribe archivos en dos carpetas dentro de `static/`. El usuario del sistema operativo que ejecuta la aplicación debe tener permisos de escritura en estas rutas:
 
@@ -218,7 +277,7 @@ chmod -R 755 /ruta/al/proyecto/broker-suite/static/downloads-excel
 
 ---
 
-## Variables de entorno en producción
+### Variables de entorno en producción
 
 En producción, el archivo `.env` debe:
 1. Tener permisos restrictivos: `chmod 600 .env`
@@ -229,7 +288,7 @@ Para mayor seguridad, puede usar el `EnvironmentFile` de systemd (como se muestr
 
 ---
 
-## Actualizar la aplicación
+### Actualizar la aplicación
 
 Para actualizar BrokerCore en producción:
 
@@ -260,7 +319,7 @@ sudo systemctl status brokercore
 
 ---
 
-## Certificado SSL con Let's Encrypt (Linux)
+### Certificado SSL con Let's Encrypt (Linux)
 
 ```bash
 sudo apt install certbot python3-certbot-nginx

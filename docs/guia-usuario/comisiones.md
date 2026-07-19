@@ -4,91 +4,45 @@
 
 ## ¿Qué son las comisiones?
 
-Las **comisiones** son los pagos que las aseguradoras realizan a la corredora como retribución por las pólizas gestionadas. Cada aseguradora emite periódicamente un reporte (generalmente en Excel o PDF) detallando las comisiones correspondientes a cada póliza.
+Las **comisiones** son los pagos que las aseguradoras realizan a la corredora como retribución por las pólizas gestionadas. El módulo de comisiones de BrokerCore permite:
 
-El módulo de comisiones de BrokerCore permite:
-1. Cargar el reporte de la aseguradora.
-2. Emparejar automáticamente cada línea del reporte con las pólizas registradas en el sistema.
-3. Revisar y resolver manualmente los casos que no emparejaron automáticamente.
+1. Registrar manualmente una comisión recibida de una aseguradora, vinculada a la póliza y al pago (cuota/recibo) correspondiente.
+2. Agrupar los registros en un bloque de pago, con soporte para retenciones.
+3. Confirmar el bloque para dejarlo registrado en el sistema.
 4. Generar reportes de comisiones por ejecutivo y por período.
 
 ---
 
-## Aseguradoras soportadas
+## Registrar una comisión recibida (Carga Manual)
 
-BrokerCore tiene parsers especializados para los reportes de las siguientes aseguradoras:
+1. Acceda a **Registro de Comisión Recibida** desde el menú lateral (dentro de la sección Comisiones).
+2. Si todavía no hay ningún registro cargado, verá la tarjeta **Carga Manual**. Haga clic en ella para abrir el formulario.
+3. En el formulario:
+   - **Buscar Póliza:** ingrese el número de póliza y haga clic en **Buscar**.
+   - **Seleccionar Cuota/Recibo Pagado:** el sistema solo muestra los pagos con estado "PAGADO" de esa póliza.
+   - Complete **Monto Comisión (USD)**, **Tasa de Cambio** y una **Descripción/Movimiento** (por ejemplo, "COMISION 1RA CUOTA").
+4. Haga clic en **Agregar a Tabla**. La línea queda agregada al bloque que se está armando.
+5. Repita el proceso para cada comisión que quiera registrar en el mismo bloque.
 
-| N° | Aseguradora |
-|---|---|
-| 1 | Star |
-| 2 | Caracas |
-| 3 | Pirámide |
-| 4 | Universitas |
-| 5 | Banesco |
-| 6 | Venezuela |
-| 7 | Internacional |
-| 8 | Mercantil |
-| 9 | Oceánica |
-
-Cada aseguradora tiene un formato de reporte distinto. El sistema identifica automáticamente el formato según la aseguradora seleccionada al cargar el archivo.
+> **Nota:** Los parsers automáticos por aseguradora que existían en versiones anteriores (carga de archivo Excel/PDF con emparejamiento automático) ya no están disponibles desde el menú. El registro de comisiones se hace exclusivamente por Carga Manual.
 
 ---
 
-## Flujo completo de procesamiento
+## Confirmar el bloque de pago
 
-### Paso 1 — Cargar el reporte de la aseguradora
+Una vez agregadas todas las líneas correspondientes a un bloque:
 
-1. Acceda al módulo **Comisiones** desde el menú lateral.
-2. Haga clic en **Cargar Reporte**.
-3. Seleccione la aseguradora de la lista desplegable.
-4. Seleccione el archivo del reporte (Excel `.xlsx` o `.xls`, según la aseguradora).
-5. Indique el período al que corresponde el reporte (mes y año).
-6. Haga clic en **Procesar**.
+1. Si corresponde, use **Agregar Retención** para descontar una retención del bloque antes de confirmarlo.
+2. Revise el resumen del bloque (información y totales en la parte superior de la pantalla).
+3. Haga clic en **Confirmar Bloque** para guardar el registro.
 
-El sistema analizará el archivo y mostrará un resumen de las líneas encontradas antes de confirmar la carga.
-
-> **Formatos de archivo:** El formato específico esperado varía según la aseguradora. Utilice el archivo tal como lo entrega la compañía de seguros, sin modificarlo. Si el archivo fue alterado (columnas movidas, filas agregadas), el parser puede fallar.
+Si necesita descartar lo cargado y empezar de nuevo antes de confirmar, use **Otra Carga**.
 
 ---
 
-### Paso 2 — Emparejamiento automático con pólizas
+## Generar reporte de comisiones por ejecutivo
 
-Una vez procesado el archivo, el sistema intenta emparejar automáticamente cada línea del reporte con una póliza existente en BrokerCore. El emparejamiento se realiza por **código de póliza** (`cod_poliza`), usando coincidencia difusa (fuzzy matching) para tolerar pequeñas diferencias de formato entre la aseguradora y el sistema.
-
-El sistema clasifica cada línea en una de tres categorías:
-
-| Resultado | Descripción |
-|---|---|
-| **Emparejada** | La póliza fue encontrada con alta confianza. Se crea el registro de comisión automáticamente. |
-| **Emparejada con revisión** | Se encontró una póliza similar pero con menor confianza. El usuario debe confirmar. |
-| **Sin emparejar** | No se encontró ninguna póliza correspondiente. Va a la cola de pendientes. |
-
----
-
-### Paso 3 — Revisar pólizas pendientes
-
-Las líneas del reporte que no emparejaron automáticamente se almacenan en la tabla **Pólizas Pendientes** (`polizas_pendientes`). Estas requieren resolución manual.
-
-1. Acceda a **Comisiones → Pólizas Pendientes**.
-2. Para cada línea pendiente, el sistema muestra:
-   - El código de póliza tal como aparece en el reporte de la aseguradora.
-   - El nombre del asegurado (si la aseguradora lo incluye).
-   - El monto de la comisión.
-3. Para resolver una línea pendiente, tiene tres opciones:
-
-| Acción | Cuándo usarla |
-|---|---|
-| **Vincular a póliza existente** | La póliza sí existe en BrokerCore pero el código es diferente. Busque la póliza manualmente y confirme el vínculo. |
-| **Crear póliza nueva** | La póliza no estaba registrada. El sistema la pre-crea con los datos disponibles del reporte. Deberá completar la información después. |
-| **Descartar** | La línea del reporte no corresponde a una póliza de esta corredora (error de la aseguradora, póliza de otra cartera, etc.). |
-
-> **Recomendación:** Revisar las pólizas pendientes el mismo día que se carga el reporte, mientras la información está fresca. Las líneas pendientes sin resolver afectan la precisión de los reportes de comisiones por ejecutivo.
-
----
-
-### Paso 4 — Generar reporte de comisiones por ejecutivo
-
-Una vez procesadas y emparejadas las comisiones, puede generar reportes detallados:
+Una vez confirmadas las comisiones, puede generar reportes detallados:
 
 1. Acceda a **Comisiones → Reportes**.
 2. Seleccione:
@@ -97,7 +51,7 @@ Una vez procesadas y emparejadas las comisiones, puede generar reportes detallad
    - **Aseguradora** (opcional, para filtrar por compañía).
 3. Haga clic en **Generar Reporte**.
 
-El reporte se puede exportar a **Excel** y muestra:
+El reporte se puede exportar a **Excel** o **PDF** y muestra:
 - Detalle de cada póliza con comisión en el período.
 - Porcentaje de comisión aplicado.
 - Monto de comisión en Bs y USD.
@@ -128,11 +82,11 @@ El sistema permite marcar bloques de comisiones como "pagadas" mediante los regi
 
 ## Preguntas frecuentes
 
-**¿Qué hago si el archivo de la aseguradora no es reconocido?**
-Verifique que seleccionó la aseguradora correcta. Si el formato del archivo cambió (las aseguradoras ocasionalmente actualizan sus plantillas), notifique al equipo de soporte técnico para actualizar el parser.
+**¿Puedo registrar una comisión para una cuota que todavía no está pagada?**
+No. El buscador de Carga Manual solo muestra cuotas/recibos con estado "PAGADO" de la póliza seleccionada.
 
-**¿Por qué una póliza que sí existe aparece como "sin emparejar"?**
-El código de póliza en BrokerCore puede estar registrado de forma diferente al que usa la aseguradora en su reporte. Revise ambos y use la opción "Vincular a póliza existente" para resolver el caso manualmente.
+**Cargué una línea con datos incorrectos antes de confirmar el bloque, ¿cómo la corrijo?**
+Use **Otra Carga** para descartar el bloque en construcción y empezar de nuevo, o contacte al administrador si el bloque ya fue confirmado.
 
-**¿Puedo cargar el mismo reporte dos veces?**
-El sistema detecta reportes duplicados por aseguradora y período. Si intenta cargar un reporte ya procesado, mostrará una advertencia. En caso de error en un reporte ya procesado, contacte al administrador para revertir la carga.
+**¿Qué pasa con los datos de comisiones cargados con el sistema anterior (por aseguradora)?**
+Los registros previos se conservan. Lo que cambió es la forma de cargar comisiones nuevas: ahora es exclusivamente manual.
