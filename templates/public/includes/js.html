@@ -35,3 +35,32 @@
         })
     });
 </script>
+
+<script>
+    // Feel/microinteracciones globales: auto-cierre de alertas + loading en submits
+    document.addEventListener('DOMContentLoaded', function () {
+        // Auto-cierre de mensajes flash (success/error) con fade-out
+        document.querySelectorAll('.alert').forEach(function (alertEl) {
+            setTimeout(function () {
+                alertEl.classList.add('is-hiding');
+                setTimeout(function () { alertEl.remove(); }, 320);
+            }, 4500);
+        });
+
+        // Estado de carga genérico al enviar un form (opt-out con data-no-loading en el <form>)
+        document.querySelectorAll('form:not([data-no-loading])').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                var btn = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (!btn || btn.classList.contains('is-loading')) return;
+                btn.classList.add('is-loading');
+                btn.disabled = true;
+                // Red de seguridad: si el form es manejado por AJAX y no navega,
+                // el botón se reactiva solo en vez de quedar bloqueado para siempre.
+                setTimeout(function () {
+                    btn.classList.remove('is-loading');
+                    btn.disabled = false;
+                }, 8000);
+            });
+        });
+    });
+</script>
