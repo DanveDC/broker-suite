@@ -65,7 +65,7 @@
 .sbadge {
   font-size: .68rem;
   padding: .18rem .5rem;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-weight: 700;
   display: inline-block;
   white-space: nowrap;
@@ -83,7 +83,7 @@
   padding: 2px 4px;
   height: 27px;
   border: 1px solid #d9dee3;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   width: 100%;
   background-color: #fff;
   cursor: pointer;
@@ -111,7 +111,7 @@
 #importStrip .import-controls .btn {
   font-size: .78rem;
   padding: 3px 14px;
-  border-radius: 99px;
+  border-radius: var(--radius-pill);
   font-weight: 600;
   transition: all .2s;
 }
@@ -120,7 +120,7 @@
   font-size: .68rem;
   font-weight: 700;
   padding: 2px 10px;
-  border-radius: 99px;
+  border-radius: var(--radius-pill);
   display: inline-block;
 }
 @keyframes pulsePause {
@@ -135,7 +135,7 @@
 .cnt-pill {
   font-size: .75rem; font-weight: 700;
   padding: .15rem .5rem;
-  border-radius: 99px; display: inline-block;
+  border-radius: var(--radius-pill); display: inline-block;
 }
 
 /* Action buttons in rows */
@@ -144,7 +144,7 @@
 /* Search bar */
 #searchBar {
   font-size: .82rem; height: 30px;
-  border-radius: 99px; padding: 0 .7rem;
+  border-radius: var(--radius-pill); padding: 0 .7rem;
   max-width: 210px;
 }
 #statusFilter { font-size: .78rem; height: 30px; }
@@ -162,7 +162,7 @@
     <span class="small text-muted" id="streamCount">0 filas</span>
     <span class="small fw-bold text-secondary" id="streamPct">0%</span>
   </div>
-  <div class="progress" style="height:5px;border-radius:99px;">
+  <div class="progress" style="height:5px;border-radius:var(--radius-pill);">
     <div id="streamBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
          style="width:0%;transition:width .2s;"></div>
   </div>
@@ -369,7 +369,7 @@
       </div>
     </div>
   </div>
-  <div class="progress" style="height:6px;border-radius:99px;">
+  <div class="progress" style="height:6px;border-radius:var(--radius-pill);">
     <div id="importBar" class="progress-bar progress-bar-striped progress-bar-animated"
          style="width:0%;transition:width .3s;"></div>
   </div>

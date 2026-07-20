@@ -93,7 +93,7 @@
         border: 1px solid rgba(79,70,229,.15);
         color: var(--primary);
         font-size: .78rem; font-weight: 700;
-        padding: 5px 14px; border-radius: 100px;
+        padding: 5px 14px; border-radius: var(--radius-pill);
         display: inline-flex; align-items: center; gap: 6px;
     }
 
@@ -102,12 +102,12 @@
         background: rgba(255,255,255,.6);
         backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
-        border-radius: 20px;
+        border-radius: var(--radius-lg);
         padding: 1.1rem 1.4rem;
         display: flex; gap: 1.2rem; flex-wrap: wrap;
         align-items: flex-end;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,.04);
+        box-shadow: var(--shadow-sm);
     }
     .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 160px; }
     .filter-label {
@@ -116,7 +116,7 @@
     }
     .f-select {
         background: #fff; border: 1.5px solid #e2e8f0;
-        color: var(--text-main); border-radius: 12px;
+        color: var(--text-main); border-radius: var(--radius-md);
         padding: .55rem 1rem; font-size: .88rem; font-weight: 500;
         cursor: pointer; transition: all .25s;
         font-family: 'Outfit', sans-serif;
@@ -126,7 +126,7 @@
     .btn-refresh {
         display: inline-flex; align-items: center; gap: 8px;
         background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
-        color: #fff; border: none; border-radius: 14px;
+        color: #fff; border: none; border-radius: var(--radius-md);
         padding: .65rem 1.6rem; font-weight: 700; font-size: .92rem;
         cursor: pointer; white-space: nowrap;
         box-shadow: 0 8px 24px -4px rgba(79,70,229,.4);
@@ -153,7 +153,7 @@
     }
     .kpi-accent-bar {
         position: absolute; top: 0; left: 0; right: 0; height: 4px;
-        border-radius: 22px 22px 0 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     }
     .kpi-label {
         font-size: .72rem; font-weight: 700; text-transform: uppercase;
@@ -170,7 +170,7 @@
     .trend-pill {
         display: inline-flex; align-items: center; gap: 5px;
         font-size: .78rem; font-weight: 800;
-        padding: 4px 12px; border-radius: 100px;
+        padding: 4px 12px; border-radius: var(--radius-pill);
         margin-top: .5rem;
     }
     .trend-up   { background: rgba(16,185,129,.1); color: #059669; }
@@ -196,7 +196,7 @@
     .section-badge {
         background: #f1f5f9; color: #475569;
         font-weight: 700; font-size: .72rem;
-        padding: 4px 12px; border-radius: 8px;
+        padding: 4px 12px; border-radius: var(--radius-sm);
         text-transform: uppercase; letter-spacing: .04em;
     }
 
@@ -205,16 +205,16 @@
         background: rgba(255,255,255,.55);
         backdrop-filter: blur(10px);
         border: 1px solid var(--glass-border);
-        border-radius: 18px;
+        border-radius: var(--radius-lg);
         padding: 7px;
         display: flex; gap: 4px; flex-wrap: wrap;
         margin-bottom: 1.8rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,.04);
+        box-shadow: var(--shadow-sm);
     }
     .tab-btn {
         flex: 1; min-width: 130px;
         background: transparent; border: none;
-        border-radius: 13px;
+        border-radius: var(--radius-md);
         padding: 11px 20px;
         font-size: .9rem; font-weight: 700;
         color: var(--text-muted); cursor: pointer;
@@ -238,10 +238,10 @@
     }
     .prog-track {
         height: 8px; background: #f1f5f9;
-        border-radius: 100px; overflow: hidden;
+        border-radius: var(--radius-pill); overflow: hidden;
     }
     .prog-fill {
-        height: 100%; border-radius: 100px;
+        height: 100%; border-radius: var(--radius-pill);
         transition: width 1.2s cubic-bezier(.4,0,.2,1);
     }
 
@@ -263,7 +263,7 @@
     }
     .rank-pos {
         display: inline-flex; align-items: center; justify-content: center;
-        width: 26px; height: 26px; border-radius: 8px;
+        width: 26px; height: 26px; border-radius: var(--radius-sm);
         font-weight: 800; font-size: .78rem;
     }
     .pos-1 { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#fff; }
@@ -278,7 +278,7 @@
         background: rgba(79,70,229,.06);
         border: 1px solid rgba(79,70,229,.15);
         border-left: 4px solid var(--primary);
-        border-radius: 14px; padding: 1rem 1.2rem;
+        border-radius: var(--radius-md); padding: 1rem 1.2rem;
         font-size: .88rem; color: var(--text-main);
         display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1rem;
     }
@@ -296,7 +296,7 @@
     /* ── Cobranza badges ── */
     .cobr-badge {
         display: inline-flex; align-items: center; gap: 6px;
-        padding: 6px 14px; border-radius: 100px;
+        padding: 6px 14px; border-radius: var(--radius-pill);
         font-weight: 700; font-size: .82rem; margin-bottom: .5rem;
     }
     .cobr-primary { background: rgba(79,70,229,.08); color: var(--primary); border: 1px solid rgba(79,70,229,.2); }
@@ -308,7 +308,7 @@
     /* ── Export Button ── */
     .btn-export {
         background: #f8fafc; border: 1.5px solid #e2e8f0;
-        color: var(--text-main); border-radius: 12px;
+        color: var(--text-main); border-radius: var(--radius-md);
         padding: .5rem 1.1rem; font-weight: 700; font-size: .82rem;
         cursor: pointer; transition: all .2s;
         display: inline-flex; align-items: center; gap: 6px;
@@ -411,8 +411,8 @@
             <i class="bi bi-speedometer2 kpi-icon-bg"></i>
             <div class="kpi-label">Eficiencia de Cobro</div>
             <div class="kpi-num" id="val_eficiencia">0.00%</div>
-            <div id="kpi_eficiencia_bar" style="margin-top:.6rem;height:6px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
-                <div id="kpi_eficiencia_fill" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;border-radius:10px;transition:width 1.2s cubic-bezier(.4,0,.2,1);"></div>
+            <div id="kpi_eficiencia_bar" style="margin-top:.6rem;height:6px;background:#f1f5f9;border-radius:var(--radius-md);overflow:hidden;">
+                <div id="kpi_eficiencia_fill" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;border-radius:var(--radius-md);transition:width 1.2s cubic-bezier(.4,0,.2,1);"></div>
             </div>
         </div>
         <!-- 4. Recaudación Externa -->
@@ -962,7 +962,7 @@ function updateUI(data) {
     const totalRamo = ramoTotals.reduce((a,b) => a+b, 0) || 1;
     document.getElementById('ramos_legend_detail').innerHTML = ramoData.slice(0,5).map((r,i) => `
         <div class="d-flex align-items-center gap-2 mb-2">
-            <div style="width:10px;height:10px;border-radius:3px;background:${COLORS.palette[i]};flex-shrink:0;"></div>
+            <div style="width:10px;height:10px;border-radius:var(--radius-sm);background:${COLORS.palette[i]};flex-shrink:0;"></div>
             <span style="font-size:.8rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.Ramo||'Sin Ramo'}</span>
             <span style="font-size:.8rem;font-weight:800;color:var(--primary);">${((Number(r.total||0)/totalRamo)*100).toFixed(2)}%</span>
         </div>`).join('');
@@ -1001,7 +1001,7 @@ function updateUI(data) {
     const totalTipo = tipoData.reduce((a,b) => a+Number(b.total||0), 0) || 1;
     document.getElementById('tipo_venta_legend').innerHTML = tipoData.slice(0,5).map((t,i) => `
         <div class="d-flex align-items-center gap-2 mb-2">
-            <div style="width:10px;height:10px;border-radius:3px;background:${['#06b6d4',COLORS.primary,'#3b82f6','#8b5cf6','#f59e0b'][i]||COLORS.palette[i]};flex-shrink:0;"></div>
+            <div style="width:10px;height:10px;border-radius:var(--radius-sm);background:${['#06b6d4',COLORS.primary,'#3b82f6','#8b5cf6','#f59e0b'][i]||COLORS.palette[i]};flex-shrink:0;"></div>
             <span style="font-size:.8rem;font-weight:600;flex:1;">${t.nombre_tipo||t.Tipo_venta||'N/A'}</span>
             <span style="font-size:.8rem;font-weight:800;color:var(--primary);">${((Number(t.total||0)/totalTipo)*100).toFixed(2)}%</span>
         </div>`).join('');

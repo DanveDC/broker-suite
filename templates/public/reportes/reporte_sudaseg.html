@@ -63,17 +63,17 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     background:rgba(255,255,255,.65);
     backdrop-filter:blur(12px);
     border:1px solid var(--gb);
-    border-radius:18px;
+    border-radius:var(--radius-lg);
     padding:1.1rem 1.4rem;
     display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;
     margin-bottom:1.8rem;
-    box-shadow:0 4px 20px rgba(0,0,0,.04);
+    box-shadow:var(--shadow-sm);
 }
 .filter-group { flex:1;min-width:150px; }
 .filter-label { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:.35rem; }
 .f-select {
     width:100%;background:#fff;border:1.5px solid #e2e8f0;
-    color:var(--text-main);border-radius:12px;padding:.55rem 1rem;
+    color:var(--text-main);border-radius:var(--radius-md);padding:.55rem 1rem;
     font-size:.88rem;font-weight:500;cursor:pointer;
     transition:all .25s;font-family:'Outfit',sans-serif;
 }
@@ -81,7 +81,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .btn-consult {
     display:flex;align-items:center;gap:8px;
     background:linear-gradient(135deg,var(--primary),var(--pri2));
-    color:#fff;border:none;border-radius:14px;
+    color:#fff;border:none;border-radius:var(--radius-md);
     padding:.62rem 1.6rem;font-weight:700;font-size:.92rem;
     cursor:pointer;white-space:nowrap;
     box-shadow:0 6px 20px rgba(79,70,229,.35);
@@ -94,7 +94,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .btn-preview {
     display:inline-flex;align-items:center;gap:7px;
     background:rgba(79,70,229,.08);color:var(--primary);
-    border:1.5px solid rgba(79,70,229,.2);border-radius:12px;
+    border:1.5px solid rgba(79,70,229,.2);border-radius:var(--radius-md);
     padding:.5rem 1.2rem;font-weight:700;font-size:.86rem;
     cursor:pointer;transition:all .25s;font-family:'Outfit',sans-serif;
 }
@@ -102,7 +102,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .btn-download {
     display:inline-flex;align-items:center;gap:7px;
     background:linear-gradient(135deg,#10b981,#059669);
-    color:#fff;border:none;border-radius:12px;
+    color:#fff;border:none;border-radius:var(--radius-md);
     padding:.5rem 1.5rem;font-weight:700;font-size:.86rem;
     cursor:pointer;transition:all .25s;text-decoration:none;
     box-shadow:0 4px 16px rgba(16,185,129,.3);
@@ -110,8 +110,8 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .btn-download:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.4);color:#fff; }
 
 /* ── VIEW TABS ── */
-.view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:14px;padding:.3rem;margin-bottom:1.4rem; }
-.view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--text-muted); }
+.view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:var(--radius-md);padding:.3rem;margin-bottom:1.4rem; }
+.view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:var(--radius-md);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--text-muted); }
 .view-tab.active { background:linear-gradient(135deg,var(--primary),var(--pri2));color:#fff;box-shadow:0 4px 16px rgba(79,70,229,.3); }
 .view-tab:not(.active):hover { background:rgba(79,70,229,.07);color:var(--primary); }
 .view-pane { display:none; }
@@ -126,17 +126,17 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     padding:1.2rem 1.3rem;
     cursor:default;
 }
-.kpi-accent { position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0; }
+.kpi-accent { position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
 .kpi-ico { position:absolute;bottom:-12px;right:-12px;font-size:4.5rem;opacity:.045; }
 .kpi-lbl { font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:.55rem; }
 .kpi-val { font-size:1.8rem;font-weight:700;letter-spacing:-.04em;color:#0f172a;line-height:1; }
 .kpi-sub { font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:.4rem; }
 
 /* ── MAIN TABLE ── */
-.table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04); }
+.table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm); }
 .tbl-header { padding:1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.05); }
 .tbl-title  { font-size:.95rem;font-weight:800;color:var(--text-main); }
-.tbl-badge  { background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em; }
+.tbl-badge  { background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:.04em; }
 
 .tbl-sudaseg { width:100%;border-collapse:collapse; }
 .tbl-sudaseg thead th {
@@ -158,17 +158,17 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .aseg-chip {
     display:inline-flex;align-items:center;gap:6px;
     background:rgba(79,70,229,.07);color:var(--primary);
-    border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700;
+    border-radius:var(--radius-sm);padding:3px 10px;font-size:.78rem;font-weight:700;
     max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .date-badge {
     background:rgba(14,165,233,.07);color:#0369a1;
-    border-radius:8px;padding:3px 9px;font-size:.78rem;font-weight:700;
+    border-radius:var(--radius-sm);padding:3px 9px;font-size:.78rem;font-weight:700;
     white-space:nowrap;display:inline-block;
 }
 .recibo-badge {
     background:#f1f5f9;color:#334155;
-    border-radius:8px;padding:3px 9px;font-size:.78rem;font-weight:700;
+    border-radius:var(--radius-sm);padding:3px 9px;font-size:.78rem;font-weight:700;
     font-family:'Courier New',monospace;
 }
 .poliza-txt { font-weight:700;font-size:.82rem;color:#1e293b; }
@@ -176,7 +176,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .amount-zero { font-weight:600;color:var(--text-muted); }
 .estado-badge {
     display:inline-flex;align-items:center;gap:5px;
-    font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:8px;
+    font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:var(--radius-sm);
 }
 .estado-ok   { background:rgba(16,185,129,.1);color:#059669; }
 .estado-pend { background:rgba(245,158,11,.1);color:#b45309; }
@@ -190,8 +190,8 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
    EXCEL PREVIEW MODAL
 ══════════════════════════════════════════════ */
 .modal-excel .modal-content {
-    border:none;border-radius:18px;
-    box-shadow:0 24px 80px rgba(0,0,0,.22);
+    border:none;border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-lg);
     overflow:hidden;
 }
 .modal-excel .modal-header {
@@ -208,7 +208,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     padding:.4rem 1rem;display:flex;align-items:center;gap:1rem;
 }
 .excel-ribbon-tab {
-    font-size:.75rem;font-weight:700;color:#444;padding:3px 10px;border-radius:4px;cursor:pointer;
+    font-size:.75rem;font-weight:700;color:#444;padding:3px 10px;border-radius:var(--radius-sm);cursor:pointer;
 }
 .excel-ribbon-tab.active { background:#fff;box-shadow:0 0 0 1px #ccc;color:#1d6f42; }
 
@@ -219,7 +219,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     font-size:.76rem;color:#333;
 }
 .excel-cell-ref {
-    background:#fff;border:1px solid #bbb;border-radius:3px;
+    background:#fff;border:1px solid #bbb;border-radius:var(--radius-sm);
     padding:2px 8px;font-size:.75rem;font-weight:600;min-width:60px;color:#333;
 }
 .excel-fx { color:#666;font-size:.85rem; }
@@ -296,7 +296,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 }
 .s-chip {
     display:inline-flex;align-items:center;gap:5px;
-    background:#fff;border:1px solid #e2e8f0;border-radius:8px;
+    background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-sm);
     padding:4px 12px;font-size:.75rem;font-weight:700;color:#334155;
 }
 .s-chip i { color:#1d6f42; }
@@ -308,7 +308,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 }
 .excel-sheet-tab {
     font-size:.72rem;font-weight:600;padding:3px 14px;
-    border:1px solid #bbb;border-bottom:none;border-radius:4px 4px 0 0;
+    border:1px solid #bbb;border-bottom:none;border-radius:var(--radius-sm) var(--radius-sm) 0 0;
     cursor:pointer;
 }
 .excel-sheet-tab.active { background:#fff;color:#1d6f42;font-weight:800;border-color:#999; }
@@ -317,7 +317,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 /* Scrollbar excel */
 .excel-sheet-wrap::-webkit-scrollbar { height:10px;width:10px; }
 .excel-sheet-wrap::-webkit-scrollbar-track { background:#f1f1f1; }
-.excel-sheet-wrap::-webkit-scrollbar-thumb { background:#bbb;border-radius:6px;border:2px solid #f1f1f1; }
+.excel-sheet-wrap::-webkit-scrollbar-thumb { background:#bbb;border-radius:var(--radius-sm);border:2px solid #f1f1f1; }
 .excel-sheet-wrap::-webkit-scrollbar-thumb:hover { background:#999; }
 
 /* ── CHART SECTION ── */
@@ -328,20 +328,20 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .chart-full { grid-column:1/-1; }
 
 /* ── COLUMN SEARCH ROW ── */
-.col-search-row input { width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:3px 7px;font-size:.73rem;font-family:'Outfit',sans-serif; }
+.col-search-row input { width:100%;border:1px solid #e2e8f0;border-radius:var(--radius-sm);padding:3px 7px;font-size:.73rem;font-family:'Outfit',sans-serif; }
 .col-search-row input:focus { outline:none;border-color:var(--primary); }
 
 /* ── PDF PREVIEW MODAL ── */
-.modal-pdf .modal-content { border:none;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden; }
+.modal-pdf .modal-content { border:none;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden; }
 .modal-pdf .modal-header { background:linear-gradient(135deg,#b91c1c,#dc2626);color:#fff;padding:1rem 1.4rem;border:none; }
 .modal-pdf .modal-header .btn-close { filter:invert(1) brightness(2); }
-.pdf-page { background:#fff;width:100%;max-width:760px;margin:1.2rem auto;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:2rem 2.2rem;font-family:'Times New Roman',serif; }
+.pdf-page { background:#fff;width:100%;max-width:760px;margin:1.2rem auto;border-radius:var(--radius-sm);box-shadow:var(--card-shadow);padding:2rem 2.2rem;font-family:'Times New Roman',serif; }
 .pdf-logo-row { display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e293b;padding-bottom:.8rem;margin-bottom:1rem; }
 .pdf-org-name { font-size:1.1rem;font-weight:700;color:#0f172a; }
 .pdf-report-title { font-size:1.4rem;font-weight:700;color:#0f172a;text-align:center;margin:.5rem 0 .3rem; }
 .pdf-period { text-align:center;color:#475569;font-size:.85rem;margin-bottom:1.2rem; }
 .pdf-kpis { display:flex;gap:1rem;justify-content:center;margin-bottom:1.2rem; }
-.pdf-kpi { border:1px solid #cbd5e1;border-radius:6px;padding:.5rem 1.2rem;text-align:center; }
+.pdf-kpi { border:1px solid #cbd5e1;border-radius:var(--radius-sm);padding:.5rem 1.2rem;text-align:center; }
 .pdf-kpi-val { font-size:1.1rem;font-weight:700;color:#0f172a; }
 .pdf-kpi-lbl { font-size:.68rem;color:#64748b;text-transform:uppercase; }
 .pdf-tbl { width:100%;border-collapse:collapse;font-size:.7rem;margin-bottom:1rem; }
@@ -354,10 +354,10 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 
 /* DataTable overrides */
 #tblSudaseg_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--primary)!important; color:#fff!important; border:none!important; border-radius:8px!important;
+    background: var(--primary)!important; color:#fff!important; border:none!important; border-radius:var(--radius-sm)!important;
 }
 #tblSudaseg_wrapper .dataTables_paginate .paginate_button:hover {
-    background: rgba(79,70,229,.1)!important; color:var(--primary)!important; border:none!important; border-radius:8px!important;
+    background: rgba(79,70,229,.1)!important; color:var(--primary)!important; border:none!important; border-radius:var(--radius-sm)!important;
 }
 #tblSudaseg_wrapper .dataTables_info { font-size:.8rem; color:var(--text-muted); }
 #tblSudaseg_wrapper { padding:.5rem 1rem 1rem; }
@@ -515,7 +515,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                             </td>
                             <td class="text-center">
                                 {% if d.porcentaje_commission %}
-                                <span style="background:rgba(79,70,229,.08);color:var(--primary);border-radius:6px;padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
+                                <span style="background:rgba(79,70,229,.08);color:var(--primary);border-radius:var(--radius-sm);padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
                                 {% else %}—{% endif %}
                             </td>
                             <td>

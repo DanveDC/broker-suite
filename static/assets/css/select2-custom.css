@@ -2,7 +2,7 @@
 .select2-container--default .select2-selection--single {
     background-color: #f8fbff !important;
     border: 1px solid #e1e8ef !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-md) !important;
     height: 48px !important;
     display: flex !important;
     align-items: center !important;
@@ -27,7 +27,7 @@
 /* Estilo del menú desplegable */
 .select2-dropdown {
     border: 1px solid #e1e8ef !important;
-    border-radius: 12px !important;
+    border-radius: var(--radius-md) !important;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
     overflow: hidden !important;
     z-index: 9999 !important;
@@ -38,7 +38,7 @@
 }
 
 .select2-search--dropdown .select2-search__field {
-    border-radius: 8px !important;
+    border-radius: var(--radius-sm) !important;
     border: 1px solid #e1e8ef !important;
     padding: 8px 12px !important;
 }
@@ -47,7 +47,7 @@
 .select2-small+.select2-container--default .select2-selection--single {
     height: 48px !important;
     min-width: 80px !important;
-    border-radius: 12px 0 0 12px !important;
+    border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
 }
 
 .select2-small+.select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -100,10 +100,10 @@
 
 /* Corregir margen del buscador interno */
 .select2-container--open .select2-dropdown {
-    border-radius: 12px !important;
+    border-radius: var(--radius-md) !important;
 }
 
 /* Si es el último elemento en un grupo o está solo */
 .select2-small.select2-standalone+.select2-container--default .select2-selection--single {
-    border-radius: 12px !important;
+    border-radius: var(--radius-md) !important;
 }

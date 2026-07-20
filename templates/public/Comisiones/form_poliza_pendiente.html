@@ -10,8 +10,8 @@
     }
 
     .form-card {
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--card-shadow);
         border: none;
         overflow: hidden;
     }
@@ -37,7 +37,7 @@
         background: var(--primary-gradient);
         color: white;
         padding: 1.5rem;
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         margin-bottom: 2rem;
     }
 
@@ -49,7 +49,7 @@
 
     .form-control,
     .form-select {
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         padding: 0.6rem 1rem;
         border: 1px solid #d1d3e2;
     }
@@ -65,7 +65,7 @@
         border: none;
         padding: 0.8rem 2rem;
         font-weight: 700;
-        border-radius: 10px;
+        border-radius: var(--radius-md);
         transition: transform 0.2s;
     }
 
@@ -76,7 +76,7 @@
 
     .select2-container .select2-selection--single {
         height: 42px !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
         border: 1px solid #d1d3e2 !important;
     }
 

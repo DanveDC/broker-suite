@@ -5,8 +5,8 @@
 {% block customCSS %}
 <style>
     .pending-card {
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
         border: none;
     }
 
@@ -25,7 +25,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
         transition: all 0.2s;
     }
 

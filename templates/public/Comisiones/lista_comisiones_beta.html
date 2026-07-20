@@ -7,8 +7,8 @@
     /* Premium Look */
     .commission-card {
         border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--card-shadow);
         overflow: hidden;
         margin-bottom: 2rem;
     }
@@ -21,7 +21,7 @@
     }
 
     .stats-card {
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         border-left: 5px solid var(--primary);
         transition: transform 0.2s;
     }
@@ -43,7 +43,7 @@
     .status-badge {
         font-weight: 600;
         padding: 0.5em 0.8em;
-        border-radius: 50px;
+        border-radius: var(--radius-pill);
     }
 
     tr.procesado {
@@ -178,23 +178,23 @@
                         <div class="col-md-3">
                             <label class="form-label fw-bold text-muted small" for="numero_egreso">NRO. EGRESO / TRANSFERENCIA</label>
                             <input type="text" class="form-control" id="numero_egreso" placeholder="000000"
-                                value="{{ metadata.get('egreso', '') }}" style="border-radius: 8px;">
+                                value="{{ metadata.get('egreso', '') }}" style="border-radius: var(--radius-sm);">
                         </div>
                         <div class="col-md-auto">
                             <label class="form-label fw-bold text-muted small" for="referencia_bancaria">REFERENCIA BANCARIA</label>
                             <input type="text" class="form-control" id="referencia_bancaria" placeholder="REF-000"
-                                value="{{ metadata.get('referencia', '') }}" style="border-radius: 8px;">
+                                value="{{ metadata.get('referencia', '') }}" style="border-radius: var(--radius-sm);">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-bold text-muted small" for="codigo_banco_bloque">CÓDIGO BANCO</label>
                             <input type="text" class="form-control" id="codigo_banco_bloque" placeholder="0102"
-                                value="{{ metadata.get('codigo_banco', '') }}" style="border-radius: 8px;">
+                                value="{{ metadata.get('codigo_banco', '') }}" style="border-radius: var(--radius-sm);">
                         </div>
                         <input type="hidden" id="compania_nombre" value="{{ compania }}">
                         <div class="col-md-3">
                             <label class="form-label fw-bold text-muted small" for="fecha_movimiento">FECHA DEL MOVIMIENTO</label>
                             <input type="date" class="form-control" id="fecha_movimiento"
-                                value="{{ fecha_seleccionada }}" style="border-radius: 8px;">
+                                value="{{ fecha_seleccionada }}" style="border-radius: var(--radius-sm);">
                         </div>
                         <div class="col-md-auto">
                             <!-- Summary calculated via JS -->

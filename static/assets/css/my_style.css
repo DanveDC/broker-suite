@@ -176,7 +176,7 @@ body {
   background: var(--sidebar-active-bg) !important;
   color: var(--sidebar-active-text) !important;
   box-shadow: 0 4px 12px rgba(26,86,219,0.3) !important;
-  border-radius: 12px !important;
+  border-radius: var(--radius-md) !important;
   margin: 0 10px !important;
 }
 
@@ -187,7 +187,7 @@ body {
 .menu-vertical .menu-link:hover {
   background: rgba(26,86,219,0.15) !important;
   color: #ffffff !important;
-  border-radius: 12px !important;
+  border-radius: var(--radius-md) !important;
 }
 
 .menu-vertical .menu-item.active:not(.open) > .menu-link {
@@ -427,7 +427,7 @@ tbody tr:hover {
    -------------------------------------------------------- */
 .dataTables_wrapper .dataTables_filter input {
   border: 1px solid #e2e8f0 !important;
-  border-radius: 30px !important;
+  border-radius: var(--radius-pill) !important;
   padding: 8px 20px !important;
   background: #fff !important;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
@@ -454,7 +454,7 @@ tbody tr:hover {
   background: var(--primary) !important;
   background-color: var(--primary) !important;
   border: none !important;
-  border-radius: 30px !important;
+  border-radius: var(--radius-pill) !important;
   padding: 10px 24px !important;
   font-weight: 600 !important;
   box-shadow: 0 4px 6px -1px rgba(26,86,219,0.4) !important;
@@ -535,7 +535,7 @@ label {
    -------------------------------------------------------- */
 .pagination .page-link {
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--radius-sm) !important;
   margin: 0 3px !important;
   color: var(--text-main) !important;
   font-weight: 500 !important;
