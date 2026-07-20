@@ -7,20 +7,15 @@
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     :root {
-        --primary: #4f46e5;
         --primary-light: #818cf8;
         --primary-glow: rgba(79,70,229,0.18);
-        --secondary: #7c3aed;
         --accent: #f43f5e;
         --success: #10b981;
         --warning: #f59e0b;
         --info: #0ea5e9;
         --danger: #ef4444;
-        --bg: linear-gradient(135deg, #eef0f8 0%, #e5e8f5 60%, #dde3f2 100%);
         --card-bg: rgba(255,255,255,0.82);
         --glass-border: rgba(255,255,255,0.5);
-        --text-main: #1e293b;
-        --text-muted: #64748b;
         --text-dim: #94a3b8;
         --glass-shadow: 0 8px 40px 0 rgba(79,70,229,0.08);
         --card-radius: 22px;
@@ -29,7 +24,7 @@
     *, *::before, *::after { box-sizing: border-box; }
 
     body {
-        background: var(--bg);
+        background: var(--body-bg);
         color: var(--text-main);
         font-family: 'Outfit', 'Inter', sans-serif;
         margin: 0;
@@ -130,7 +125,7 @@
 
     .btn-refresh {
         display: inline-flex; align-items: center; gap: 8px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
         color: #fff; border: none; border-radius: 14px;
         padding: .65rem 1.6rem; font-weight: 700; font-size: .92rem;
         cursor: pointer; white-space: nowrap;
@@ -161,11 +156,11 @@
         border-radius: 22px 22px 0 0;
     }
     .kpi-label {
-        font-size: .72rem; font-weight: 800; text-transform: uppercase;
+        font-size: .72rem; font-weight: 700; text-transform: uppercase;
         letter-spacing: .07em; color: var(--text-muted); margin-bottom: .7rem;
     }
     .kpi-num {
-        font-size: 2.1rem; font-weight: 800; letter-spacing: -.04em;
+        font-size: 2.1rem; font-weight: 700; letter-spacing: -.04em;
         color: #0f172a; margin-bottom: .55rem; line-height: 1;
     }
     .kpi-sub {
@@ -396,7 +391,7 @@
     <div class="kpi-strip">
         <!-- 1. Facturación -->
         <div class="g-card kpi-card">
-            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+            <div class="kpi-accent-bar" style="background:linear-gradient(90deg,var(--primary),var(--primary-hover));"></div>
             <i class="bi bi-currency-dollar kpi-icon-bg"></i>
             <div class="kpi-label">Facturación (Prima USD)</div>
             <div class="kpi-num" id="val_facturacion">$0.00</div>

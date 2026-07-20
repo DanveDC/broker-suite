@@ -9,18 +9,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --pri:   #4f46e5;
     --pri2:  #7c3aed;
     --ok:    #10b981;
     --warn:  #f59e0b;
     --err:   #ef4444;
-    --bg:    linear-gradient(135deg,#f0f4ff 0%,#e8eeff 60%,#dde6ff 100%);
     --glass: rgba(255,255,255,0.85);
     --gb:    rgba(255,255,255,0.45);
-    --shadow: 0 8px 32px rgba(79,70,229,0.09);
-    --rad:   20px;
-    --text:  #1e293b;
-    --muted: #64748b;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -39,15 +33,15 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border: 1px solid var(--gb);
-    border-radius: var(--rad);
-    box-shadow: var(--shadow);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
     transition: box-shadow .3s, transform .3s;
 }
 .g-card:hover { box-shadow: 0 16px 48px rgba(79,70,229,.14); transform: translateY(-3px); }
 .g-card::before {
-    content:'';position:absolute;inset:0;border-radius:var(--rad);
+    content:'';position:absolute;inset:0;border-radius:var(--radius-lg);
     padding:1px;
     background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.1));
     -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
@@ -60,9 +54,9 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     display:flex;justify-content:space-between;align-items:flex-start;
     flex-wrap:wrap;gap:1rem;margin-bottom:1.8rem;
 }
-.page-title { font-size:1.6rem;font-weight:800;letter-spacing:-.03em;color:var(--text);margin:0; }
-.page-sub   { font-size:.83rem;color:var(--muted);font-weight:500;margin:.2rem 0 0; }
-.text-grad  { background:linear-gradient(135deg,var(--pri),#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent; }
+.page-title { font-size:1.6rem;font-weight:800;letter-spacing:-.03em;color:var(--text-main);margin:0; }
+.page-sub   { font-size:.83rem;color:var(--text-muted);font-weight:500;margin:.2rem 0 0; }
+.text-grad  { background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent; }
 
 /* ── FILTER BAR ── */
 .filter-bar {
@@ -76,17 +70,17 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     box-shadow:0 4px 20px rgba(0,0,0,.04);
 }
 .filter-group { flex:1;min-width:150px; }
-.filter-label { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:.35rem; }
+.filter-label { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:.35rem; }
 .f-select {
     width:100%;background:#fff;border:1.5px solid #e2e8f0;
-    color:var(--text);border-radius:12px;padding:.55rem 1rem;
+    color:var(--text-main);border-radius:12px;padding:.55rem 1rem;
     font-size:.88rem;font-weight:500;cursor:pointer;
     transition:all .25s;font-family:'Outfit',sans-serif;
 }
-.f-select:focus { border-color:var(--pri);box-shadow:0 0 0 4px rgba(79,70,229,.12);outline:none; }
+.f-select:focus { border-color:var(--primary);box-shadow:0 0 0 4px rgba(79,70,229,.12);outline:none; }
 .btn-consult {
     display:flex;align-items:center;gap:8px;
-    background:linear-gradient(135deg,var(--pri),var(--pri2));
+    background:linear-gradient(135deg,var(--primary),var(--pri2));
     color:#fff;border:none;border-radius:14px;
     padding:.62rem 1.6rem;font-weight:700;font-size:.92rem;
     cursor:pointer;white-space:nowrap;
@@ -99,12 +93,12 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 /* ── ACTION BUTTONS ── */
 .btn-preview {
     display:inline-flex;align-items:center;gap:7px;
-    background:rgba(79,70,229,.08);color:var(--pri);
+    background:rgba(79,70,229,.08);color:var(--primary);
     border:1.5px solid rgba(79,70,229,.2);border-radius:12px;
     padding:.5rem 1.2rem;font-weight:700;font-size:.86rem;
     cursor:pointer;transition:all .25s;font-family:'Outfit',sans-serif;
 }
-.btn-preview:hover { background:var(--pri);color:#fff; }
+.btn-preview:hover { background:var(--primary);color:#fff; }
 .btn-download {
     display:inline-flex;align-items:center;gap:7px;
     background:linear-gradient(135deg,#10b981,#059669);
@@ -117,9 +111,9 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 
 /* ── VIEW TABS ── */
 .view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:14px;padding:.3rem;margin-bottom:1.4rem; }
-.view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--muted); }
-.view-tab.active { background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;box-shadow:0 4px 16px rgba(79,70,229,.3); }
-.view-tab:not(.active):hover { background:rgba(79,70,229,.07);color:var(--pri); }
+.view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--text-muted); }
+.view-tab.active { background:linear-gradient(135deg,var(--primary),var(--pri2));color:#fff;box-shadow:0 4px 16px rgba(79,70,229,.3); }
+.view-tab:not(.active):hover { background:rgba(79,70,229,.07);color:var(--primary); }
 .view-pane { display:none; }
 .view-pane.active { display:block; }
 
@@ -134,21 +128,21 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 }
 .kpi-accent { position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0; }
 .kpi-ico { position:absolute;bottom:-12px;right:-12px;font-size:4.5rem;opacity:.045; }
-.kpi-lbl { font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.55rem; }
-.kpi-val { font-size:1.8rem;font-weight:800;letter-spacing:-.04em;color:#0f172a;line-height:1; }
-.kpi-sub { font-size:.75rem;color:var(--muted);font-weight:500;margin-top:.4rem; }
+.kpi-lbl { font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:.55rem; }
+.kpi-val { font-size:1.8rem;font-weight:700;letter-spacing:-.04em;color:#0f172a;line-height:1; }
+.kpi-sub { font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:.4rem; }
 
 /* ── MAIN TABLE ── */
 .table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04); }
 .tbl-header { padding:1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.05); }
-.tbl-title  { font-size:.95rem;font-weight:800;color:var(--text); }
+.tbl-title  { font-size:.95rem;font-weight:800;color:var(--text-main); }
 .tbl-badge  { background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em; }
 
 .tbl-sudaseg { width:100%;border-collapse:collapse; }
 .tbl-sudaseg thead th {
     background:rgba(79,70,229,.06);
     font-size:.68rem;font-weight:800;text-transform:uppercase;
-    letter-spacing:.06em;color:var(--muted);
+    letter-spacing:.06em;color:var(--text-muted);
     padding:.75rem 1rem;border-bottom:1px solid rgba(79,70,229,.1);
     white-space:nowrap;
 }
@@ -163,7 +157,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 /* Cell styles */
 .aseg-chip {
     display:inline-flex;align-items:center;gap:6px;
-    background:rgba(79,70,229,.07);color:var(--pri);
+    background:rgba(79,70,229,.07);color:var(--primary);
     border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700;
     max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
@@ -179,7 +173,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 }
 .poliza-txt { font-weight:700;font-size:.82rem;color:#1e293b; }
 .amount-pos { font-weight:800;color:#059669; }
-.amount-zero { font-weight:600;color:var(--muted); }
+.amount-zero { font-weight:600;color:var(--text-muted); }
 .estado-badge {
     display:inline-flex;align-items:center;gap:5px;
     font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:8px;
@@ -190,7 +184,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 /* ── EMPTY STATE ── */
 .empty-state { text-align:center;padding:4rem 2rem; }
 .empty-icon  { font-size:4rem;color:#cbd5e1;margin-bottom:1rem; }
-.empty-msg   { color:var(--muted);font-weight:500; }
+.empty-msg   { color:var(--text-muted);font-weight:500; }
 
 /* ══════════════════════════════════════════════
    EXCEL PREVIEW MODAL
@@ -330,12 +324,12 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .chart-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.4rem; }
 @media(max-width:900px){ .chart-grid{grid-template-columns:1fr} }
 .chart-card { padding:1.3rem 1.4rem; }
-.chart-card-title { font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:1rem; }
+.chart-card-title { font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:1rem; }
 .chart-full { grid-column:1/-1; }
 
 /* ── COLUMN SEARCH ROW ── */
 .col-search-row input { width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:3px 7px;font-size:.73rem;font-family:'Outfit',sans-serif; }
-.col-search-row input:focus { outline:none;border-color:var(--pri); }
+.col-search-row input:focus { outline:none;border-color:var(--primary); }
 
 /* ── PDF PREVIEW MODAL ── */
 .modal-pdf .modal-content { border:none;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden; }
@@ -360,12 +354,12 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 
 /* DataTable overrides */
 #tblSudaseg_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--pri)!important; color:#fff!important; border:none!important; border-radius:8px!important;
+    background: var(--primary)!important; color:#fff!important; border:none!important; border-radius:8px!important;
 }
 #tblSudaseg_wrapper .dataTables_paginate .paginate_button:hover {
-    background: rgba(79,70,229,.1)!important; color:var(--pri)!important; border:none!important; border-radius:8px!important;
+    background: rgba(79,70,229,.1)!important; color:var(--primary)!important; border:none!important; border-radius:8px!important;
 }
-#tblSudaseg_wrapper .dataTables_info { font-size:.8rem; color:var(--muted); }
+#tblSudaseg_wrapper .dataTables_info { font-size:.8rem; color:var(--text-muted); }
 #tblSudaseg_wrapper { padding:.5rem 1rem 1rem; }
 </style>
 {% endblock %}
@@ -376,7 +370,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     <!-- ══ PAGE HEADER ══ -->
     <div class="page-header">
         <div>
-            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.3rem;">
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.3rem;">
                 <i class="bi bi-house me-1"></i> Reportes
             </div>
             <h1 class="page-title">Reporte <span class="text-grad">Sudaseg</span></h1>
@@ -434,8 +428,8 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     {% set count_pagadas = datos | selectattr('fecha_pago') | list | length %}
     <div class="kpi-strip">
         <div class="g-card kpi-item">
-            <div class="kpi-accent" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
-            <i class="bi bi-receipt kpi-ico" style="color:#4f46e5;"></i>
+            <div class="kpi-accent" style="background:linear-gradient(90deg,var(--primary),var(--primary-hover));"></div>
+            <i class="bi bi-receipt kpi-ico" style="color:var(--primary);"></i>
             <div class="kpi-lbl">Total Registros</div>
             <div class="kpi-val">{{ datos | length }}</div>
             <div class="kpi-sub">Movimientos del período</div>
@@ -468,8 +462,8 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     <div class="table-wrap">
         <div class="tbl-header">
             <div>
-                <div class="tbl-title"><i class="bi bi-table me-2" style="color:var(--pri);"></i>Movimientos del Período</div>
-                <div style="font-size:.75rem;color:var(--muted);font-weight:500;margin-top:.2rem;">
+                <div class="tbl-title"><i class="bi bi-table me-2" style="color:var(--primary);"></i>Movimientos del Período</div>
+                <div style="font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:.2rem;">
                     {% if mes and ano %}
                     {% set meses_nombres2 = {'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'} %}
                     {{ meses_nombres2.get(mes, mes) }} {{ ano }}
@@ -500,7 +494,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                     <tbody>
                         {% for d in datos %}
                         <tr>
-                            <td style="padding-left:1.2rem;color:var(--muted);font-size:.78rem;">{{ loop.index }}</td>
+                            <td style="padding-left:1.2rem;color:var(--text-muted);font-size:.78rem;">{{ loop.index }}</td>
                             <td><span class="aseg-chip" title="{{ d.nombre_aseguradora }}"><i class="bi bi-building" style="font-size:.75rem;"></i> {{ d.nombre_aseguradora }}</span></td>
                             <td><span class="date-badge"><i class="bi bi-calendar3" style="font-size:.7rem;"></i> {{ d.fecha_cobro_recibo | format_date }}</span></td>
                             <td><span class="recibo-badge">{{ d.numero_recibo }}</span></td>
@@ -521,7 +515,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                             </td>
                             <td class="text-center">
                                 {% if d.porcentaje_commission %}
-                                <span style="background:rgba(79,70,229,.08);color:var(--pri);border-radius:6px;padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
+                                <span style="background:rgba(79,70,229,.08);color:var(--primary);border-radius:6px;padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
                                 {% else %}—{% endif %}
                             </td>
                             <td>
@@ -536,7 +530,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                     </tbody>
                     <tfoot>
                         <tr style="background:rgba(79,70,229,.04);border-top:2px solid rgba(79,70,229,.15);">
-                            <td colspan="5" style="padding:.8rem 1.2rem;font-size:.8rem;font-weight:800;color:var(--pri);">TOTAL</td>
+                            <td colspan="5" style="padding:.8rem 1.2rem;font-size:.8rem;font-weight:800;color:var(--primary);">TOTAL</td>
                             <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#334155;">${{ "{:,.2f}".format(total_prima) }}</td>
                             <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#059669;">${{ "{:,.2f}".format(total_com) }}</td>
                             <td colspan="2"></td>
@@ -548,7 +542,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
             <div class="empty-state">
                 <div class="empty-icon"><i class="bi bi-folder2-open"></i></div>
                 <p class="empty-msg">No se encontraron movimientos para este período.</p>
-                <p style="font-size:.82rem;color:var(--muted);">Verifica el mes y año seleccionados.</p>
+                <p style="font-size:.82rem;color:var(--text-muted);">Verifica el mes y año seleccionados.</p>
             </div>
             {% endif %}
         </div>

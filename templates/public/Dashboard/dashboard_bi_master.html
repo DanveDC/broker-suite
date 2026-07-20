@@ -6,29 +6,23 @@
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     :root {
-        --pri:   #4361ee;
         --pri2:  #3a0ca3;
         --sec:   #4cc9f0;
         --acc:   #f72585;
         --ok:    #2dc653;
         --warn:  #f4a261;
         --err:   #e63946;
-        --bg:    linear-gradient(135deg, #f0f4ff 0%, #e8eeff 60%, #dde6ff 100%);
         --glass: rgba(255,255,255,0.78);
         --gb:    rgba(255,255,255,0.18);
-        --shadow: 0 8px 40px rgba(67,97,238,.10);
-        --text:  #1e293b;
-        --muted: #64748b;
         --dim:   #94a3b8;
-        --rad:   20px;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
 
     body {
-        background: var(--bg);
+        background: var(--body-bg);
         font-family: 'Outfit', 'Inter', sans-serif;
-        color: var(--text); min-height: 100vh;
+        color: var(--text-main); min-height: 100vh;
     }
 
     /* ── LAYOUT ── */
@@ -57,12 +51,12 @@
     }
     .sb-brand-icon {
         width: 38px; height: 38px; border-radius: 10px;
-        background: linear-gradient(135deg, var(--pri), var(--pri2));
+        background: linear-gradient(135deg, var(--primary), var(--pri2));
         display: flex; align-items: center; justify-content: center;
         color: #fff; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(67,97,238,.35);
     }
-    .sb-brand-text { font-size: .95rem; font-weight: 800; color: var(--text); line-height: 1.2; }
-    .sb-brand-sub  { font-size: .68rem; color: var(--muted); font-weight: 600; }
+    .sb-brand-text { font-size: .95rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
+    .sb-brand-sub  { font-size: .68rem; color: var(--text-muted); font-weight: 600; }
 
     .sb-section-label {
         font-size: .63rem; font-weight: 800; text-transform: uppercase;
@@ -72,20 +66,20 @@
     .sb-nav-item {
         display: flex; align-items: center; gap: 10px;
         padding: 11px 14px; border-radius: 12px;
-        color: var(--muted); font-weight: 600; font-size: .88rem;
+        color: var(--text-muted); font-weight: 600; font-size: .88rem;
         cursor: pointer; transition: all .25s; text-decoration: none;
         border: none; background: transparent; width: 100%; text-align: left;
         font-family: 'Outfit', sans-serif;
     }
-    .sb-nav-item:hover  { background: rgba(67,97,238,.08); color: var(--pri); }
-    .sb-nav-item.active { background: var(--pri); color: #fff;
+    .sb-nav-item:hover  { background: rgba(67,97,238,.08); color: var(--primary); }
+    .sb-nav-item.active { background: var(--primary); color: #fff;
         box-shadow: 0 4px 16px rgba(67,97,238,.35); }
     .sb-nav-item i { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
     .sb-nav-item .sb-badge {
         margin-left: auto; background: rgba(255,255,255,.25);
         font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 8px;
     }
-    .sb-nav-item:not(.active) .sb-badge { background: rgba(67,97,238,.1); color: var(--pri); }
+    .sb-nav-item:not(.active) .sb-badge { background: rgba(67,97,238,.1); color: var(--primary); }
 
     .sb-divider { border: none; border-top: 1px solid rgba(0,0,0,.06); margin: .5rem 0; }
     .sb-footer { margin-top: auto; padding-top: .8rem; }
@@ -111,10 +105,10 @@
         align-items: center; flex-wrap: wrap; gap: 1rem;
     }
     .bi-page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em; }
-    .bi-page-sub   { font-size: .82rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
+    .bi-page-sub   { font-size: .82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
     .bi-time-badge {
         background: rgba(67,97,238,.08); border: 1px solid rgba(67,97,238,.16);
-        color: var(--pri); font-size: .76rem; font-weight: 700;
+        color: var(--primary); font-size: .76rem; font-weight: 700;
         padding: 5px 14px; border-radius: 100px;
         display: flex; align-items: center; gap: 6px;
     }
@@ -122,27 +116,27 @@
     /* ── FILTER BAR ── */
     .bi-filter-bar {
         background: var(--glass); backdrop-filter: blur(12px);
-        border: 1px solid var(--gb); border-radius: var(--rad);
-        padding: 1rem 1.4rem; box-shadow: var(--shadow);
+        border: 1px solid var(--gb); border-radius: var(--radius-lg);
+        padding: 1rem 1.4rem; box-shadow: var(--card-shadow);
         display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
     }
     .bi-fi { flex: 1; min-width: 140px; }
     .bi-fi label {
         display: block; margin-bottom: .35rem;
         font-size: .68rem; font-weight: 800; text-transform: uppercase;
-        letter-spacing: .06em; color: var(--muted);
+        letter-spacing: .06em; color: var(--text-muted);
     }
     .bi-fi select {
         width: 100%; padding: .55rem .9rem;
         border-radius: 10px; border: 1.5px solid #e2e8f0;
         background: #fff; font-family: 'Outfit', sans-serif;
-        font-size: .88rem; font-weight: 500; color: var(--text);
+        font-size: .88rem; font-weight: 500; color: var(--text-main);
         transition: border .2s, box-shadow .2s;
     }
-    .bi-fi select:focus { border-color: var(--pri); box-shadow: 0 0 0 4px rgba(67,97,238,.12); outline: none; }
+    .bi-fi select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(67,97,238,.12); outline: none; }
     .btn-apply {
         display: flex; align-items: center; gap: 7px;
-        background: linear-gradient(135deg, var(--pri), var(--pri2));
+        background: linear-gradient(135deg, var(--primary), var(--pri2));
         color: #fff; border: none; border-radius: 12px;
         padding: .6rem 1.5rem; font-weight: 700; font-size: .9rem;
         cursor: pointer; font-family: 'Outfit', sans-serif;
@@ -166,7 +160,7 @@
         padding: 1.3rem 1.2rem;
         box-shadow: 0 4px 16px rgba(0,0,0,.05);
         position: relative; overflow: hidden;
-        border-left: 4px solid var(--pri);
+        border-left: 4px solid var(--primary);
         transition: box-shadow .25s, transform .25s;
     }
     .kpi-card:hover { box-shadow: 0 10px 30px rgba(67,97,238,.14); transform: translateY(-3px); }
@@ -176,20 +170,20 @@
     .kpi-card.c-acc   { border-left-color: var(--acc); }
     .kpi-icon-bg {
         position: absolute; top: -8px; right: -8px;
-        font-size: 4.5rem; opacity: .045; color: var(--pri);
+        font-size: 4.5rem; opacity: .045; color: var(--primary);
     }
-    .kpi-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .55rem; }
-    .kpi-value { font-size: 1.9rem; font-weight: 800; color: var(--text); letter-spacing: -.04em; line-height: 1; }
+    .kpi-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: .55rem; }
+    .kpi-value { font-size: 1.9rem; font-weight: 700; color: var(--text-main); letter-spacing: -.04em; line-height: 1; }
     .kpi-trend { font-size: .78rem; padding: 3px 10px; border-radius: 8px; width: fit-content; margin-top: .5rem; font-weight: 700; }
     .t-up   { background: rgba(45,198,83,.12); color: #16a34a; }
     .t-down { background: rgba(230,57,70,.12); color: #dc2626; }
-    .t-flat { background: rgba(100,116,139,.1); color: var(--muted); }
+    .t-flat { background: rgba(100,116,139,.1); color: var(--text-muted); }
     .kpi-progress { margin-top: .7rem; height: 5px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
     .kpi-progress-fill { height: 100%; border-radius: 10px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
 
     /* ── CARD ── */
     .bi-card {
-        background: #fff; border-radius: var(--rad);
+        background: #fff; border-radius: var(--radius-lg);
         padding: 1.4rem 1.5rem;
         box-shadow: 0 4px 20px rgba(0,0,0,.05);
         transition: box-shadow .25s;
@@ -200,10 +194,10 @@
         align-items: flex-start; margin-bottom: 1.1rem;
     }
     .bi-card-title {
-        font-weight: 800; font-size: 1rem; color: var(--text);
+        font-weight: 800; font-size: 1rem; color: var(--text-main);
         display: flex; align-items: center; gap: 8px;
     }
-    .bi-card-title i { color: var(--pri); font-size: 1rem; }
+    .bi-card-title i { color: var(--primary); font-size: 1rem; }
     .bi-card-badge {
         background: #f1f5f9; color: #475569;
         font-size: .7rem; font-weight: 700; padding: 4px 10px; border-radius: 8px;
@@ -231,7 +225,7 @@
     /* ── Rank Table ── */
     .rank-tbl { width:100%; border-collapse:collapse; }
     .rank-tbl thead th { font-size:.68rem; font-weight:800; text-transform:uppercase;
-        letter-spacing:.06em; color:var(--muted); padding:.5rem .7rem;
+        letter-spacing:.06em; color:var(--text-muted); padding:.5rem .7rem;
         border-bottom:1px solid #f1f5f9; text-align:left; }
     .rank-tbl tbody tr { border-bottom:1px solid #f8fafc; transition:background .2s; }
     .rank-tbl tbody tr:hover { background:#fafbff; }
@@ -241,16 +235,16 @@
     .rp-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;}
     .rp-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;}
     .rp-3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;}
-    .rp-n{background:#f1f5f9;color:var(--muted);}
+    .rp-n{background:#f1f5f9;color:var(--text-muted);}
 
     /* ── Callout ── */
     .callout {
         background: rgba(67,97,238,.05); border: 1px solid rgba(67,97,238,.14);
-        border-left: 4px solid var(--pri); border-radius: 12px;
-        padding: .9rem 1.1rem; font-size:.85rem; color:var(--text);
+        border-left: 4px solid var(--primary); border-radius: 12px;
+        padding: .9rem 1.1rem; font-size:.85rem; color:var(--text-main);
         display:flex; align-items:flex-start; gap:9px; margin-bottom: .8rem;
     }
-    .callout i { color:var(--pri); flex-shrink:0; margin-top:2px; }
+    .callout i { color:var(--primary); flex-shrink:0; margin-top:2px; }
 
     /* ── Hero metric ── */
     .hero-metric {
@@ -258,16 +252,16 @@
     }
     .hero-val {
         font-size:3.8rem; font-weight:800; letter-spacing:-.05em; line-height:1;
-        background:linear-gradient(135deg,var(--pri),#8b5cf6);
+        background:linear-gradient(135deg,var(--primary),#8b5cf6);
         -webkit-background-clip:text; background-clip:text;
         -webkit-text-fill-color:transparent;
     }
     .hero-label { font-size:.75rem; font-weight:800; text-transform:uppercase;
-        letter-spacing:.07em; color:var(--muted); margin-bottom:.8rem; }
+        letter-spacing:.07em; color:var(--text-muted); margin-bottom:.8rem; }
     .mini-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1rem; }
     .mini-cell { text-align:center; }
-    .mini-val   { font-size:1.35rem; font-weight:800; color:var(--text); }
-    .mini-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+    .mini-val   { font-size:1.35rem; font-weight:800; color:var(--text-main); }
+    .mini-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
 
     /* ── Risk items ── */
     .risk-li { display:flex; align-items:center; gap:12px; padding:.65rem 0; border-bottom:1px solid #f8fafc; }
@@ -344,7 +338,7 @@
         <!-- Topbar -->
         <div class="bi-topbar">
             <div>
-                <div class="bi-page-title">Panel de <span style="background:linear-gradient(135deg,var(--pri),#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Inteligencia de Negocio</span></div>
+                <div class="bi-page-title">Panel de <span style="background:linear-gradient(135deg,var(--primary),#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Inteligencia de Negocio</span></div>
                 <div class="bi-page-sub"><i class="fas fa-circle text-success" style="font-size:.55rem;"></i> Cartera de Clientes · Broker Suite</div>
             </div>
             <div class="bi-time-badge"><i class="fas fa-clock"></i> Actualizado: <span id="bi_ts">—</span></div>
@@ -501,7 +495,7 @@
                 <div style="overflow-x:auto;">
                     <table class="rank-tbl">
                         <thead><tr><th>#</th><th>Ejecutivo</th><th>Prima Actual (USD)</th><th>Pólizas</th><th>Prima Año Ant.</th><th>Crecimiento $</th><th>YoY %</th><th>Participación</th></tr></thead>
-                        <tbody id="TB_ejecutivos"><tr><td colspan="8" class="text-center py-3" style="color:var(--muted);">Cargando...</td></tr></tbody>
+                        <tbody id="TB_ejecutivos"><tr><td colspan="8" class="text-center py-3" style="color:var(--text-muted);">Cargando...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -542,7 +536,7 @@
                 <div class="bi-card hero-metric">
                     <div class="hero-label"><i class="fas fa-procedures"></i> Loss Ratio Estimado</div>
                     <div class="hero-val" id="H_loss_ratio">0%</div>
-                    <p style="color:var(--muted);font-size:.82rem;margin:.5rem auto 1rem;max-width:240px;text-align:center;">
+                    <p style="color:var(--text-muted);font-size:.82rem;margin:.5rem auto 1rem;max-width:240px;text-align:center;">
                         Relación siniestros / primas cobradas. Objetivo: mantener bajo 60%.
                     </p>
                     <div class="mini-grid">

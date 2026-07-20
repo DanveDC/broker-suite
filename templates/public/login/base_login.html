@@ -64,15 +64,12 @@
 <style>
   /* Estilos existentes para body y root */
   body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1a56db 100%);
+    background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--primary-hover) 50%, var(--primary) 100%);
     min-height: 100vh;
     color: #333;
   }
 
   :root {
-    --bg: #0f172a;
-    --primary: #1a56db;
-    --green: #10b981;
     --font: 'Inter', 'Open Sans', sans-serif;
   }
 
@@ -98,7 +95,7 @@
   .drawer-trigger {
     width: 30px;
     height: 60px;
-    background: #1a56db;
+    background: var(--primary);
     /* Púrpura que combina con el botón primario */
     color: white;
     border-radius: 0 10px 10px 0;
@@ -106,7 +103,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 2px 0 10px rgba(105, 108, 255, 0.4);
+    box-shadow: var(--shadow-lg);
     font-size: 1.2rem;
     flex-shrink: 0;
     transition: all 0.3s ease;
@@ -144,7 +141,7 @@
   }
 
   .drawer-trigger:hover {
-    background: #1648c0;
+    background: var(--primary-hover);
     /* Tono morado para el hover */
     width: 35px;
   }
@@ -176,7 +173,7 @@
   }
 
   .switch-label.active-internacional {
-    color: var(--green) !important;
+    color: var(--accent-success) !important;
     text-shadow: 0 0 5px rgba(95, 248, 194, 0.4);
   }
 
@@ -192,14 +189,14 @@
   }
 
   .form-check-input:checked {
-    background-color: var(--green);
-    border-color: var(--green);
-    box-shadow: 0 0 10px rgba(95, 248, 194, 0.5);
+    background-color: var(--accent-success);
+    border-color: var(--accent-success);
+    box-shadow: var(--card-shadow);
   }
 
   .form-check-input:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 0 0.25rem rgba(95, 248, 194, 0.25);
+    border-color: var(--accent-success);
+    box-shadow: var(--card-shadow);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3csvg%3e");
   }
 
