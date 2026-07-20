@@ -984,6 +984,24 @@ label {
   pointer-events: auto;
 }
 
+/* Bajo el breakpoint navbar-expand-xl, Bootstrap vuelve .navbar-nav
+   .dropdown-menu position:static (queda en el flujo del documento).
+   Con visibility:hidden ahi arriba, el menu cerrado seguiria ocupando
+   su alto real en el layout en mobile/tablet. Se restaura el toggle
+   plano de Bootstrap (display:none/block) solo para ese caso. */
+@media (max-width: 1199.98px) {
+  .navbar-nav .dropdown-menu {
+    display: none;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .navbar-nav .dropdown-menu.show {
+    display: block;
+  }
+}
+
 /* --------------------------------------------------------
    24. Toggles de tabla tipo acordeon (filas/tablas ocultas por JS)
    -------------------------------------------------------- */
