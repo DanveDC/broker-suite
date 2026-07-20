@@ -159,11 +159,11 @@
                                 data-profesion="{{ riesgo_item.profesion or '' }}"
                                 data-localidad="{{ riesgo_item.localidad or '' }}"
                                 data-canal="{{ riesgo_item.canal or '' }}"
-                                data-tipo-ci="{{ riesgo_item.Tipo_CI or 'N/A' }}" title="Editar Asegurado">
+                                data-tipo-ci="{{ riesgo_item.Tipo_CI or 'N/A' }}" title="Editar Asegurado" aria-label="Editar Asegurado">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
-                                data-bs-placement="top" title="Recalcular Riesgo"
+                                data-bs-placement="top" title="Recalcular Riesgo" aria-label="Recalcular Riesgo"
                                 onclick="recalcularRiesgoPoliza('{{ riesgo_item.Cod_renovacion }}', this)">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>

@@ -92,7 +92,7 @@
                                 <button class="btn btn-warning btn-sm editar-comision-btn"
                                     data-recibo-id="{{ comision.get('NRO. RECIBO') }}"
                                     data-cod-renovacion="{{ comision.get('COD. RENOVACION') }}" data-bs-toggle="modal"
-                                    data-bs-target="#procesarComisionModal" data-edit-mode="true">
+                                    data-bs-target="#procesarComisionModal" data-edit-mode="true" aria-label="Editar comisión">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 {% endif %}
@@ -127,53 +127,53 @@
                     <input type="hidden" id="modalCodEjecutivo" name="codEjecutivo">
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Ejecutivo</label>
+                            <label class="form-label" for="modalEjecutivo">Ejecutivo</label>
                             <input type="text" class="form-control" id="modalEjecutivo" readonly>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Asegurado</label>
+                            <label class="form-label" for="modalAsegurado">Asegurado</label>
                             <input type="text" class="form-control" id="modalAsegurado" readonly>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Póliza</label>
+                            <label class="form-label" for="modalPoliza">Póliza</label>
                             <input type="text" class="form-control" id="modalPoliza" readonly>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Prima $</label>
+                            <label class="form-label" for="modalPrima">Prima $</label>
                             <input type="text" class="form-control" id="modalPrima" name="prima" readonly>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Monto Fracción</label>
+                            <label class="form-label" for="modalMontoFraccion">Monto Fracción</label>
                             <input type="text" class="form-control" id="modalMontoFraccion" name="montoFraccion"
                                 placeholder="0,00" readonly>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Comision $</label>
+                            <label class="form-label" for="modalMontoDolar">Comision $</label>
                             <input type="text" class="form-control" id="modalMontoDolar" name="montoDolar"
                                 placeholder="0,00">
                         </div>
                         <div class="col-md-4 mb-3 bs-field">
-                            <label class="form-label">Comision Bs</label>
+                            <label class="form-label" for="modalComisionBs">Comision Bs</label>
                             <input type="text" class="form-control" id="modalComisionBs" name="comisionBs"
                                 placeholder="0,00">
                         </div>
                         <div class="col-md-4 mb-3 bs-field">
-                            <label class="form-label">Tasa</label>
+                            <label class="form-label" for="modalTasa">Tasa</label>
                             <input type="text" class="form-control" id="modalTasa" name="tasa" placeholder="0,00">
                         </div>
                         <div class="col-md-4 mb-3 bs-field">
-                            <label class="form-label">Bono Bs</label>
+                            <label class="form-label" for="modalBono">Bono Bs</label>
                             <input type="text" class="form-control" id="modalBono" name="bono" placeholder="0,00">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label d-flex justify-content-between">
+                            <label class="form-label d-flex justify-content-between" for="modalPorcentaje">
                                 % Comisión <span id="porcentajeBadge" class="badge bg-primary">0%</span>
                             </label>
                             <div class="d-flex align-items-center gap-2">
                                 <input type="range" class="form-range flex-grow-1" id="modalPorcentajeSlider" min="0"
-                                    max="100" step="0.1" value="0">
+                                    max="100" step="0.1" value="0" aria-label="Porcentaje de comisión (deslizador)">
                                 <div class="input-group" style="width: 100px;">
                                     <input type="number" class="form-control px-1 text-center" id="modalPorcentaje"
                                         name="comisionPorcentaje" step="0.01" placeholder="0.00">
@@ -182,7 +182,7 @@
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Moneda</label>
+                            <label class="form-label" for="modalMoneda">Moneda</label>
                             <select class="form-select select2-search" id="modalMoneda" name="moneda"
                                 data-placeholder="Moneda">
                                 <option value="$">$ (Dólares)</option>

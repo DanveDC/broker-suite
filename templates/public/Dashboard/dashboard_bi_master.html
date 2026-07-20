@@ -333,7 +333,7 @@
     </aside>
 
     <!-- ═══ MAIN CONTENT ═══ -->
-    <main class="bi-main">
+    <div class="bi-main">
 
         <!-- Topbar -->
         <div class="bi-topbar">
@@ -347,7 +347,7 @@
         <!-- Filter Bar -->
         <form id="bi-filter-form" class="bi-filter-bar">
             <div class="bi-fi">
-                <label>Año Fiscal</label>
+                <label for="bi_filter_ano">Año Fiscal</label>
                 <select name="ano" id="bi_filter_ano">
                     <option value="">Todos los años</option>
                     {% for y in range(2022, 2027) %}
@@ -356,7 +356,7 @@
                 </select>
             </div>
             <div class="bi-fi">
-                <label>Mes</label>
+                <label for="bi_filter_mes">Mes</label>
                 <select name="mes" id="bi_filter_mes">
                     <option value="">Toda la gestión</option>
                     {% set meses=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"] %}
@@ -366,7 +366,7 @@
                 </select>
             </div>
             <div class="bi-fi">
-                <label>Compañía</label>
+                <label for="bi_filter_compania">Compañía</label>
                 <select name="compania_id" id="bi_filter_compania">
                     <option value="">Todas</option>
                     {% for c in filtros.companias %}
@@ -375,7 +375,7 @@
                 </select>
             </div>
             <div class="bi-fi">
-                <label>Ramo</label>
+                <label for="bi_filter_ramo">Ramo</label>
                 <select name="ramo" id="bi_filter_ramo">
                     <option value="">Todos los ramos</option>
                     {% for item in filtros.ramos %}
@@ -384,7 +384,7 @@
                 </select>
             </div>
             <div class="bi-fi">
-                <label>Ejecutivo</label>
+                <label for="bi_filter_ejecutivo">Ejecutivo</label>
                 <select name="ejecutivo_id" id="bi_filter_ejecutivo">
                     <option value="">Todos</option>
                     {% for e in filtros.ejecutivos %}
@@ -683,7 +683,7 @@
             </div>
         </div>
 
-    </main><!-- /bi-main -->
+    </div><!-- /bi-main -->
 </div><!-- /bi-shell -->
 {% endblock %}
 

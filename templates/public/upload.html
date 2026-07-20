@@ -302,7 +302,7 @@
             </select>
           </div>
           <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="applyBulkExecutive()"
-                  title="Asignar a seleccionados">
+                  title="Asignar a seleccionados" aria-label="Asignar a seleccionados">
             <i class="bi bi-check-all"></i>
           </button>
         </div>
@@ -625,8 +625,8 @@ function buildRowHtml(r) {
     <span class="status-icon"></span>
     <span class="reason-txt ${cfg.rc}" title="${r.reason||''}">${r.reason||''}</span>
     <div class="mt-1 d-flex gap-1">
-      <button class="btn btn-xs btn-outline-primary rounded-pill edit-btn" data-idx="${i}"><i class="bi bi-pencil"></i></button>
-      <button class="btn btn-xs btn-outline-warning rounded-pill retry-btn d-none" data-idx="${i}"><i class="bi bi-arrow-clockwise"></i></button>
+      <button class="btn btn-xs btn-outline-primary rounded-pill edit-btn" data-idx="${i}" aria-label="Editar"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-xs btn-outline-warning rounded-pill retry-btn d-none" data-idx="${i}" aria-label="Reintentar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </td>
 </tr>`;

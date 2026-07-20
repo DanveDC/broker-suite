@@ -96,7 +96,7 @@
     <div class="card-body">
         <div class="row mb-3">
             <div class="col-md-2">
-                <label class="form-label">Mes</label>
+                <label class="form-label" for="filtro_mes">Mes</label>
                 <select id="filtro_mes" class="form-select">
                     <option value="">Todos</option>
                     <option value="1">Enero</option>
@@ -114,11 +114,11 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Año</label>
+                <label class="form-label" for="filtro_ano">Año</label>
                 <input type="number" id="filtro_ano" class="form-control" placeholder="Ej: 2026">
             </div>
             <div class="col-md-3">
-                <label class="form-label">Asegurado</label>
+                <label class="form-label" for="filtro_asegurado">Asegurado</label>
                 <select id="filtro_asegurado" class="form-select">
                     <option value="">Todos</option>
                     {% for asegurado in asegurados %}
@@ -127,7 +127,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Estado Pago</label>
+                <label class="form-label" for="filtro_estado">Estado Pago</label>
                 <select id="filtro_estado" class="form-select">
                     <option value="">Todos</option>
                     <option value="PAGADO">Pagados</option>
@@ -138,7 +138,7 @@
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button id="filter" class="btn btn-primary me-2">Filtrar</button>
-                <button id="exportExcel" class="btn btn-success text-white" disabled>
+                <button id="exportExcel" class="btn btn-success text-white" disabled aria-label="Exportar a Excel">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i>
                 </button>
             </div>
@@ -179,15 +179,15 @@
                 <form id="pagoForm">
                     <input type="hidden" id="pagoId" name="pagoId">
                     <div class="mb-3">
-                        <label class="form-label">Fecha de Cuota</label>
+                        <label class="form-label" for="fecha">Fecha de Cuota</label>
                         <input type="date" class="form-control" id="fecha" name="fecha" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Monto ($)</label>
+                        <label class="form-label" for="monto">Monto ($)</label>
                         <input type="text" class="form-control" id="monto" name="monto" readonly>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Moneda</label>
+                        <label class="form-label" for="moneda">Moneda</label>
                         <select id="moneda" class="form-select" name="moneda" required>
                             <option value="">Seleccione</option>
                             <option value="$">Dolar</option>
@@ -195,27 +195,27 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Método de Pago</label>
+                        <label class="form-label" for="metodoPago">Método de Pago</label>
                         <select id="metodoPago" class="form-select" name="metodoPago" required></select>
                     </div>
                     <div id="tasaAndBsContainer" style="display: none;" class="mb-3">
                         <div class="row">
                             <div class="col-md-6">
-                                <label class="form-label">Monto Bs</label>
+                                <label class="form-label" for="montoBs">Monto Bs</label>
                                 <input type="text" class="form-control" id="montoBs" name="montoBs">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Tasa</label>
+                                <label class="form-label" for="tasa">Tasa</label>
                                 <input type="text" class="form-control" id="tasa" name="tasa" readonly>
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Fecha Pagada</label>
+                        <label class="form-label" for="fecha_pagada">Fecha Pagada</label>
                         <input type="date" class="form-control" id="fecha_pagada" name="fecha_pagada" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nro Recibo / Referencia</label>
+                        <label class="form-label" for="nro_recibo">Nro Recibo / Referencia</label>
                         <input type="text" class="form-control" id="nro_recibo" name="nro_recibo" required>
                     </div>
                     <input type="hidden" id="nro_cuota" name="nro_cuota">
@@ -397,7 +397,7 @@
 
                         let revertirBtn = '';
                         if (row.estado === 'PAGADO') {
-                            revertirBtn = `<button class="btn btn-secondary btn-sm text-white me-1" onclick="revertirAProceso('${row.cod_pago}')" title="Poner en Proceso"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+                            revertirBtn = `<button class="btn btn-secondary btn-sm text-white me-1" onclick="revertirAProceso('${row.cod_pago}')" title="Poner en Proceso" aria-label="Poner en Proceso"><i class="bi bi-arrow-counterclockwise"></i></button>`;
                         }
 
                         let buttonHtml = '';
@@ -412,7 +412,7 @@
                                 <a href="/Pagos_poliza/${row.Cod_renovacion}/0/1" class="btn btn-info btn-sm text-white" title="Ir a la vista detallada de pagos de esta póliza"><i class="bi bi-eye"></i> Ir a pagos</a>
                                 ${revertirBtn}
                                 ${buttonHtml}
-                                <button class="dropdown-btn btn btn-sm btn-secondary" data-pago-id="${row.cod_pago}" title="Más opciones">
+                                <button class="dropdown-btn btn btn-sm btn-secondary" data-pago-id="${row.cod_pago}" title="Más opciones" aria-label="Más opciones">
                                     <i class="bi bi-chevron-down"></i>
                                 </button>
                             </div>

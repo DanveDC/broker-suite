@@ -85,7 +85,7 @@
                                     data-producto="{{ rule.producto }}" data-tipo_ejecutivo="{{ rule.tipo_ejecutivo }}"
                                     data-cod_ejecutivo="{{ rule.cod_ejecutivo if rule.cod_ejecutivo else '' }}"
                                     data-porcentajes="{{ rule.porcentajes }}" data-bs-toggle="modal"
-                                    data-bs-target="#editRuleModal">
+                                    data-bs-target="#editRuleModal" aria-label="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <a href="{{ url_for('delete_comision_config', id=rule.id) }}"

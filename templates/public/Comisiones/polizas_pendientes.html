@@ -88,7 +88,7 @@
                             <td class="text-center pe-4">
                                 <div class="d-flex justify-content-center gap-2">
                                     <button class="btn btn-outline-info btn-action"
-                                        onclick="verificarExistencia('{{ p.id }}')" title="Verificar si ya existe">
+                                        onclick="verificarExistencia('{{ p.id }}')" title="Verificar si ya existe" aria-label="Verificar si ya existe">
                                         <i class="bi bi-arrow-repeat"></i>
                                     </button>
                                     <a href="{{ url_for('gestionar_pendiente', id_pendiente=p.id) }}"
@@ -96,7 +96,7 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <button class="btn btn-outline-danger btn-action"
-                                        onclick="eliminarPendiente('{{ p.id }}')" title="Descartar">
+                                        onclick="eliminarPendiente('{{ p.id }}')" title="Descartar" aria-label="Descartar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>

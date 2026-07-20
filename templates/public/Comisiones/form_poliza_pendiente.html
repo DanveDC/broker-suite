@@ -143,78 +143,78 @@
 
                         <div class="row g-3 mb-5">
                             <div class="col-md-3">
-                                <label class="form-label">Identificación</label>
+                                <label class="form-label" for="Cedula_asegurado">Identificación</label>
                                 <div class="input-group">
-                                    <select class="form-select" name="tipo" style="max-width: 80px;">
+                                    <select class="form-select" name="tipo" style="max-width: 80px;" aria-label="Tipo de identificación">
                                         <option value="V">V</option>
                                         <option value="J">J</option>
                                         <option value="M">M</option>
                                         <option value="E">E</option>
                                     </select>
-                                    <input type="text" class="form-control" name="Cedula_asegurado" placeholder="Número"
+                                    <input type="text" class="form-control" id="Cedula_asegurado" name="Cedula_asegurado" placeholder="Número"
                                         required>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Primer Nombre</label>
-                                <input type="text" class="form-control" name="nombre_asegurado"
+                                <label class="form-label" for="nombre_asegurado">Primer Nombre</label>
+                                <input type="text" class="form-control" id="nombre_asegurado" name="nombre_asegurado"
                                     value="{{ detalle.nombre_cliente.split(' ')[0] if detalle.nombre_cliente else '' }}"
                                     required>
                             </div>
                             <div class="col-md-5">
-                                <label class="form-label">Segundo Nombre</label>
-                                <input type="text" class="form-control" name="nombre_asegurado2">
+                                <label class="form-label" for="nombre_asegurado2">Segundo Nombre</label>
+                                <input type="text" class="form-control" id="nombre_asegurado2" name="nombre_asegurado2">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Primer Apellido</label>
-                                <input type="text" class="form-control" name="apellido_asegurado" required>
+                                <label class="form-label" for="apellido_asegurado">Primer Apellido</label>
+                                <input type="text" class="form-control" id="apellido_asegurado" name="apellido_asegurado" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Segundo Apellido</label>
-                                <input type="text" class="form-control" name="apellido_asegurado2">
+                                <label class="form-label" for="apellido_asegurado2">Segundo Apellido</label>
+                                <input type="text" class="form-control" id="apellido_asegurado2" name="apellido_asegurado2">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Sexo</label>
-                                <select class="form-select" name="sexo_asegurado">
+                                <label class="form-label" for="sexo_asegurado">Sexo</label>
+                                <select class="form-select" id="sexo_asegurado" name="sexo_asegurado">
                                     <option value="">Seleccione...</option>
                                     <option value="1">Masculino</option>
                                     <option value="2">Femenino</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">F. Nacimiento</label>
-                                <input type="date" class="form-control" name="fecha_nacimiento">
+                                <label class="form-label" for="fecha_nacimiento">F. Nacimiento</label>
+                                <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" name="email_asegurado"
+                                <label class="form-label" for="email_asegurado">Email</label>
+                                <input type="email" class="form-control" id="email_asegurado" name="email_asegurado"
                                     placeholder="email@ext.com">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Teléfono</label>
+                                <label class="form-label" for="telefono_asegurado_numero">Teléfono</label>
                                 <div class="input-group">
-                                    <select class="form-select" name="prefijo_telefono" style="max-width: 90px;">
+                                    <select class="form-select" name="prefijo_telefono" style="max-width: 90px;" aria-label="Prefijo telefónico">
                                         <option value="414">414</option>
                                         <option value="424">424</option>
                                         <option value="412">412</option>
                                         <option value="416">416</option>
                                         <option value="212">212</option>
                                     </select>
-                                    <input type="text" class="form-control" name="telefono_asegurado_numero"
+                                    <input type="text" class="form-control" id="telefono_asegurado_numero" name="telefono_asegurado_numero"
                                         placeholder="1234567">
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Profesión</label>
-                                <select class="form-select" name="Profesion">
+                                <label class="form-label" for="Profesion">Profesión</label>
+                                <select class="form-select" id="Profesion" name="Profesion">
                                     <option value="Profesion BR">Profesion BR</option>
                                     <option value="Profesion MR">Profesion MR</option>
                                     <option value="Profesion AR">Profesion AR</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Estado/Localidad</label>
-                                <select class="form-select" name="localidad">
+                                <label class="form-label" for="localidad">Estado/Localidad</label>
+                                <select class="form-select" id="localidad" name="localidad">
                                     <option value="Amazonas">Amazonas</option>
                                     <option value="Anzoátegui">Anzoátegui</option>
                                     <option value="Apure">Apure</option>
@@ -243,8 +243,8 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Canal de Registro</label>
-                                <select class="form-select" name="Canal">
+                                <label class="form-label" for="Canal">Canal de Registro</label>
+                                <select class="form-select" id="Canal" name="Canal">
                                     <option value="Cara a cara">Cara a Cara/convencional</option>
                                     <option value="Internet">Internet</option>
                                     <option value="Correos con dominios privados">Correos con dominios privados</option>
@@ -252,8 +252,8 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Ejecutivo</label>
-                                <select class="form-select select2-search" name="Ejecutivo" required>
+                                <label class="form-label" for="Ejecutivo">Ejecutivo</label>
+                                <select class="form-select select2-search" id="Ejecutivo" name="Ejecutivo" required>
                                     <option value="">Seleccione...</option>
                                     {% for e in ejecutivos %}
                                     <option value="{{ e.cod_ejecutivo }}">{{ e.Nombre }} {{ e.Apellido }}</option>
@@ -270,12 +270,12 @@
 
                         <div class="row g-3 mb-5">
                             <div class="col-md-4">
-                                <label class="form-label">Número de Póliza</label>
-                                <input type="text" class="form-control fw-bold" name="numero_poliza"
+                                <label class="form-label" for="numero_poliza">Número de Póliza</label>
+                                <input type="text" class="form-control fw-bold" id="numero_poliza" name="numero_poliza"
                                     value="{{ detalle.nro_poliza }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Compañía</label>
+                                <label class="form-label" for="companyS">Compañía</label>
                                 <select class="form-select select2-search" id="companyS" name="company" required>
                                     <option value="">Seleccione...</option>
                                     {% for c in companias %}
@@ -286,13 +286,13 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Tomador</label>
-                                <input type="text" class="form-control" name="Tomador"
+                                <label class="form-label" for="Tomador">Tomador</label>
+                                <input type="text" class="form-control" id="Tomador" name="Tomador"
                                     value="{{ detalle.nombre_cliente }}">
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">Ramo</label>
+                                <label class="form-label" for="mySelect">Ramo</label>
                                 <select class="form-select select2-search" id="mySelect" name="Ramo" required>
                                     <option value="">Seleccione...</option>
                                     <option value="Persona">Persona</option>
@@ -303,32 +303,32 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Sub-Ramo</label>
+                                <label class="form-label" for="subRamo">Sub-Ramo</label>
                                 <select class="form-select select2-search" id="subRamo" name="SubRamo" required>
                                     <option value="">Seleccione...</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Producto / Plan</label>
+                                <label class="form-label" for="producto">Producto / Plan</label>
                                 <select class="form-select select2-search" id="producto" name="producto" required>
                                     <option value="">Seleccione...</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Cobertura</label>
-                                <input type="text" class="form-control" name="Cobertura"
+                                <label class="form-label" for="Cobertura">Cobertura</label>
+                                <input type="text" class="form-control" id="Cobertura" name="Cobertura"
                                     value="{{ detalle.descripcion or 'COBERTURA BASICA' }}">
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">Fecha Emisión</label>
-                                <input type="date" class="form-control" name="fecha_emision"
+                                <label class="form-label" for="fecha_emision">Fecha Emisión</label>
+                                <input type="date" class="form-control" id="fecha_emision" name="fecha_emision"
                                     value="{{ detalle.fecha_cobro.strftime('%Y-%m-%d') if detalle.fecha_cobro else '' }}"
                                     required>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Frecuencia de Pago</label>
-                                <select class="form-select" name="Frecuencia" required>
+                                <label class="form-label" for="Frecuencia">Frecuencia de Pago</label>
+                                <select class="form-select" id="Frecuencia" name="Frecuencia" required>
                                     <option value="1">Anual</option>
                                     <option value="2">Mensual</option>
                                     <option value="3">Trimestral</option>
@@ -338,15 +338,15 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Prima Total ($)</label>
+                                <label class="form-label" for="prima">Prima Total ($)</label>
                                 {% set prima_val = detalle.monto_prima|default(0)|float %}
                                 <input type="text" class="form-control" id="prima" name="prima"
                                     value="{{ '{:,.2f}'.format(prima_val).replace(',', 'X').replace('.', ',').replace('X', '.') }}"
                                     required>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Canal de Venta</label>
-                                <select class="form-select" name="Tipo_venta">
+                                <label class="form-label" for="Tipo_venta">Canal de Venta</label>
+                                <select class="form-select" id="Tipo_venta" name="Tipo_venta">
                                     <option value="1">Emisión Tradicional</option>
                                     <option value="2">Venta Interna</option>
                                     <option value="3">Pago Directo</option>
@@ -364,30 +364,30 @@
                             <div class="row g-3 mb-5">
                                 <!-- AUTO -->
                                 <div class="col-md-3 dynamic-field" id="camposAuto">
-                                    <label class="form-label">Marca</label>
-                                    <input type="text" class="form-control" name="Marca">
+                                    <label class="form-label" for="Marca">Marca</label>
+                                    <input type="text" class="form-control" id="Marca" name="Marca">
                                 </div>
                                 <div class="col-md-3 dynamic-field" id="camposAuto3">
-                                    <label class="form-label">Modelo</label>
-                                    <input type="text" class="form-control" name="Modelo">
+                                    <label class="form-label" for="Modelo">Modelo</label>
+                                    <input type="text" class="form-control" id="Modelo" name="Modelo">
                                 </div>
                                 <div class="col-md-3 dynamic-field" id="camposAuto2">
-                                    <label class="form-label">Año</label>
-                                    <input type="number" class="form-control" name="Ano" min="1980" max="2030">
+                                    <label class="form-label" for="Ano">Año</label>
+                                    <input type="number" class="form-control" id="Ano" name="Ano" min="1980" max="2030">
                                 </div>
                                 <div class="col-md-3 dynamic-field" id="camposAuto4">
-                                    <label class="form-label">Placa</label>
-                                    <input type="text" class="form-control" name="placa">
+                                    <label class="form-label" for="placa">Placa</label>
+                                    <input type="text" class="form-control" id="placa" name="placa">
                                 </div>
                                 <!-- PATRIMONIO -->
                                 <div class="col-md-12 dynamic-field" id="camposPatrimonio">
-                                    <label class="form-label">Dirección del Riesgo</label>
-                                    <input type="text" class="form-control" name="direccion">
+                                    <label class="form-label" for="direccion">Dirección del Riesgo</label>
+                                    <input type="text" class="form-control" id="direccion" name="direccion">
                                 </div>
                                 <!-- VIAJE -->
                                 <div class="col-md-4 dynamic-field" id="camposViaje">
-                                    <label class="form-label">Nro. de Pasaporte</label>
-                                    <input type="text" class="form-control" name="pasaporte">
+                                    <label class="form-label" for="pasaporte">Nro. de Pasaporte</label>
+                                    <input type="text" class="form-control" id="pasaporte" name="pasaporte">
                                 </div>
                             </div>
                         </div>

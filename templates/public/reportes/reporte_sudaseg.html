@@ -391,7 +391,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     <!-- ══ FILTER BAR ══ -->
     <form method="GET" action="{{ url_for('reporte_sudaseg') }}" class="filter-bar">
         <div class="filter-group">
-            <label class="filter-label">Mes</label>
+            <label class="filter-label" for="mes">Mes</label>
             <select class="f-select" id="mes" name="mes" required>
                 <option value="">— Mes —</option>
                 {% set meses_nombres = {'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'} %}
@@ -401,7 +401,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">Año</label>
+            <label class="filter-label" for="ano">Año</label>
             <select class="f-select" id="ano" name="ano" required>
                 {% for y in range(2023, 2030) %}
                 <option value="{{ y }}" {% if ano==y|string %}selected{% endif %}>{{ y }}</option>

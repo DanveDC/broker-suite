@@ -70,7 +70,7 @@
 
       <div id="filtroMesDiv" class="filter-date-container">
         <div class="input-group">
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-fecha" style="display:none;" title="Borrar filtro">
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-fecha" style="display:none;" title="Borrar filtro" aria-label="Borrar filtro">
             <i class="fas fa-times"></i>
           </button>
           <input type="month" id="datepicker" class="form-control" title="Seleccione Mes y Año">
@@ -79,7 +79,7 @@
 
       <div id="filtroAnioDiv" class="filter-date-container" style="display:none;">
         <div class="input-group">
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-anio" style="display:none;" title="Borrar filtro">
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-anio" style="display:none;" title="Borrar filtro" aria-label="Borrar filtro">
             <i class="fas fa-times"></i>
           </button>
           <input type="number" id="yearpicker" class="form-control" placeholder="Ej: 2024" min="2000" max="2100" title="Ingrese Año">
@@ -94,7 +94,7 @@
           <div class="input-group input-group-sm">
             <span class="input-group-text" style="width: 50px;">Al</span>
             <input type="date" id="fechaFin" class="form-control" title="Fecha de fin">
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-rango" style="display:none;" title="Borrar filtro">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-borrar-rango" style="display:none;" title="Borrar filtro" aria-label="Borrar filtro">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -102,7 +102,7 @@
     </div>
 
     <div class="col-md-3 py-2">
-      <label class="form-label fw-bold">Estados</label>
+      <label class="form-label fw-bold" for="statusFilter">Estados</label>
       <select id="statusFilter" class="form-select select2-search" multiple="multiple" data-placeholder="Seleccionar estados">
         <option value="Vigente">Vigente</option>
         <option value="Pendiente">Pendiente</option>
@@ -114,7 +114,7 @@
     </div>
 
     <div class="col-md-3 py-2">
-      <label class="form-label fw-bold">Aseguradora</label>
+      <label class="form-label fw-bold" for="companiaFilter">Aseguradora</label>
       <select id="companiaFilter" class="form-select">
         <option value="">Todas las Aseguradoras</option>
         {% for cia in companias %}
@@ -124,7 +124,7 @@
     </div>
 
     <div class="col-md-3 py-2">
-      <label class="form-label fw-bold">Ejecutivo</label>
+      <label class="form-label fw-bold" for="ejecutivoFilter">Ejecutivo</label>
       <select id="ejecutivoFilter" class="form-select">
         <option value="">Todos los Ejecutivos</option>
         {% for ejec in ejecutivos %}
@@ -250,7 +250,7 @@
               <div class="d-flex gap-1">
                 <a href="/detalles-poliza/${row.cod_poliza}" class="btn btn-info btn-sm text-white" title="Ver Detalles"><i class="bi bi-eye"></i></a>
                 <a href="/Pagos_poliza/${row.cod_poliza}" class="btn btn-success btn-sm" title="Ver pagos"><i class="bi bi-arrow-clockwise"></i></a>
-                <button onclick="eliminarPoliza('${row.cod_poliza}')" class="btn btn-danger btn-sm" title="Eliminar"><i class="bi bi-trash3"></i></button>
+                <button onclick="eliminarPoliza('${row.cod_poliza}')" class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash3"></i></button>
               </div>
             `;
           }

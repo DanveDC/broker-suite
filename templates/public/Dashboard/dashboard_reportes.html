@@ -340,7 +340,7 @@
     <!-- ═══ FILTERS ═══ -->
     <div class="filter-bar">
         <div class="filter-group">
-            <label class="filter-label">Año Fiscal</label>
+            <label class="filter-label" for="filter_ano">Año Fiscal</label>
             <select id="filter_ano" class="f-select">
                 <option value="">Todos</option>
                 {% for item in filtros.anos %}
@@ -349,7 +349,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">Mes</label>
+            <label class="filter-label" for="filter_mes">Mes</label>
             <select id="filter_mes" class="f-select">
                 <option value="">Toda la gestión</option>
                 {% set meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] %}
@@ -359,7 +359,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">Aseguradora</label>
+            <label class="filter-label" for="filter_compania">Aseguradora</label>
             <select id="filter_compania" class="f-select">
                 <option value="">Todas las compañías</option>
                 {% for item in filtros.companias %}
@@ -368,7 +368,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">Ramo</label>
+            <label class="filter-label" for="filter_ramo">Ramo</label>
             <select id="filter_ramo" class="f-select">
                 <option value="">Todos los ramos</option>
                 {% for item in filtros.ramos %}
@@ -377,7 +377,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">Consultor / Ejecutivo</label>
+            <label class="filter-label" for="filter_ejecutivo">Consultor / Ejecutivo</label>
             <select id="filter_ejecutivo" class="f-select">
                 <option value="">Todos los ejecutivos</option>
                 {% for item in filtros.ejecutivos %}
