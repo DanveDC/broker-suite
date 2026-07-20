@@ -505,9 +505,11 @@
 
     if (tabla.style.display === "none") {
       tabla.style.display = "table";
+      tabla.classList.add("table-fade-in"); /* Fade-in al mostrarse (ver my_style.css) */
       flecha.style.transform = "rotate(180deg)"; /* Gira la flecha */
     } else {
       tabla.style.display = "none";
+      tabla.classList.remove("table-fade-in");
       flecha.style.transform = "rotate(0deg)"; /* Restablece la flecha */
     }
   }
@@ -518,9 +520,11 @@
 
     if (tabla.style.display === "none") {
       tabla.style.display = "table";
+      tabla.classList.add("table-fade-in"); /* Fade-in al mostrarse (ver my_style.css) */
       flecha.style.transform = "rotate(180deg)"; /* Gira la flecha */
     } else {
       tabla.style.display = "none";
+      tabla.classList.remove("table-fade-in");
       flecha.style.transform = "rotate(0deg)"; /* Restablece la flecha */
     }
   }

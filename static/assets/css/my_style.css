@@ -938,11 +938,88 @@ label {
 /* Respeta la preferencia de movimiento reducido del sistema */
 @media (prefers-reduced-motion: reduce) {
   .btn, .menu-vertical .menu-link, .alert,
-  .input_vacio, .input_lleno, .card, .table tbody tr {
+  .input_vacio, .input_lleno, .card, .table tbody tr,
+  .dropdown-menu, .table-fade-in, .dataTables_processing, .dt-processing {
     animation: none !important;
     transition: none !important;
   }
   .btn.is-loading::after { animation: none !important; border-top-color: transparent; }
+  /* Sin reduced motion, el show/hide del dropdown sigue siendo instantaneo
+     via opacity/visibility (0 <-> 1), solo se pierde la transicion suave.
+     .dataTables_processing/.dt-processing arrancan en opacity:0 para el
+     fade-in por animation; sin animation hay que forzar el estado final visible. */
+  .dataTables_processing,
+  .dt-processing {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+
+/* --------------------------------------------------------
+   23. Dropdowns — fade + slide en vez de aparecer de golpe
+   -------------------------------------------------------- */
+
+/* Bootstrap alterna la clase .show sobre .dropdown-menu (no display inline),
+   asi que se puede animar con opacity/transform. display:none no es
+   animable, asi que se reemplaza por visibility+opacity para que la
+   transicion pueda correr en ambas direcciones (mostrar y ocultar).
+   pointer-events evita que el menu sea clickeable mientras esta oculto.
+   El transform queda inerte cuando Popper.js posiciona el menu via
+   transform inline (tiene prioridad sobre la regla de clase), pero no
+   rompe nada: Popper siempre gana por ser estilo inline. */
+.dropdown-menu {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+}
+
+.dropdown-menu.show {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* --------------------------------------------------------
+   24. Toggles de tabla tipo acordeon (filas/tablas ocultas por JS)
+   -------------------------------------------------------- */
+
+/* Reutilizable: se agrega/quita junto con el cambio de display ya
+   existente en el JS (Pagos.html, detalles_polizaAuto/Persona/Patrimonial),
+   asi la fila/tabla no aparece de golpe al pasar de display:none a visible. */
+.table-fade-in {
+  animation: tableFadeIn 0.2s ease;
+}
+
+@keyframes tableFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------
+   25. DataTables — overlay de "processing" acorde al resto de la app
+   -------------------------------------------------------- */
+/* .dt-processing cubre DataTables 2.x (renombro interno de la clase);
+   .dataTables_processing queda por compatibilidad con configuraciones/plugins viejos. */
+.dataTables_processing,
+.dt-processing {
+  background-color: var(--card-bg) !important;
+  box-shadow: var(--card-shadow);
+  border-radius: var(--radius-md);
+  border: none !important;
+  color: #697a8d;
+  font-weight: 500;
+  opacity: 0;
+  animation: processingFadeIn 0.2s ease forwards;
+}
+
+@keyframes processingFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 

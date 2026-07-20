@@ -20,6 +20,14 @@
     .dropdown-row.show {
         display: table-row;
         /* Mostrar como una fila de tabla */
+        animation: tableFadeIn 0.2s ease;
+        /* Reusa @keyframes tableFadeIn de my_style.css para que no aparezca de golpe */
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .dropdown-row.show {
+            animation: none;
+        }
     }
 
     .dropdown-row>div {

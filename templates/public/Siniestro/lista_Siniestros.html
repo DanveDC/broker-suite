@@ -182,6 +182,12 @@
 
     $(document).ready(function () {
         $("#filtrar").click(function () {
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            // Feedback de carga (mismo patrón que lista_comisiones.html: spinner-border + cambio de texto)
+            $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Filtrando...');
+            $btn.prop('disabled', true);
+
             const tipoCedula = $("#filtro_cedula").val();
             const cedula = $("#search_cedula").val();
             const estadoSiniestro = $("#filtro_estado").val();
@@ -270,6 +276,11 @@
                 },
                 error: function (error) {
                     console.error("Error en la solicitud AJAX:", error);
+                },
+                complete: function () {
+                    // Restaura el botón sea éxito o error (equivalente al finally de lista_comisiones.html)
+                    $btn.html(originalHtml);
+                    $btn.prop('disabled', false);
                 }
             });
         });
