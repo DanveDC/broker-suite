@@ -8853,3 +8853,145 @@ def guardar_siniestros_batch(siniestros_data):
     except Exception as e:
         print(f"Error en guardar_siniestros_batch: {e}")
         return {'success': False, 'error': str(e)}
+
+# ---- Catálogo de Productos ----
+
+def sql_lista_catalogo_producto():
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = ("""
+                    SELECT
+                         cp.id,
+                         cp.Cod_compania,
+                         c.Nombre,
+                         cp.base,
+                         cp.Ramo,
+                         cp.Subramo,
+                         cp.Producto,
+                         cp.activo
+                    FROM catalogo_producto AS cp
+                    INNER JOIN compania AS c ON c.Cod_compania = cp.Cod_compania
+                    ORDER BY c.Nombre, cp.Ramo, cp.Subramo, cp.Producto
+                    """)
+                cursor.execute(querySQL,)
+                catalogobd = cursor.fetchall()
+
+        return catalogobd
+    except Exception as e:
+        print(
+            f"Error en la función sql_lista_catalogo_producto: {e}")
+        return None
+
+def sql_catalogo_producto_detalle(id):
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = ("""
+                    SELECT
+                         cp.id,
+                         cp.Cod_compania,
+                         c.Nombre,
+                         cp.base,
+                         cp.Ramo,
+                         cp.Subramo,
+                         cp.Producto,
+                         cp.activo
+                    FROM catalogo_producto AS cp
+                    INNER JOIN compania AS c ON c.Cod_compania = cp.Cod_compania
+                    WHERE cp.id = %s
+                    """)
+                cursor.execute(querySQL, (id,))
+                catalogobd = cursor.fetchone()
+
+        return catalogobd
+    except Exception as e:
+        print(
+            f"Error en la función sql_catalogo_producto_detalle: {e}")
+        return None
+
+def sql_lista_company_para_catalogo():
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = ("""
+                    SELECT
+                         Cod_compania,
+                         Nombre
+                    FROM compania
+                    ORDER BY Nombre
+                    """)
+                cursor.execute(querySQL,)
+                companybd = cursor.fetchall()
+
+        return companybd
+    except Exception as e:
+        print(
+            f"Error en la función sql_lista_company_para_catalogo: {e}")
+        return None
+
+def sql_insertar_catalogo_producto(data):
+    try:
+        if not data.get('Cod_compania') or not data.get('base') or not data.get('Ramo') or not data.get('Subramo') or not data.get('Producto'):
+            return {'success': False, 'message': 'Todos los campos son obligatorios.'}
+
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                sql = "INSERT INTO catalogo_producto (Cod_compania, base, Ramo, Subramo, Producto) VALUES (%s, %s, %s, %s, %s)"
+                valores = (
+                    data.get('Cod_compania'),
+                    data.get('base'),
+                    data.get('Ramo'),
+                    data.get('Subramo'),
+                    data.get('Producto'),
+                )
+                cursor.execute(sql, valores)
+                conexion_MySQLdb.commit()
+                return {'success': True, 'message': 'Producto registrado exitosamente.'}
+
+    except Exception as e:
+        return {'success': False, 'message': f'Error inesperado en sql_insertar_catalogo_producto: {str(e)}'}
+
+def sql_actualizar_catalogo_producto(id, data):
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = """
+                        UPDATE catalogo_producto
+                        SET
+                            Cod_compania = %s,
+                            base = %s,
+                            Ramo = %s,
+                            Subramo = %s,
+                            Producto = %s
+                        WHERE id = %s
+                    """
+                values = (
+                    data.get('Cod_compania'),
+                    data.get('base'),
+                    data.get('Ramo'),
+                    data.get('Subramo'),
+                    data.get('Producto'),
+                    id,
+                )
+                cursor.execute(querySQL, values)
+                conexion_MySQLdb.commit()
+                return {'success': True, 'message': 'Producto actualizado exitosamente.'}
+    except Exception as e:
+        print(f"Ocurrió un error en sql_actualizar_catalogo_producto: {e}")
+        return {'success': False, 'message': f'Error inesperado en sql_actualizar_catalogo_producto: {str(e)}'}
+
+def sql_toggle_activo_catalogo_producto(id):
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = "UPDATE catalogo_producto SET activo = NOT activo WHERE id = %s"
+                cursor.execute(querySQL, (id,))
+                conexion_MySQLdb.commit()
+                if cursor.rowcount:
+                    return {'success': True, 'message': 'Estado del producto actualizado correctamente.'}
+                else:
+                    return {'success': False, 'message': 'No se encontró el producto indicado.'}
+    except Exception as e:
+        print(f"Error en sql_toggle_activo_catalogo_producto: {e}")
+        return {'success': False, 'message': f'Error inesperado en sql_toggle_activo_catalogo_producto: {str(e)}'}

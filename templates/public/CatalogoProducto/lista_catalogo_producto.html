@@ -1,0 +1,164 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Lista de catálogo de productos{% endblock %}
+
+{% block customCSS %}
+<style>
+  tr.catalogo-inactivo td:not(.catalogo-acciones) {
+    text-decoration: line-through;
+    opacity: .6;
+  }
+</style>
+{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+
+<div class="alert alert-info alert-dismissible d-flex align-items-center mb-3" role="alert">
+  <i class="bx bx-info-circle me-2 fs-5"></i>
+  <div>
+    <strong>Gestión de Producto</strong><br>
+    Administrá el catálogo de productos por compañía: definí los <strong>Ramos</strong>, <strong>Subramos</strong> y
+    <strong>Productos</strong> disponibles para cada aseguradora, usados luego al registrar pólizas.
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+</div>
+
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">LISTA DE CATÁLOGO DE PRODUCTOS</h3>
+  </div>
+
+  <div class="row justify-content-between align-items-center mb-3 mt-3 mx-3">
+    <div class="col-md-3">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="search_catalogo" class="form-control" placeholder="Buscar en el catálogo...">
+      </div>
+    </div>
+    <div class="col-md-auto ms-auto">
+      <a href="/registrar-catalogo-producto" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i>
+        Agregar Producto
+      </a>
+    </div>
+  </div>
+
+  {% if catalogo %}
+  <div class="row justify-content-center mb-2">
+    <div class="table-responsive text-nowrap table-hover">
+      <table table-hover id="catalogoProducto" class="table table-striped table-bordered" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>Compañía</th>
+            <th>Base</th>
+            <th>Ramo</th>
+            <th>Subramo</th>
+            <th>Producto</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in catalogo %}
+          <tr id="catalogo_{{ item.id }}" class="{{ 'catalogo-inactivo' if not item.activo else '' }}">
+            <td>{{ item.Nombre }}</td>
+            <td>{{ 'Nacional' if item.base == 'nacional' else 'Internacional' }}</td>
+            <td>{{ item.Ramo }}</td>
+            <td>{{ item.Subramo }}</td>
+            <td>{{ item.Producto }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if item.activo else 'bg-secondary' }} estado-badge">
+                {{ 'Activo' if item.activo else 'Inactivo' }}
+              </span>
+            </td>
+            <td width="10px" class="catalogo-acciones">
+              <a href="/editar-catalogo-producto/{{ item.id }}" class="btn btn-success btn-sm" data-bs-toggle="tooltip"
+                data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>Editar producto</span>">
+                <i class="bi bi-pencil-square"></i>
+                Editar
+              </a>
+              <button type="button"
+                class="btn btn-sm {{ 'btn-outline-secondary' if item.activo else 'btn-outline-success' }} btn-toggle-activo"
+                data-id="{{ item.id }}"
+                aria-label="{{ 'Desactivar' if item.activo else 'Activar' }} el producto {{ item.Producto }} de {{ item.Nombre }}">
+                <i class="bi bi-toggle-{{ 'on' if item.activo else 'off' }}"></i>
+                {{ 'Desactivar' if item.activo else 'Activar' }}
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center">No hay productos registrados en el catálogo</h3>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+<!--Script Custom-->
+{% block customJS %}
+<script>
+  $(document).ready(function () {
+
+    // Buscador en tiempo real: filtra por cualquier columna visible
+    $('#search_catalogo').on('keyup', function () {
+      var value = $(this).val().toLowerCase();
+      $('#catalogoProducto tbody tr').filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+      });
+    });
+
+    // Activar / Desactivar producto vía AJAX, sin recargar la página
+    $(document).on('click', '.btn-toggle-activo', function () {
+      const $btn = $(this);
+      const id = $btn.data('id');
+      const $fila = $btn.closest('tr');
+      const originalHtml = $btn.html();
+
+      $btn.prop('disabled', true);
+      $btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+
+      $.ajax({
+        url: '/toggle-activo-catalogo-producto',
+        type: 'POST',
+        data: { id: id },
+        success: function (response) {
+          if (response.success) {
+            const estabaActivo = !$fila.hasClass('catalogo-inactivo');
+            const nuevoActivo = !estabaActivo;
+
+            $fila.toggleClass('catalogo-inactivo');
+
+            const $badge = $fila.find('.estado-badge');
+            $badge.text(nuevoActivo ? 'Activo' : 'Inactivo');
+            $badge.toggleClass('bg-success', nuevoActivo).toggleClass('bg-secondary', !nuevoActivo);
+
+            $btn.toggleClass('btn-outline-success', !nuevoActivo).toggleClass('btn-outline-secondary', nuevoActivo);
+            $btn.attr('aria-label', (nuevoActivo ? 'Desactivar' : 'Activar') + ' el producto');
+            $btn.html('<i class="bi bi-toggle-' + (nuevoActivo ? 'on' : 'off') + '"></i> ' + (nuevoActivo ? 'Desactivar' : 'Activar'));
+          } else {
+            alert('Error: ' + (response.message || 'No se pudo actualizar el estado del producto.'));
+            $btn.html(originalHtml);
+          }
+        },
+        error: function () {
+          alert('Ocurrió un error al intentar actualizar el estado del producto.');
+          $btn.html(originalHtml);
+        },
+        complete: function () {
+          $btn.prop('disabled', false);
+        }
+      });
+    });
+
+  });
+</script>
+{% endblock %}

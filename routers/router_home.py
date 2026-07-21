@@ -5535,7 +5535,73 @@ def viewFormCompany():
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
         return redirect(url_for('inicio1'))
-    
+
+# ---- Catálogo de Productos ----
+
+@app.route("/lista-catalogo-producto", methods=['GET'])
+def lista_catalogo_producto():
+    if 'conectado' in session:
+        catalogo = sql_lista_catalogo_producto()
+        return render_template('public/CatalogoProducto/lista_catalogo_producto.html', catalogo=catalogo)
+    else:
+        return redirect(url_for('inicioCpanel'))
+
+@app.route('/registrar-catalogo-producto', methods=['GET'])
+def viewFormCatalogoProducto():
+    if 'conectado' in session:
+        companys = sql_lista_company_para_catalogo()
+        return render_template('public/CatalogoProducto/form_catalogo_producto.html', companys=companys)
+    else:
+        flash('primero debes iniciar sesiÃ³n.', 'error')
+        return redirect(url_for('inicio1'))
+
+@app.route('/form-registrar-catalogo-producto', methods=['POST'])
+def formCatalogoProducto():
+    if 'conectado' in session:
+        resultado = sql_insertar_catalogo_producto(request.form)
+        if resultado.get('success'):
+            flash(resultado.get('message'), 'success')
+            return redirect(url_for('lista_catalogo_producto'))
+        else:
+            flash(resultado.get('message', 'El producto NO fue registrado.'), 'error')
+            return redirect(url_for('lista_catalogo_producto'))
+    else:
+        flash('primero debes iniciar sesiÃ³n.', 'error')
+        return redirect(url_for('inicio'))
+
+@app.route('/editar-catalogo-producto/<int:id>', methods=['GET'])
+def EditarCatalogoProducto(id):
+    if 'conectado' in session:
+        producto = sql_catalogo_producto_detalle(id)
+        companys = sql_lista_company_para_catalogo()
+        return render_template('public/CatalogoProducto/editar_catalogo_producto.html', producto=producto, companys=companys)
+    else:
+        return redirect(url_for('inicioCpanel'))
+
+@app.route('/actualizar-catalogo-producto', methods=['POST'])
+def actualizarCatalogoProducto():
+    if 'conectado' in session:
+        id_producto = request.form.get('id')
+        resultado = sql_actualizar_catalogo_producto(id_producto, request.form)
+        if resultado.get('success'):
+            flash(resultado.get('message'), 'success')
+            return redirect(url_for('lista_catalogo_producto'))
+        else:
+            flash(resultado.get('message', 'El producto NO fue actualizado.'), 'error')
+            return redirect(url_for('lista_catalogo_producto'))
+    else:
+        flash('primero debes iniciar sesiÃ³n.', 'error')
+        return redirect(url_for('inicio'))
+
+@app.route('/toggle-activo-catalogo-producto', methods=['POST'])
+def toggleActivoCatalogoProducto():
+    if 'conectado' in session:
+        id_producto = request.form.get('id')
+        resultado = sql_toggle_activo_catalogo_producto(id_producto)
+        return jsonify(resultado)
+    else:
+        return jsonify({'success': False, 'message': 'SesiÃ³n no activa.'})
+
 @app.route('/registrar-ejecutivo', methods=['GET'])
 def viewFormEjecutivo():
     if 'conectado' in session:

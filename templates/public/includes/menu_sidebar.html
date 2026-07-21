@@ -118,6 +118,13 @@
       </ul>
     </li>
 
+    <li class="menu-item {% if request.path == '/lista-catalogo-producto' %} active {% endif %}">
+      <a href="/lista-catalogo-producto" class="menu-link">
+        <i class="menu-icon bi bi-box-seam"></i>
+        <div data-i18n="Boxicons">Gestión de Producto</div>
+      </a>
+    </li>
+
     <li class="menu-item {% if request.path == '/lista-de-ejecutivos' %} active {% endif %}">
       <a href="/lista-de-ejecutivos" class="menu-link">
         <i class="menu-icon bi bi-person-badge"></i>

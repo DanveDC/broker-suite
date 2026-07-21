@@ -1,0 +1,132 @@
+{% extends 'public/base_cpanel.html' %}
+<!--Cambiando el title-->
+{% block title %}Editar producto de catálogo{% endblock %}
+
+<!--Inicio del block-->
+{% block body %}
+<div class="card">
+  {% if producto %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center mt-5 mb-3">
+        <a href="/lista-catalogo-producto">
+          <i class="bi bi-arrow-left-circle"></i>
+        </a>
+        ACTUALIZAR PRODUCTO DE CATÁLOGO
+      </h3>
+      <hr />
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-10">
+      <form
+        id="formulario"
+        class="form-horizontal mx-auto"
+        method="POST"
+        action="/actualizar-catalogo-producto"
+        autocomplete="off">
+        <input type="hidden" name="id" value="{{ producto.id }}">
+
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="Cod_compania" class="form-label">
+                Compañía
+              </label>
+              <select id="Cod_compania" class="form-select" name="Cod_compania" required>
+                <option value="">Seleccione una opción</option>
+                {% for company in companys %}
+                <option value="{{ company.Cod_compania }}" {% if company.Cod_compania==producto.Cod_compania
+                  %}selected{% endif %}>{{ company.Nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="base" class="form-label">
+                Base
+              </label>
+              <select id="base" class="form-select" name="base" required>
+                <option value="">Seleccione una opción</option>
+                <option value="nacional" {% if producto.base=='nacional' %}selected{% endif %}>Nacional</option>
+                <option value="internacional" {% if producto.base=='internacional' %}selected{% endif %}>Internacional</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Ramo" class="form-label">
+                Ramo
+              </label>
+              <select id="Ramo" class="form-select" name="Ramo" required>
+                <option value="">Seleccione una opción</option>
+                <option value="Persona" {% if producto.Ramo=='Persona' %}selected{% endif %}>Persona</option>
+                <option value="Auto" {% if producto.Ramo=='Auto' %}selected{% endif %}>Auto</option>
+                <option value="Patrimonial" {% if producto.Ramo=='Patrimonial' %}selected{% endif %}>Patrimonial</option>
+                <option value="Fianza" {% if producto.Ramo=='Fianza' %}selected{% endif %}>Fianzas</option>
+                <option value="Viaje" {% if producto.Ramo=='Viaje' %}selected{% endif %}>Viaje</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="Subramo" class="form-label">
+                Subramo
+              </label>
+              <input
+                type="text"
+                id="Subramo"
+                name="Subramo"
+                value="{{ producto.Subramo }}"
+                class="form-control"
+                required />
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <label for="Producto" class="form-label">
+                Producto
+              </label>
+              <input
+                type="text"
+                id="Producto"
+                name="Producto"
+                value="{{ producto.Producto }}"
+                class="form-control"
+                required />
+            </div>
+          </div>
+
+          <div class="mb-3 mt-4 text-center">
+            <button type="submit" class="btn rounded-pill btn-primary" id="miBoton">
+              Actualizar registro ahora
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-12">
+      <h3 class="text-center">No existe el producto de catálogo</h3>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block customJS %}
+<script>
+  const boton1 = document.getElementById('miBoton');
+  const formulario = document.getElementById('formulario');
+
+  if (formulario) {
+    formulario.addEventListener('submit', function () {
+      boton1.disabled = true;
+      boton1.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cargando...';
+    });
+  }
+</script>
+{% endblock %}
