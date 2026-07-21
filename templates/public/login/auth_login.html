@@ -13,12 +13,12 @@
                     <form id="formAuthentication" class="mb-3" action="{{ url_for('loginCliente') }}" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email_user" placeholder="Escribe tu email"
+                            <input type="email" class="form-control" id="email" name="email_user" placeholder="Escribe tu email"
                                 autofocus required />
                         </div>
                         <div class="mb-3 form-password-toggle">
                             <div class="d-flex justify-content-between">
-                                <label class="form-label" for="password">Clave</label>
+                                <label class="form-label" for="pass_user">Clave</label>
                                 <a href="{{ url_for('cpanelRecoveryPassUser') }}">
                                     <small>Olvidó su Clave?</small>
                                 </a>

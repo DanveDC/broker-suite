@@ -23,13 +23,13 @@
               <label for="nombre_asegurado" class="form-label">
                 Nombre del asegurado
               </label>
-              <input type="text" name="nombre_asegurado" class="form-control" required />
+              <input type="text" id="nombre_asegurado" name="nombre_asegurado" class="form-control" required />
             </div>
             <div class="col-md-6">
-              <label for="Nombre_asegurado2" class="form-label">
+              <label for="nombre_asegurado2" class="form-label">
                 Segundo Nombre del asegurado
               </label>
-              <input class="form-control" type="text" name="nombre_asegurado2" />
+              <input class="form-control" type="text" id="nombre_asegurado2" name="nombre_asegurado2" />
             </div>
           </div>
 
@@ -38,13 +38,13 @@
               <label for="apellido_asegurado" class="form-label">
                 Apellido del asegurado
               </label>
-              <input class="form-control" type="text" name="apellido_asegurado" required />
+              <input class="form-control" type="text" id="apellido_asegurado" name="apellido_asegurado" required />
             </div>
             <div class="col-md-6">
               <label for="apellido_asegurado2" class="form-label">
                 Segundo Apellido del asegurado
               </label>
-              <input type="text" name="apellido_asegurado2" class="form-control" />
+              <input type="text" id="apellido_asegurado2" name="apellido_asegurado2" class="form-control" />
             </div>
           </div>
 
@@ -53,25 +53,25 @@
               <label for="sexo_asegurado" class="form-label">
                 Sexo del asegurado
               </label>
-              <select class="form-select select2-search" name="sexo_asegurado" data-placeholder="Seleccione el sexo">
+              <select class="form-select select2-search" id="sexo_asegurado" name="sexo_asegurado" data-placeholder="Seleccione el sexo">
                 <option value=""></option>
                 <option value="1">Masculino</option>
                 <option value="2">Femenino</option>
               </select>
             </div>
             <div class="col-md-6">
-              <label for="telefono_asegurado" class="form-label">
+              <label for="telefono_asegurado_numero" class="form-label">
                 Telefono del asegurado
               </label>
               <div class="input-group">
-                <select class="form-select select2-search select2-small" name="prefijo_telefono" data-placeholder="---">
+                <select class="form-select select2-search select2-small" name="prefijo_telefono" data-placeholder="---" aria-label="Prefijo telefono del asegurado">
                   <option value="414">414</option>
                   <option value="212">212</option>
                   <option value="416">416</option>
                   <option value="424">424</option>
                   <option value="412">412</option>
                 </select>
-                <input class="form-control" type="text" name="telefono_asegurado_numero" required />
+                <input class="form-control" type="text" id="telefono_asegurado_numero" name="telefono_asegurado_numero" required />
               </div>
             </div>
           </div>
@@ -81,7 +81,7 @@
               <label for="email_asegurado" class="form-label">
                 Email del asegurado
               </label>
-              <input class="form-control" type="email" name="email_asegurado" required />
+              <input class="form-control" type="email" id="email_asegurado" name="email_asegurado" required />
             </div>
 
 
@@ -90,13 +90,13 @@
                 Cedula del asegurado
               </label>
               <div class="input-group">
-                <select class="form-select select2-search select2-small" name="tipo" data-placeholder="-">
+                <select class="form-select select2-search select2-small" name="tipo" data-placeholder="-" aria-label="Tipo de cedula">
                   <option value="V">V</option>
                   <option value="J">J</option>
                   <option value="M">M</option>
                   <option value="E">E</option>
                 </select>
-                <input class="form-control" type="text" name="Cedula_asegurado" required />
+                <input class="form-control" type="text" id="Cedula_asegurado" name="Cedula_asegurado" required />
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@
               <label for="fecha_nacimiento" class="form-label">
                 fecha nacimiento
               </label>
-              <input class="form-control" type="date" name="fecha_nacimiento" required />
+              <input class="form-control" type="date" id="fecha_nacimiento" name="fecha_nacimiento" required />
             </div>
             <div class="col-md-6">
               <label for="ejecutivo" class="form-label">
@@ -127,7 +127,7 @@
               <label for="Profesion" class="form-label">
                 Profesion
               </label>
-              <select class="form-select select2-search" name="Profesion" data-placeholder="Seleccione profesión">
+              <select class="form-select select2-search" id="Profesion" name="Profesion" data-placeholder="Seleccione profesión">
                 <option value="Profesion BR">Profesion BR</option>
                 <option value="Profesion MR">Profesion MR</option>
                 <option value="Profesion AR">Profesion AR</option>
@@ -173,7 +173,7 @@
               <label for="Canal" class="form-label">
                 Canal
               </label>
-              <select class="form-select select2-search" name="Canal" data-placeholder="Seleccione canal">
+              <select class="form-select select2-search" id="Canal" name="Canal" data-placeholder="Seleccione canal">
                 <option value="Cara a cara">Cara a Cara/convencional</option>
                 <option value="Internet">Internet</option>
                 <option value="Correos con dominios privados">Correos con dominios privados</option>

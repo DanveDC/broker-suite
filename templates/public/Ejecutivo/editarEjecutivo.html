@@ -152,7 +152,7 @@
         <div class="card-body">
 
           <div class="mb-3">
-            <label for="CI" class="form-label">Cod ejecutivo</label>
+            <label for="cod_ejecutivo" class="form-label">Cod ejecutivo</label>
             <div class="input-group">
               <input type="text" class="form-control" id="cod_ejecutivo" name="cod_ejecutivo"
                 value="{{ ejecutivo.cod_ejecutivo }}" readonly>
@@ -161,33 +161,33 @@
 
           <div class="row">
             <div class="col-md-6">
-              <label for="nombre_empleado" class="form-label">
+              <label for="nombre_ejecutivo" class="form-label">
                 Nombre del ejecutivo
               </label>
-              <input type="text" name="nombre_ejecutivo" value="{{ ejecutivo.Nombre }}" class="form-control" required />
+              <input type="text" id="nombre_ejecutivo" name="nombre_ejecutivo" value="{{ ejecutivo.Nombre }}" class="form-control" required />
             </div>
             <div class="col-md-6">
-              <label for="nombre_asegurado" class="form-label">
+              <label for="nombre2_ejecutivo" class="form-label">
                 Segundo Nombre del ejecutivo
               </label>
-              <input class="form-control" type="text" name="nombre2_ejecutivo" value="{{ ejecutivo.nombre2 }}"
+              <input class="form-control" type="text" id="nombre2_ejecutivo" name="nombre2_ejecutivo" value="{{ ejecutivo.nombre2 }}"
                 required />
             </div>
           </div>
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="nombre_ejecutivo" class="form-label">
+              <label for="apellido_ejecutivo" class="form-label">
                 Apellido del ejecutivo
               </label>
-              <input class="form-control" type="text" name="apellido_ejecutivo" value="{{ ejecutivo.Apellido }}"
+              <input class="form-control" type="text" id="apellido_ejecutivo" name="apellido_ejecutivo" value="{{ ejecutivo.Apellido }}"
                 required />
             </div>
             <div class="col-md-6">
-              <label for="nombre_ejecutivo" class="form-label">
+              <label for="apellido2_ejecutivo" class="form-label">
                 Segundo apellido del ejecutivo
               </label>
-              <input class="form-control" type="text" name="apellido2_ejecutivo" value="{{ ejecutivo.Apellido2 }}"
+              <input class="form-control" type="text" id="apellido2_ejecutivo" name="apellido2_ejecutivo" value="{{ ejecutivo.Apellido2 }}"
                 required />
             </div>
           </div>
@@ -197,20 +197,20 @@
               <label for="email_ejecutivo" class="form-label">
                 Email del ejecutivo
               </label>
-              <input class="form-control" type="email" name="email_ejecutivo" value="{{ ejecutivo.Correo }}" required />
+              <input class="form-control" type="email" id="email_ejecutivo" name="email_ejecutivo" value="{{ ejecutivo.Correo }}" required />
             </div>
             <div class="col-md-6">
-              <label for="telefono_empleado" class="form-label">
+              <label for="telefono_ejecutivo" class="form-label">
                 Telefono del ejecutivo
               </label>
-              <input class="form-control" type="text" name="telefono_ejecutivo" value="{{ ejecutivo.Telefono }}"
+              <input class="form-control" type="text" id="telefono_ejecutivo" name="telefono_ejecutivo" value="{{ ejecutivo.Telefono }}"
                 required />
             </div>
           </div>
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="tipo" class="form-label">
+              <label for="TipoS" class="form-label">
                 Tipo
               </label>
               <select id="TipoS" class="form-select" name="tipo" aria-label="Default select example">

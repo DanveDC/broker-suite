@@ -33,10 +33,10 @@
               <label for="numero_poliza" class="form-label">
                 Numero de poliza
               </label>
-              <input type="text" name="numero_poliza" class="form-control" required />
+              <input type="text" id="numero_poliza" name="numero_poliza" class="form-control" required />
             </div>
             <div class="col-md-6">
-              <label for="Cedula_asegurado" class="form-label">
+              <label for="asegurado" class="form-label">
                 Asegurado
               </label>
               <select id="asegurado" class="form-select select2-search" name="asegurado"
@@ -66,7 +66,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label for="company" class="form-label">
+              <label for="companyS" class="form-label">
                 Compañía
               </label>
               <select id="companyS" class="form-select select2-search" name="company"
@@ -81,7 +81,7 @@
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="Ramo" class="form-label">
+              <label for="mySelect" class="form-label">
                 Ramo
                 <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="El ramo define el tipo de seguro: Persona (HCM/Vida/Accidentes), Auto, Patrimonial, Viaje o Fianza"></i>
               </label>
@@ -95,7 +95,7 @@
               </select>
             </div>
             <div class="col-md-6" id="camposPersona2">
-              <label for="Subtipo" class="form-label">
+              <label for="subRamo" class="form-label">
                 Subtipo
               </label>
               <select id="subRamo" class="form-select select2-search" name="SubRamo"
@@ -107,7 +107,7 @@
 
           <div class="row mt-2">
             <div class="col-md-6" id="camposPersona">
-              <label for="PlanP" class="form-label">
+              <label for="producto" class="form-label">
                 Producto
               </label>
               <select id="producto" class="form-select select2-search" name="producto"
@@ -119,7 +119,7 @@
               <label for="Cobertura" class="form-label">
                 Cobertura
               </label>
-              <input class="form-control" type="text" name="Cobertura" required />
+              <input class="form-control" type="text" id="Cobertura" name="Cobertura" required />
             </div>
           </div>
 
@@ -128,14 +128,14 @@
               <label for="fecha_emision" class="form-label">
                 Fecha de emision
               </label>
-              <input class="form-control" type="date" name="fecha_emision" required />
+              <input class="form-control" type="date" id="fecha_emision" name="fecha_emision" required />
             </div>
             <div class="col-md-6">
               <label for="Frecuencia" class="form-label">
                 Frecuencia de pago
                 <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Periodicidad de los pagos: Anual, Mensual, Trimestral, Semestral"></i>
               </label>
-              <select class="form-select select2-search" name="Frecuencia" data-placeholder="Seleccione frecuencia">
+              <select class="form-select select2-search" id="Frecuencia" name="Frecuencia" data-placeholder="Seleccione frecuencia">
                 <option value=""></option>
                 <option value="2">Mensual</option>
                 <option value="6">Bimensual</option>
@@ -150,7 +150,7 @@
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="Prima" class="form-label">
+              <label for="prima" class="form-label">
                 Prima
                 <i class="bx bx-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Monto total del seguro en la moneda seleccionada. Se registra en Bs o USD"></i>
               </label>
@@ -160,7 +160,7 @@
               <label for="Tipo_venta" class="form-label">
                 Tipo de venta
               </label>
-              <select class="form-select select2-search" name="Tipo_venta" data-placeholder="Seleccione tipo de venta"
+              <select class="form-select select2-search" id="Tipo_venta" name="Tipo_venta" data-placeholder="Seleccione tipo de venta"
                 required>
                 <option value="">Seleccione una opción</option>
                 <option value="1">emision tradicional</option>
@@ -180,25 +180,25 @@
               <label for="Marca" class="form-label">
                 Marca
               </label>
-              <input class="form-control" type="text" name="Marca" required />
+              <input class="form-control" type="text" id="Marca" name="Marca" required />
             </div>
             <div class="col-md-6" id="camposAuto4" style="display: none;">
               <label for="placa" class="form-label">
                 Placa
               </label>
-              <input class="form-control" type="text" name="placa" required>
+              <input class="form-control" type="text" id="placa" name="placa" required>
             </div>
             <div class="col-md-6" id="camposPatrimonio" style="display: none;">
               <label for="direccion" class="form-label">
                 Direccion
               </label>
-              <input class="form-control" type="text" name="direccion" required />
+              <input class="form-control" type="text" id="direccion" name="direccion" required />
             </div>
             <div class="col-md-6" id="camposViaje" style="display: none;">
               <label for="pasaporte" class="form-label">
                 Pasaporte
               </label>
-              <input class="form-control" type="text" name="pasaporte" required />
+              <input class="form-control" type="text" id="pasaporte" name="pasaporte" required />
             </div>
           </div>
 
@@ -212,13 +212,13 @@
               <label for="Ano" class="form-label">
                 Año
               </label>
-              <input class="form-control" type="number" min="1900" max="2099" name="Ano" required>
+              <input class="form-control" type="number" min="1900" max="2099" id="Ano" name="Ano" required>
             </div>
             <div class="col-md-6" id="camposAuto3" style="display: none;">
               <label for="Modelo" class="form-label">
                 Modelo
               </label>
-              <input class="form-control" type="text" name="Modelo" required />
+              <input class="form-control" type="text" id="Modelo" name="Modelo" required />
             </div>
           </div>
 

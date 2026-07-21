@@ -23,7 +23,7 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-              <label for="Prima" class="form-label">
+              <label for="prima" class="form-label">
                 Prima
               </label>
               <input type="text" name="prima" id="prima" class="form-control" required />
@@ -32,7 +32,7 @@
               <label for="frecuencia" class="form-label">
                 Frecuencia
               </label>
-              <select class="form-select" name="Frecuencia" aria-label="Default select example">
+              <select class="form-select" id="frecuencia" name="Frecuencia" aria-label="Default select example">
                 <option selected>Seleccione</option>
                 <option value="2">Mensual</option>
                 <option value="6">Bimensual</option>
@@ -50,7 +50,7 @@
               <label for="Cobertura" class="form-label">
                 Cobertura
               </label>
-              <input type="text" name="Cobertura" class="form-control" required />
+              <input type="text" id="Cobertura" name="Cobertura" class="form-control" required />
             </div>
 
             <input type="hidden" id="vencimiento" name="Fvencimiento" value="{{ fecha_vencimiento }}">

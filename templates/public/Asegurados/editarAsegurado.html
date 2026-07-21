@@ -43,32 +43,32 @@
 
           <div class="row">
             <div class="col-md-6">
-              <label for="nombre_empleado" class="form-label">
+              <label for="nombre_asegurado" class="form-label">
                 Nombre del asegurado
               </label>
-              <input type="text" name="nombre_asegurado" value="{{ asegurado.Nombre }}" class="form-control" required />
+              <input type="text" id="nombre_asegurado" name="nombre_asegurado" value="{{ asegurado.Nombre }}" class="form-control" required />
             </div>
             <div class="col-md-6">
-              <label for="nombre_asegurado" class="form-label">
+              <label for="nombre2_asegurado" class="form-label">
                 Segundo Nombre del asegurado
               </label>
-              <input class="form-control" type="text" name="nombre2_asegurado" value="{{ asegurado.Nombre2 }}" />
+              <input class="form-control" type="text" id="nombre2_asegurado" name="nombre2_asegurado" value="{{ asegurado.Nombre2 }}" />
             </div>
           </div>
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="nombre_asegurado" class="form-label">
+              <label for="apellido_asegurado" class="form-label">
                 Apellido del asegurado
               </label>
-              <input class="form-control" type="text" name="apellido_asegurado" value="{{ asegurado.Apellido }}"
+              <input class="form-control" type="text" id="apellido_asegurado" name="apellido_asegurado" value="{{ asegurado.Apellido }}"
                 required />
             </div>
             <div class="col-md-6">
-              <label for="nombre_asegurado" class="form-label">
+              <label for="apellido2_asegurado" class="form-label">
                 Segundo apellido del asegurado
               </label>
-              <input class="form-control" type="text" name="apellido2_asegurado" value="{{ asegurado.Apellido2 }}" />
+              <input class="form-control" type="text" id="apellido2_asegurado" name="apellido2_asegurado" value="{{ asegurado.Apellido2 }}" />
             </div>
           </div>
 
@@ -77,22 +77,22 @@
               <label for="email_asegurado" class="form-label">
                 Email del asegurado
               </label>
-              <input class="form-control" type="email" name="email_asegurado" value="{{ asegurado.Correo }}" required />
+              <input class="form-control" type="email" id="email_asegurado" name="email_asegurado" value="{{ asegurado.Correo }}" required />
             </div>
             <div class="col-md-6">
-              <label for="telefono_asegurado" class="form-label">
+              <label for="telefono_asegurado_numero" class="form-label">
                 Telefono del asegurado
               </label>
               <div class="input-group">
                 {% set tel = asegurado.Telefono or '' %}
-                <select class="form-select custom-select-width" name="prefijo_telefono">
+                <select class="form-select custom-select-width" name="prefijo_telefono" aria-label="Prefijo telefono del asegurado">
                   <option value="414" {% if tel[:3]=='414' %}selected{% endif %}>414</option>
                   <option value="212" {% if tel[:3]=='212' %}selected{% endif %}>212</option>
                   <option value="416" {% if tel[:3]=='416' %}selected{% endif %}>416</option>
                   <option value="424" {% if tel[:3]=='424' %}selected{% endif %}>424</option>
                   <option value="412" {% if tel[:3]=='412' %}selected{% endif %}>412</option>
                 </select>
-                <input class="form-control" type="text" name="telefono_asegurado_numero" value="{{ tel[3:] }}"
+                <input class="form-control" type="text" id="telefono_asegurado_numero" name="telefono_asegurado_numero" value="{{ tel[3:] }}"
                   required />
               </div>
             </div>
@@ -100,10 +100,10 @@
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="email_empleado" class="form-label">
+              <label for="fecha_nacimiento" class="form-label">
                 Fecha de nacimiento
               </label>
-              <input class="form-control" type="date" name="Fecha" value="{{ asegurado.Fecha_nacimiento }}" required />
+              <input class="form-control" type="date" id="fecha_nacimiento" name="Fecha" value="{{ asegurado.Fecha_nacimiento }}" required />
             </div>
           </div>
 
@@ -112,7 +112,7 @@
               <label for="Profesion" class="form-label">
                 Profesion
               </label>
-              <select class="form-select custom-select-width" name="Profesion">
+              <select class="form-select custom-select-width" id="Profesion" name="Profesion">
                 <option value="Profesion BR" {% if asegurado.profesion=='Profesion BR' %}selected{% endif %}>Profesion
                   BR</option>
                 <option value="Profesion MR" {% if asegurado.profesion=='Profesion MR' %}selected{% endif %}>Profesion
@@ -153,7 +153,7 @@
               <label for="Canal" class="form-label">
                 Canal
               </label>
-              <select class="form-select custom-select-width" name="Canal">
+              <select class="form-select custom-select-width" id="Canal" name="Canal">
                 <option value="Cara a cara" {% if asegurado.canal=='Cara a cara' %}selected{% endif %}>Cara a
                   Cara/convencional</option>
                 <option value="Internet" {% if asegurado.canal=='Internet' %}selected{% endif %}>Internet</option>

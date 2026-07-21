@@ -45,19 +45,19 @@
               <label for="Diagnostico" class="form-label">
                 Especialidad
               </label>
-              <input type="text" name="Diagnostico" class="form-control" required />
+              <input type="text" id="Diagnostico" name="Diagnostico" class="form-control" required />
             </div>
             <div class="col-md-6">
               <label for="Procedimiento" class="form-label">
                 Procedimiento
               </label>
-              <input type="text" name="Procedimiento" class="form-control" />
+              <input type="text" id="Procedimiento" name="Procedimiento" class="form-control" />
             </div>
           </div>
-          
+
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="Tipo_de_Atencion" class="form-label">
+              <label for="tipoDeAtencionSelect" class="form-label">
                 Tipo de Atención
               </label>
               <select id="tipoDeAtencionSelect" class="form-select select2-search" name="Tipo_de_Atencion"
@@ -68,7 +68,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label for="Status" class="form-label">
+              <label for="statusSelect" class="form-label">
                 Estatus
               </label>
               <select id="statusSelect" class="form-select select2-search" name="Status" data-placeholder="Estado">
@@ -80,7 +80,7 @@
             </div>
           </div>
             <div class="col-md-6">
-              <label for="Moneda" class="form-label">
+              <label for="mySelect" class="form-label">
                 Moneda
               </label>
               <select id="mySelect" class="form-select select2-search" name="Moneda" data-placeholder="Moneda">
@@ -95,28 +95,28 @@
               <label for="Monto_solicitado" class="form-label">
                 Monto solicitado
               </label>
-              <input class="form-control" type="text" name="Monto_solicitado" required />
+              <input class="form-control" type="text" id="Monto_solicitado" name="Monto_solicitado" required />
             </div>
             <div class="col-md-6">
               <label for="Monto_aprobado" class="form-label">
                 Monto aprobado
               </label>
-              <input class="form-control" type="text" name="Monto_aprobado" required />
+              <input class="form-control" type="text" id="Monto_aprobado" name="Monto_aprobado" required />
             </div>
           </div>
 
           <div class="row mt-2">
             <div class="col-md-6">
-              <label for="Aprobado" class="form-label">
+              <label for="Monto_aprobado_dolares" class="form-label">
                 Monto aprobado($)
               </label>
-              <input class="form-control" type="text" name="Monto_aprobado_dolares" required />
+              <input class="form-control" type="text" id="Monto_aprobado_dolares" name="Monto_aprobado_dolares" required />
             </div>
             <div class="col-md-6">
               <label for="Fecha_notificada" class="form-label">
                 Fecha notificada
               </label>
-              <input class="form-control" type="date" name="Fecha_notificada" required />
+              <input class="form-control" type="date" id="Fecha_notificada" name="Fecha_notificada" required />
             </div>
           </div>
 
@@ -125,13 +125,13 @@
               <label for="Fecha_aprobada" class="form-label">
                 Fecha aprobada
               </label>
-              <input class="form-control" type="date" name="Fecha_aprobada" />
+              <input class="form-control" type="date" id="Fecha_aprobada" name="Fecha_aprobada" />
             </div>
             <div class="col-md-6">
               <label for="Correo" class="form-label">
                 Correo
               </label>
-              <input class="form-control" type="text" name="correo" required />
+              <input class="form-control" type="text" id="Correo" name="correo" required />
             </div>
           </div>
 
@@ -140,13 +140,13 @@
               <label for="codigo_siniestro" class="form-label">
                 Número de Siniestro
               </label>
-              <input class="form-control" type="text" name="codigo_siniestro" required />
+              <input class="form-control" type="text" id="codigo_siniestro" name="codigo_siniestro" required />
             </div>
             <div class="col-md-6">
               <label for="MES" class="form-label">
                 Mes
               </label>
-              <input class="form-control" type="text" name="MES" />
+              <input class="form-control" type="text" id="MES" name="MES" />
             </div>
           </div>
 
@@ -155,13 +155,13 @@
               <label for="NEGOCIO" class="form-label">
                 Negocio
               </label>
-              <input class="form-control" type="text" name="NEGOCIO" />
+              <input class="form-control" type="text" id="NEGOCIO" name="NEGOCIO" />
             </div>
             <div class="col-md-6">
               <label for="TITULAR" class="form-label">
                 Titular
               </label>
-              <input class="form-control" type="text" name="TITULAR" />
+              <input class="form-control" type="text" id="TITULAR" name="TITULAR" />
             </div>
           </div>
 
@@ -170,13 +170,13 @@
               <label for="RECLAMANTE" class="form-label">
                 Reclamante
               </label>
-              <input class="form-control" type="text" name="RECLAMANTE" />
+              <input class="form-control" type="text" id="RECLAMANTE" name="RECLAMANTE" />
             </div>
             <div class="col-md-6">
               <label for="REFERIDOR" class="form-label">
                 Referidor
               </label>
-              <input class="form-control" type="text" name="REFERIDOR" />
+              <input class="form-control" type="text" id="REFERIDOR" name="REFERIDOR" />
             </div>
           </div>
 
@@ -185,7 +185,7 @@
               <label for="ANALISTA" class="form-label">
                 Analista
               </label>
-              <input class="form-control" type="text" name="ANALISTA" />
+              <input class="form-control" type="text" id="ANALISTA" name="ANALISTA" />
             </div>
           </div>
 
@@ -194,7 +194,7 @@
               <label for="OBSERVACION" class="form-label">
                 Observación
               </label>
-              <textarea class="form-control" name="OBSERVACION" rows="3"></textarea>
+              <textarea class="form-control" id="OBSERVACION" name="OBSERVACION" rows="3"></textarea>
             </div>
           </div>
 

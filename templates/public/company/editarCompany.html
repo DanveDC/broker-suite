@@ -39,7 +39,7 @@
           <div class="mb-3">
                       <label for="Cod" class="form-label">Cod</label>
                       <div class="input-group">
-                          <input type="text" class="form-control" id="CI" name="cod" value="{{ company.Cod_compania }}" readonly> 
+                          <input type="text" class="form-control" id="Cod" name="cod" value="{{ company.Cod_compania }}" readonly>
                       </div>
                     </div>
 
@@ -53,6 +53,7 @@
               </label>
               <input
                 type="text"
+                id="nombre_Company"
                 name="nombre_Company"
                 value="{{ company.Nombre }}"
                 class="form-control"
@@ -65,6 +66,7 @@
               <input
                 class="form-control"
                 type="text"
+                id="Rif"
                 name="Rif"
                 value="{{ company.rif }}"
                 required />

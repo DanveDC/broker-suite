@@ -48,6 +48,7 @@
               </label>
               <input
                 type="text"
+                id="nombre_empleado"
                 name="nombre_empleado"
                 value="{{ respuestaEmpleado.nombre_empleado }}"
                 class="form-control"
@@ -60,6 +61,7 @@
               <input
                 class="form-control"
                 type="text"
+                id="apellido_empleado"
                 name="apellido_empleado"
                 value="{{ respuestaEmpleado.apellido_empleado }}"
                 required />
@@ -72,7 +74,7 @@
                 Sexo del empleado
               </label>
               {% with tipo_sexo = {"1": "Masculino", "2": "Femenino"} %}
-              <select class="form-select" name="sexo_empleado">
+              <select class="form-select" id="sexo_empleado" name="sexo_empleado">
                 {% for clave, valor in tipo_sexo.items() %} {% if clave ==
                 respuestaEmpleado.sexo_empleado|string %}
                 <option value="{{ clave }}" selected>{{ valor }}</option>
@@ -90,6 +92,7 @@
               <input
                 class="form-control"
                 type="text"
+                id="telefono_empleado"
                 name="telefono_empleado"
                 value="{{ respuestaEmpleado.telefono_empleado }}"
                 required />
@@ -104,6 +107,7 @@
               <input
                 class="form-control"
                 type="email"
+                id="email_empleado"
                 name="email_empleado"
                 value="{{ respuestaEmpleado.email_empleado }}"
                 required />
@@ -115,6 +119,7 @@
               <input
                 class="form-control"
                 type="text"
+                id="profesion_empleado"
                 name="profesion_empleado"
                 value="{{ respuestaEmpleado.profesion_empleado }}"
                 required />

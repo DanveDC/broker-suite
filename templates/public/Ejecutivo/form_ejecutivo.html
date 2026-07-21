@@ -26,31 +26,31 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="CI" class="form-label">CI</label>
-                            <input type="number" name="CI" class="form-control" required />
+                            <input type="number" id="CI" name="CI" class="form-control" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="Nombre" class="form-label">Nombre</label>
-                            <input type="text" name="Nombre" class="form-control" required />
+                            <input type="text" id="Nombre" name="Nombre" class="form-control" required />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="Nombre2" class="form-label">Segundo Nombre</label>
-                            <input type="text" name="Nombre2" class="form-control" />
+                            <input type="text" id="Nombre2" name="Nombre2" class="form-control" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="Apellido" class="form-label">Apellido</label>
-                            <input type="text" name="Apellido" class="form-control" required />
+                            <input type="text" id="Apellido" name="Apellido" class="form-control" required />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="Apellido2" class="form-label">Segundo Apellido</label>
-                            <input type="text" name="Apellido2" class="form-control" />
+                            <input type="text" id="Apellido2" name="Apellido2" class="form-control" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="Correo" class="form-label">Correo</label>
-                            <input type="email" name="Correo" class="form-control" required />
+                            <input type="email" id="Correo" name="Correo" class="form-control" required />
                         </div>
                     </div>
                     <div class="row">
@@ -58,7 +58,7 @@
                             <label for="Telefono" class="form-label">Teléfono</label>
                             <div class="input-group">
                                 <select class="form-select select2-search select2-small" name="area_code"
-                                    data-placeholder="---">
+                                    data-placeholder="---" aria-label="Código de área">
                                     <option value="424">424</option>
                                     <option value="414">414</option>
                                     <option value="212">212</option>
@@ -66,13 +66,13 @@
                                     <option value="426">426</option>
                                     <option value="412">412</option>
                                 </select>
-                                <input type="text" name="Telefono" class="form-control" placeholder="Solo 7 digitos"
+                                <input type="text" id="Telefono" name="Telefono" class="form-control" placeholder="Solo 7 digitos"
                                     required pattern="\d{7}" title="Debe ingresar 7 dígitos numéricos."
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);" />
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="Tipo" class="form-label">Tipo</label>
+                            <label for="TipoS" class="form-label">Tipo</label>
                             <select id="TipoS" class="form-select select2-search" name="Tipo"
                                 data-placeholder="Seleccione">
                                 <option value=""></option>
