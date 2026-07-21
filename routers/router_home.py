@@ -1452,7 +1452,7 @@ def usuarios():
         resp_usuariosBD = lista_usuariosBD()
         return render_template('public/usuarios/lista_usuarios.html', resp_usuariosBD=resp_usuariosBD)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     
 
@@ -1461,7 +1461,7 @@ def registrar_comision(id):
     if 'conectado' in session: 
         return render_template('public/Comisiones/form_comision.html', cod_renovacion=id)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
 
 
@@ -1473,7 +1473,7 @@ def ejecutivos():
         ejecutivos = lista_ejecutivosBD()
         return render_template('public/Ejecutivo/lista_ejecutivo.html', ejecutivos=ejecutivos)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 @app.route("/lista-company", methods=['GET'])
 def lista_company():
@@ -1481,7 +1481,7 @@ def lista_company():
         companys = sql_lista_company()
         return render_template('public/company/lista_company.html', companys=companys)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
 @app.route("/lista-de-comisiones", methods=['GET'])
 def comisiones():
@@ -1494,7 +1494,7 @@ def comisiones():
             flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('inicio1'))
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 
 @app.route("/comisiones-beta", methods=['GET'])
@@ -1817,7 +1817,7 @@ def verificar_poliza_beta():
 @app.route('/upload-comisiones-star', methods=['POST'])
 def upload_comisiones_star():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     fecha_pago = request.form.get('fecha_pago')
     if 'file_star' not in request.files: 
@@ -2156,7 +2156,7 @@ def upload_comisiones_star():
 @app.route('/upload-comisiones-caracas', methods=['POST'])
 def upload_comisiones_caracas():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_caracas' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -2423,7 +2423,7 @@ def upload_comisiones_caracas():
 @app.route('/upload-comisiones-piramide', methods=['POST'])
 def upload_comisiones_piramide():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_piramide' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -2731,7 +2731,7 @@ def upload_comisiones_piramide():
 @app.route('/upload-comisiones-universitas', methods=['POST'])
 def upload_comisiones_universitas():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     fecha_pago_manual = request.form.get('fecha_pago')
 
@@ -2995,7 +2995,7 @@ def upload_comisiones_universitas():
 @app.route('/upload-comisiones-banesco', methods=['POST'])
 def upload_comisiones_banesco():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_banesco' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -3286,7 +3286,7 @@ def upload_comisiones_banesco():
 @app.route('/upload-comisiones-venezuela', methods=['POST'])
 def upload_comisiones_venezuela():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_venezuela' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -3588,7 +3588,7 @@ def upload_comisiones_venezuela():
 @app.route('/upload-comisiones-internacional', methods=['POST'])
 def upload_comisiones_internacional():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_internacional' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -4495,7 +4495,7 @@ def extraer_datos_oceanica_comision(file):
 @app.route('/upload-comisiones-mercantil', methods=['POST'])
 def upload_comisiones_mercantil():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_mercantil_pdf' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -4677,7 +4677,7 @@ def upload_comisiones_mercantil():
 @app.route('/upload-comisiones-oceanica', methods=['POST'])
 def upload_comisiones_oceanica():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
     if 'file_oceanica' not in request.files:
         flash('No se seleccionÃ³ ningÃºn archivo.', 'error')
@@ -4916,7 +4916,7 @@ def upload_comisiones_oceanica():
 @app.route('/comisiones/transacciones', methods=['GET'])
 def comisiones_transacciones():
     if 'conectado' not in session:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
     if not (session.get("permisos")=="Administracion" or session.get("permisos")=="Gerencia" or session.get("permisos")=="dev"):
         flash('No tienes permiso para esta acciÃ³n', 'error')
@@ -5118,7 +5118,7 @@ def borrarUsuario(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('inicio1'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
   
 @app.route('/borrar-compania/<string:id>', methods=['GET'])
 def borrarCompania(id):
@@ -5132,7 +5132,7 @@ def borrarCompania(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('inicio1'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
 @app.route('/borrar-asegurado/<string:id>', methods=['GET'])
 def borrarAsegurado(id):
@@ -5146,7 +5146,7 @@ def borrarAsegurado(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('lista_asegurado'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
   
 @app.route('/editar-asegurado/<string:id>', methods=['GET'])
 def EditarAsegurado(id):
@@ -5159,7 +5159,7 @@ def EditarAsegurado(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('lista_asegurado'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
   
 
   
@@ -5173,7 +5173,7 @@ def EditarCompany(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('lista_company'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
   
 
 
@@ -5189,7 +5189,7 @@ def borrarEjecutivo(id):
         flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
         return redirect(url_for('ejecutivos'))
   else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
 @app.route('/borrar-poliza/<path:id>', methods=['GET'])
 def borrarPoliza(id):
@@ -5203,7 +5203,7 @@ def borrarPoliza(id):
             flash('Tu usuario no tiene permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('lista_polizas'))
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 
 @app.route('/borrar-pago/<string:id>', methods=['GET'])
@@ -5545,7 +5545,7 @@ def lista_catalogo_producto():
         catalogo = sql_lista_catalogo_producto()
         return render_template('public/CatalogoProducto/lista_catalogo_producto.html', catalogo=catalogo)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 @app.route('/registrar-catalogo-producto', methods=['GET'])
 def viewFormCatalogoProducto():
@@ -5589,7 +5589,7 @@ def EditarCatalogoProducto(id):
             flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('lista_catalogo_producto'))
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 @app.route('/actualizar-catalogo-producto', methods=['POST'])
 def actualizarCatalogoProducto():
@@ -5918,7 +5918,7 @@ def lista_cobranza():
         ejecutivos = sql_lista_ejecutivo()
         return render_template('public/Cobranza/Lista_pagos.html', pagos=[], asegurados=asegurados, ejecutivos=ejecutivos)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 @app.route('/api/pagos_datatable', methods=['GET'])
 def pagos_datatable():
@@ -6064,7 +6064,7 @@ def proyeccion():
                                selected_year=selected_year,
                                years=years)
     else:
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
 
 
 @app.route('/api/get-agente-commission', methods=['GET'])
@@ -6283,7 +6283,7 @@ def upload():
         return render_template('public/upload.html')
     else:
         flash('No tiene permisos para esta accion', 'error')
-        return redirect(url_for('inicioCpanel'))
+        return redirect(url_for('inicio'))
     
 
  
@@ -6495,7 +6495,7 @@ def EditarEjecutivo(id):
         #    flash("Datos del ejecutivo actualizados correctamente", "success")
         # else:
         #    flash("Error al actualizar los datos del ejecutivo", "danger")
-        return redirect(url_for('main.listaEjecutivo')) # Redirige despuÃ©s de actualizar
+        return redirect(url_for('ejecutivos')) # Redirige despuÃ©s de actualizar
 
 @app.route('/submit_selection', methods=['POST'])
 def submit_selection():
@@ -6643,7 +6643,7 @@ def dashboard_bi_master():
                                datos_iniciales=datos,
                                ano_actual=ano_actual)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('inicio'))
 
 
 @app.route('/dashboard-reportes')
@@ -6658,7 +6658,7 @@ def dashboard_reportes():
                                datos_iniciales=datos,
                                ano_actual=ano_actual)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('inicio'))
 
 
 @app.route('/api/dashboard-data')
