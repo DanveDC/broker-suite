@@ -54,6 +54,15 @@
                                 </a>
                             </td>
                         </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7">
+                                {% set empty_icon = 'bi-person-vcard' %}
+                                {% set empty_title = 'No hay asegurados registrados todavía' %}
+                                {% set empty_message = 'Cuando agregues el primer asegurado, va a aparecer en esta lista.' %}
+                                {% include 'public/includes/empty_state.html' %}
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>

@@ -134,6 +134,15 @@
                             </a>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9">
+                            {% set empty_icon = 'bi-file-earmark-medical' %}
+                            {% set empty_title = 'No se encontraron siniestros' %}
+                            {% set empty_message = 'Cuando se registre un siniestro, va a aparecer en esta lista.' %}
+                            {% include 'public/includes/empty_state.html' %}
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

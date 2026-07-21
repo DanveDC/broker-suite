@@ -92,11 +92,12 @@
     </div>
   </div>
   {% else %}
-  <div class="row justify-content-center mb-2">
-    <div class="col-md-12">
-      <h3 class="text-center">No hay productos registrados en el catálogo</h3>
-    </div>
-  </div>
+  {% set empty_icon = 'bi-box-seam' %}
+  {% set empty_title = 'No hay productos registrados en el catálogo' %}
+  {% set empty_message = 'Cuando agregues el primer producto, va a aparecer en esta lista.' %}
+  {% set empty_cta_url = '/registrar-catalogo-producto' %}
+  {% set empty_cta_label = 'Agregar Producto' %}
+  {% include 'public/includes/empty_state.html' %}
   {% endif %}
 </div>
 

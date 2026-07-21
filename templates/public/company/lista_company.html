@@ -53,6 +53,12 @@
     <div class="card-header border-bottom">
       <h3 class="card-title text-center fw-bold mb-0">LISTA DE COMPAÑIAS</h3>
     </div>
+    <div class="card-body">
+      {% set empty_icon = 'bi-building' %}
+      {% set empty_title = 'No hay compañías registradas todavía' %}
+      {% set empty_message = 'Cuando agregues la primera compañía, va a aparecer en esta lista.' %}
+      {% include 'public/includes/empty_state.html' %}
+    </div>
   </div>
 </div>
 {% endif %}

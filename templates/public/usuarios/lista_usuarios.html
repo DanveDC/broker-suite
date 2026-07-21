@@ -2,7 +2,17 @@
 <!--Cambiando el title-->
 {% block title %}Crud - Python 🐍 | Lista de Usuarios{% endblock %}
 <!---->
-{% block body %} {% if (resp_usuariosBD) %}
+{% block body %}
+
+<div class="list-toolbar">
+  <div></div>
+  <a href="{{ url_for('registrar_usuario') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i>
+    Crear Nuevo Usuario
+  </a>
+</div>
+
+{% if (resp_usuariosBD) %}
 
 <div class="card content_consignaciones" style="border-radius: 0px !important">
   <section id="respuestaFiltroMes">
@@ -11,7 +21,6 @@
         Lista de Usuarios Creados
         <hr />
       </h2>
-      <a href="{{ url_for('registrar_usuario') }}" class="btn btn-primary mb-3">Crear Nuevo Usuario</a>
     </div>
 
     <div class="row justify-content-center mb-2">
@@ -68,13 +77,12 @@
     <h3 class="card-title text-center fw-bold mb-0">LISTA DE USUARIOS</h3>
   </div>
   <div class="card-body">
-    <div class="container mt-3 mb-3" style="width: 100% !important">
-      <div class="row justify-content-md-center mb-2">
-        <div class="col-12">
-          <h2 class="text-center">No hay usuarios 😭</h2>
-        </div>
-      </div>
-    </div>
+    {% set empty_icon = 'bi-people' %}
+    {% set empty_title = 'No hay usuarios registrados todavía' %}
+    {% set empty_message = 'Cuando crees el primer usuario, va a aparecer en esta lista.' %}
+    {% set empty_cta_url = url_for('registrar_usuario') %}
+    {% set empty_cta_label = 'Crear Nuevo Usuario' %}
+    {% include 'public/includes/empty_state.html' %}
   </div>
 </div>
 {% endif %}

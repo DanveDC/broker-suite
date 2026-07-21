@@ -1053,6 +1053,31 @@ label {
 
 
 /* --------------------------------------------------------
+   26. Estado vacío de listas (templates/public/includes/empty_state.html)
+   -------------------------------------------------------- */
+.empty-state-wrap {
+  padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  opacity: .5;
+}
+
+/* --------------------------------------------------------
+   27. Toolbar de páginas de lista (búsqueda + acción principal)
+   -------------------------------------------------------- */
+.list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem;
+  margin: 1rem .75rem;
+}
+
+/* --------------------------------------------------------
    21. Responsive
    -------------------------------------------------------- */
 
