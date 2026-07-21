@@ -5550,8 +5550,12 @@ def lista_catalogo_producto():
 @app.route('/registrar-catalogo-producto', methods=['GET'])
 def viewFormCatalogoProducto():
     if 'conectado' in session:
-        companys = sql_lista_company_para_catalogo()
-        return render_template('public/CatalogoProducto/form_catalogo_producto.html', companys=companys)
+        if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
+            companys = sql_lista_company_para_catalogo()
+            return render_template('public/CatalogoProducto/form_catalogo_producto.html', companys=companys)
+        else:
+            flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
+            return redirect(url_for('lista_catalogo_producto'))
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
         return redirect(url_for('inicio1'))
@@ -5559,12 +5563,16 @@ def viewFormCatalogoProducto():
 @app.route('/form-registrar-catalogo-producto', methods=['POST'])
 def formCatalogoProducto():
     if 'conectado' in session:
-        resultado = sql_insertar_catalogo_producto(request.form)
-        if resultado.get('success'):
-            flash(resultado.get('message'), 'success')
-            return redirect(url_for('lista_catalogo_producto'))
+        if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
+            resultado = sql_insertar_catalogo_producto(request.form)
+            if resultado.get('success'):
+                flash(resultado.get('message'), 'success')
+                return redirect(url_for('lista_catalogo_producto'))
+            else:
+                flash(resultado.get('message', 'El producto NO fue registrado.'), 'error')
+                return redirect(url_for('lista_catalogo_producto'))
         else:
-            flash(resultado.get('message', 'El producto NO fue registrado.'), 'error')
+            flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('lista_catalogo_producto'))
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
@@ -5573,22 +5581,30 @@ def formCatalogoProducto():
 @app.route('/editar-catalogo-producto/<int:id>', methods=['GET'])
 def EditarCatalogoProducto(id):
     if 'conectado' in session:
-        producto = sql_catalogo_producto_detalle(id)
-        companys = sql_lista_company_para_catalogo()
-        return render_template('public/CatalogoProducto/editar_catalogo_producto.html', producto=producto, companys=companys)
+        if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
+            producto = sql_catalogo_producto_detalle(id)
+            companys = sql_lista_company_para_catalogo()
+            return render_template('public/CatalogoProducto/editar_catalogo_producto.html', producto=producto, companys=companys)
+        else:
+            flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
+            return redirect(url_for('lista_catalogo_producto'))
     else:
         return redirect(url_for('inicioCpanel'))
 
 @app.route('/actualizar-catalogo-producto', methods=['POST'])
 def actualizarCatalogoProducto():
     if 'conectado' in session:
-        id_producto = request.form.get('id')
-        resultado = sql_actualizar_catalogo_producto(id_producto, request.form)
-        if resultado.get('success'):
-            flash(resultado.get('message'), 'success')
-            return redirect(url_for('lista_catalogo_producto'))
+        if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
+            id_producto = request.form.get('id')
+            resultado = sql_actualizar_catalogo_producto(id_producto, request.form)
+            if resultado.get('success'):
+                flash(resultado.get('message'), 'success')
+                return redirect(url_for('lista_catalogo_producto'))
+            else:
+                flash(resultado.get('message', 'El producto NO fue actualizado.'), 'error')
+                return redirect(url_for('lista_catalogo_producto'))
         else:
-            flash(resultado.get('message', 'El producto NO fue actualizado.'), 'error')
+            flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('lista_catalogo_producto'))
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
@@ -5597,9 +5613,12 @@ def actualizarCatalogoProducto():
 @app.route('/toggle-activo-catalogo-producto', methods=['POST'])
 def toggleActivoCatalogoProducto():
     if 'conectado' in session:
-        id_producto = request.form.get('id')
-        resultado = sql_toggle_activo_catalogo_producto(id_producto)
-        return jsonify(resultado)
+        if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
+            id_producto = request.form.get('id')
+            resultado = sql_toggle_activo_catalogo_producto(id_producto)
+            return jsonify(resultado)
+        else:
+            return jsonify({'success': False, 'message': 'No tienes permiso para esta acciÃƒÂ²n.'})
     else:
         return jsonify({'success': False, 'message': 'SesiÃ³n no activa.'})
 
