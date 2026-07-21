@@ -6,6 +6,27 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Sin versionar] — 2026-07-21
+
+### Agregado
+
+- **Gestión de Producto:** nuevo módulo CRUD para administrar el catálogo Compañía → Ramo → Subramo → Producto (tabla `catalogo_producto`, soft-delete vía `activo`), que reemplaza el objeto JavaScript hardcodeado que vivía en el formulario de pólizas. Incluye migración de los ~234 productos existentes.
+- Sistema de diseño unificado: tokens de radio (`--radius-sm/md/lg/pill`) y sombra (`--shadow-sm/lg`) consolidados en `static/assets/css/my_style.css`, con una paleta secundaria (`--analytics-*`) para los dashboards de BI.
+- Partial reutilizable de estado vacío (`templates/public/includes/empty_state.html`) y clase de utilidad `.list-toolbar`, aplicados en Ejecutivos, Usuarios, Compañías, Siniestros, Asegurados y Gestión de Producto.
+- Accesibilidad WCAG 2.1 AA: `aria-label` en botones de solo ícono, asociación `label`/`input` vía `for`/`id`, landmark `<main>` en el layout base, contraste de texto corregido.
+- Microinteracciones: transiciones en botones, dropdowns y acordeones, estados de carga en acciones AJAX, overlay de DataTables estilizado — todo respetando `prefers-reduced-motion`.
+- Presentación de producto en HTML (`docs/presentacion/presentacion.html`) y guión de demo (`docs/presentacion/DEMO-GUION.md`).
+
+### Corregido
+
+- **Crítico:** 17 funciones en `controllers/funciones_home.py` usaban `TO_CHAR()` (sintaxis PostgreSQL) contra una conexión MySQL — cada una tiraba un error de SQL silenciosamente convertido en `None`, causando 500 en Pólizas, Comisiones, Empleados y otros módulos. Reemplazado por `DATE_FORMAT()`.
+- **Crítico:** rutas con rutas de plantilla en minúscula (`public/poliza/...`, `public/ejecutivo/...`) que solo funcionaban en filesystems case-insensitive (Windows/WSL) — rompían en Linux (Render) con `TemplateNotFound`.
+- **Crítico:** tres `url_for()` apuntando a endpoints inexistentes (`inicioCpanel`, `index`, `main.listaEjecutivo`) causaban `BuildError` (500) en cualquier acceso sin sesión a esas rutas.
+- Formulario de pólizas: normalizado el mismatch `Fianza`/`Fianzas` y `Viaje`/`Viajes` entre el catálogo y el `<select>` de Ramo, que dejaba productos de Viaje internacional inalcanzables; agregado el Ramo "Mascotas", ausente desde siempre.
+- Botón "Crear Nuevo Usuario" vivía dentro del bloque condicional de lista no vacía — no había forma de crear un usuario cuando la lista estaba vacía.
+
+---
+
 ## [Sin versionar] — 2026-07-18
 
 ### Cambiado

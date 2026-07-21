@@ -4,6 +4,8 @@
 
 BrokerCore es un sistema de gestión integral diseñado específicamente para corredoras de seguros. Desarrollado en Flask (Python) con base de datos MySQL, centraliza la administración de asegurados, pólizas, siniestros, comisiones y cobranzas en una única plataforma web accesible desde cualquier navegador. Incluye un panel de control con indicadores de negocio en tiempo real, gestión de usuarios por roles y herramientas de importación/exportación de datos.
 
+> **Documento principal:** [BrokerCore-Funcionalidades-y-Requerimientos.docx](./BrokerCore-Funcionalidades-y-Requerimientos.docx) — funcionalidades y requerimientos completos del sistema. Punto de partida recomendado para cualquiera que se sume al proyecto.
+
 ---
 
 ## Módulos principales
@@ -11,6 +13,7 @@ BrokerCore es un sistema de gestión integral diseñado específicamente para co
 - **Asegurados** — Registro y búsqueda de personas aseguradas por cédula de identidad.
 - **Pólizas** — Gestión del ciclo completo de pólizas (Persona/HCM, Auto, Patrimonial, Viaje, Fianza), incluyendo renovaciones, pagos y anulaciones.
 - **Siniestros** — Seguimiento de reclamaciones: Carta Aval, Reembolso médico y Siniestro de Auto.
+- **Gestión de Producto** — Catálogo administrable de Compañía → Ramo → Subramo → Producto que alimenta el formulario de pólizas, con altas/bajas restringidas por rol.
 - **Comisiones** — Registro de comisiones recibidas de las aseguradoras (carga manual) y generación de reportes por ejecutivo.
 - **Cobranza** — Seguimiento de cobros de primas, proyección anual y exportación a Excel.
 - **Ejecutivos** — CRUD de ejecutivos de ventas.
@@ -34,20 +37,28 @@ BrokerCore está diseñado para corredoras de seguros venezolanas que necesitan:
 
 ## Inicio rápido
 
-1. **Instalación** — Siga la guía completa en [`docs/instalacion.md`](./instalacion.md) para configurar el entorno, la base de datos y el primer usuario administrador.
-2. **Configuración** — Revise las variables de entorno en [`docs/configuracion.md`](./configuracion.md).
+1. **Instalación** — Siga la guía completa en [`instalacion/instalacion.md`](./instalacion/instalacion.md) para configurar el entorno, la base de datos y el primer usuario administrador.
+2. **Configuración** — Revise las variables de entorno en [`instalacion/configuracion.md`](./instalacion/configuracion.md).
 3. **Primer ingreso** — Inicie el servidor con `python run.py` y acceda a `http://localhost:5600` con las credenciales del usuario administrador creado durante la instalación.
 
 ---
 
 ## Índice de documentación
 
+### Documento principal
+
+| Documento | Descripción |
+|---|---|
+| [BrokerCore-Funcionalidades-y-Requerimientos.docx](./BrokerCore-Funcionalidades-y-Requerimientos.docx) | Funcionalidades y requerimientos técnico-funcionales completos del sistema |
+
 ### Presentación
 
 | Documento | Descripción |
 |---|---|
-| [RESUMEN-EJECUTIVO.md](./RESUMEN-EJECUTIVO.md) | Resumen de una página: problema, módulos, stack y estado actual |
-| [DEMO-GUION.md](./DEMO-GUION.md) | Guión paso a paso para la demo en vivo |
+| [presentacion/RESUMEN-EJECUTIVO.md](./presentacion/RESUMEN-EJECUTIVO.md) | Resumen de una página: problema, módulos, stack y estado actual |
+| [presentacion/DEMO-GUION.md](./presentacion/DEMO-GUION.md) | Guión paso a paso para la demo en vivo |
+| [presentacion/presentacion.html](./presentacion/presentacion.html) | Presentación de producto en HTML — abrir en cualquier navegador |
+| [presentacion/BrokerCore-Presentacion.pptx](./presentacion/BrokerCore-Presentacion.pptx) | Presentación de producto en slides (versión anterior, puede estar desactualizada) |
 
 ### Guías de usuario
 
@@ -75,6 +86,6 @@ BrokerCore está diseñado para corredoras de seguros venezolanas que necesitan:
 
 | Documento | Descripción |
 |---|---|
-| [instalacion.md](./instalacion.md) | Guía de instalación paso a paso |
-| [configuracion.md](./configuracion.md) | Referencia completa de variables de entorno |
+| [instalacion/instalacion.md](./instalacion/instalacion.md) | Guía de instalación paso a paso |
+| [instalacion/configuracion.md](./instalacion/configuracion.md) | Referencia completa de variables de entorno |
 | [CHANGELOG.md](./CHANGELOG.md) | Historial de versiones |

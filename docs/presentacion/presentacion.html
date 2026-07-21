@@ -1,0 +1,533 @@
+<title>BrokerCore — Sistema de gestión para corredoras de seguros</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef2f8;
+    --ink: #0f172a;
+    --ink-soft: #475569;
+    --ink-faint: #64748b;
+    --primary: #1a56db;
+    --primary-deep: #1648c0;
+    --primary-rgb: 26, 86, 219;
+    --border: #e2e8f0;
+    --success: #0e9f6e;
+    --violet: #3a0ca3;
+    --cyan: #0891b2;
+    --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 24px 48px -12px rgba(15, 23, 42, 0.16);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --nav-h: #0b1120;
+    --nav-h-soft: #93a4c3;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1120;
+      --surface: #131c2e;
+      --surface-2: #182238;
+      --ink: #eef2f8;
+      --ink-soft: #a9b7cf;
+      --ink-faint: #7c8bab;
+      --primary: #6690ff;
+      --primary-deep: #8aa9ff;
+      --primary-rgb: 102, 144, 255;
+      --border: rgba(255, 255, 255, 0.09);
+      --success: #34d399;
+      --violet: #b39ce8;
+      --cyan: #5fd4e8;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b1120;
+    --surface: #131c2e;
+    --surface-2: #182238;
+    --ink: #eef2f8;
+    --ink-soft: #a9b7cf;
+    --ink-faint: #7c8bab;
+    --primary: #6690ff;
+    --primary-deep: #8aa9ff;
+    --primary-rgb: 102, 144, 255;
+    --border: rgba(255, 255, 255, 0.09);
+    --success: #34d399;
+    --violet: #b39ce8;
+    --cyan: #5fd4e8;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-2: #eef2f8;
+    --ink: #0f172a;
+    --ink-soft: #475569;
+    --ink-faint: #64748b;
+    --primary: #1a56db;
+    --primary-deep: #1648c0;
+    --primary-rgb: 26, 86, 219;
+    --border: #e2e8f0;
+    --success: #0e9f6e;
+    --violet: #3a0ca3;
+    --cyan: #0891b2;
+    --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 24px 48px -12px rgba(15, 23, 42, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img, svg { max-width: 100%; }
+  section { padding: 5.5rem 1.5rem; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .narrow { max-width: 680px; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+  p { line-height: 1.65; color: var(--ink-soft); margin: 0; }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+
+  /* ---------- HERO (fixed dark ground — mirrors the product's own sidebar) ---------- */
+  .hero {
+    background:
+      radial-gradient(circle at 18% 0%, rgba(102, 144, 255, .18), transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(58, 12, 163, .16), transparent 45%),
+      var(--nav-h);
+    color: #f1f5f9;
+    padding: 6.5rem 1.5rem 5rem;
+    position: relative;
+  }
+  .hero .eyebrow { color: #8aa9ff; }
+  .hero .eyebrow::before { background: #8aa9ff; }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1.02;
+    margin: 1rem 0 1.25rem;
+    max-width: 11ch;
+  }
+  .hero .lede {
+    color: #b6c2dc;
+    font-size: 1.2rem;
+    max-width: 46ch;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    max-width: 720px;
+  }
+  .hero-stat {
+    background: rgba(255, 255, 255, .04);
+    padding: 1.1rem 1.3rem;
+  }
+  .hero-stat b {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-stat span {
+    font-size: .8rem;
+    color: #93a4c3;
+  }
+
+  /* ---------- PROBLEM ---------- */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .problem-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.6rem;
+  }
+  .problem-card .glyph {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: .9rem;
+  }
+  .problem-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+  .problem-card p { font-size: .92rem; }
+
+  /* ---------- MODULES ---------- */
+  .modules { background: var(--surface-2); }
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+    margin-top: 2.5rem;
+  }
+  .module-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .module-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  }
+  .module-card .tag {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--success);
+    background: rgba(14, 159, 110, .12);
+    padding: .2rem .55rem;
+    border-radius: var(--radius-sm);
+  }
+  .module-card .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--primary-rgb), .1);
+    color: var(--primary);
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+  }
+  .module-card h3 { font-size: 1.05rem; margin-bottom: .4rem; }
+  .module-card p { font-size: .9rem; }
+
+  /* ---------- FLOW ---------- */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-top: 3rem;
+    counter-reset: step;
+  }
+  .flow-step {
+    text-align: center;
+    padding: 0 .6rem;
+    position: relative;
+  }
+  .flow-step::before {
+    counter-increment: step;
+    content: counter(step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin: 0 auto .9rem;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+    position: relative;
+    z-index: 1;
+  }
+  .flow-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .flow-step h4 { font-size: .88rem; font-weight: 700; margin-bottom: .3rem; }
+  .flow-step p { font-size: .78rem; }
+
+  /* ---------- QUALITY ---------- */
+  .quality-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .quality-card { padding: 0; }
+  .quality-card .icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .quality-card:nth-of-type(1) .icon { background: rgba(var(--primary-rgb), .12); color: var(--primary); }
+  .quality-card:nth-of-type(2) .icon { background: rgba(14, 159, 110, .12); color: var(--success); }
+  .quality-card:nth-of-type(3) .icon { background: rgba(58, 12, 163, .12); color: var(--violet); }
+  .quality-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+  .quality-card p { font-size: .92rem; }
+
+  /* ---------- STACK ---------- */
+  .stack { background: var(--surface-2); }
+  .stack-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+  .stack-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .9rem; }
+  .stack-list li { display: flex; gap: .7rem; font-size: .95rem; color: var(--ink); }
+  .stack-list li::before { content: "→"; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+  .deploy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.6rem;
+    box-shadow: var(--shadow);
+  }
+  .deploy-card .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--success);
+    background: rgba(14, 159, 110, .12);
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .deploy-card .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+  /* ---------- CLOSING ---------- */
+  .closing {
+    background: var(--nav-h);
+    color: #f1f5f9;
+    text-align: center;
+  }
+  .closing h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); max-width: 24ch; margin: 0 auto 1rem; }
+  .closing p { color: #b6c2dc; max-width: 46ch; margin: 0 auto; }
+  .closing .foot { margin-top: 3rem; font-size: .8rem; color: #64748b; }
+
+  h2.section-title { font-size: clamp(1.6rem, 3.2vw, 2.1rem); }
+  .section-head { max-width: 640px; }
+  .section-head p { margin-top: .8rem; font-size: 1.02rem; }
+
+  @media (max-width: 860px) {
+    .problem-grid, .module-grid, .quality-grid { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr 1fr; row-gap: 2rem; }
+    .flow-step:nth-child(2)::after, .flow-step:nth-child(4)::after { display: none; }
+    .stack-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    section { padding: 3.5rem 1.25rem; }
+    .problem-grid, .module-grid, .quality-grid, .flow { grid-template-columns: 1fr; }
+    .flow-step::after { display: none; }
+  }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Sistema de gestión · Corredoras de seguros</span>
+    <h1>BrokerCore</h1>
+    <p class="lede">
+      Asegurados, pólizas, siniestros, comisiones y cobranza en una sola plataforma web —
+      en producción hoy, no un prototipo.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>8</b><span>módulos integrados</span></div>
+      <div class="hero-stat"><b>4</b><span>roles con permisos propios</span></div>
+      <div class="hero-stat"><b>1</b><span>plataforma, cualquier navegador</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="problem">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">El problema</span>
+      <h2 class="section-title">La operación vive repartida en planillas sueltas</h2>
+      <p>Cada corredora termina reconstruyendo a mano lo que el sistema debería saber solo.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="glyph">🗂️</span>
+        <h3>Datos dispersos</h3>
+        <p>Asegurados en una planilla, pólizas en otra, comisiones de cada aseguradora en archivos sueltos.</p>
+      </div>
+      <div class="problem-card">
+        <span class="glyph">🔁</span>
+        <h3>Trabajo duplicado</h3>
+        <p>La misma información se transcribe varias veces entre planillas, con errores que se acumulan.</p>
+      </div>
+      <div class="problem-card">
+        <span class="glyph">📉</span>
+        <h3>Sin vista consolidada</h3>
+        <p>Reconstruir el estado real del negocio al cierre de mes es un ejercicio manual, no una consulta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="modules">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">La solución</span>
+      <h2 class="section-title">Un módulo por cada parte del negocio, todos conectados</h2>
+      <p>Nada vive aislado: una póliza sabe quién es su asegurado, qué comisión generó y qué cobros tiene pendientes.</p>
+    </div>
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="icon">👤</div>
+        <h3>Asegurados</h3>
+        <p>Registro y búsqueda de personas aseguradas por cédula de identidad.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">📄</div>
+        <h3>Pólizas</h3>
+        <p>Ciclo completo — Persona/HCM, Auto, Patrimonial, Viaje, Fianza — con renovaciones, pagos y anulaciones.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">⚠️</div>
+        <h3>Siniestros</h3>
+        <p>Carta Aval, Reembolso médico y Siniestro de Auto, con seguimiento auditado por notas.</p>
+      </div>
+      <div class="module-card">
+        <span class="tag">Nuevo</span>
+        <div class="icon">📦</div>
+        <h3>Gestión de Producto</h3>
+        <p>Catálogo administrable de Compañía → Ramo → Subramo → Producto que alimenta el alta de pólizas, sin tocar código.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">💰</div>
+        <h3>Comisiones</h3>
+        <p>Registro de comisiones recibidas por aseguradora y reportes automáticos por ejecutivo.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">🧾</div>
+        <h3>Cobranza</h3>
+        <p>Seguimiento de cobros de primas, proyección anual y exportación a Excel.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">🏢</div>
+        <h3>Compañías y Ejecutivos</h3>
+        <p>CRUD de aseguradoras y del equipo de ventas que las gestiona.</p>
+      </div>
+      <div class="module-card">
+        <div class="icon">📊</div>
+        <h3>Dashboard y Reportes</h3>
+        <p>Indicadores de negocio en tiempo real y reporte regulatorio Sudaseg.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="journey">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">De punta a punta</span>
+      <h2 class="section-title">El camino completo funciona hoy en producción</h2>
+    </div>
+    <div class="flow">
+      <div class="flow-step"><h4>Asegurado</h4><p>Se registra una vez</p></div>
+      <div class="flow-step"><h4>Póliza</h4><p>Producto del catálogo, no texto libre</p></div>
+      <div class="flow-step"><h4>Cobro</h4><p>Primas y proyección anual</p></div>
+      <div class="flow-step"><h4>Comisión</h4><p>Por aseguradora y ejecutivo</p></div>
+      <div class="flow-step"><h4>Reporte</h4><p>Interno y regulatorio (Sudaseg)</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="quality">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Calidad</span>
+      <h2 class="section-title">Pensado para el equipo que lo usa todos los días</h2>
+    </div>
+    <div class="quality-grid">
+      <div class="problem-card quality-card">
+        <div class="icon">🎨</div>
+        <h3>Interfaz consistente</h3>
+        <p>Un sistema de diseño único — colores, tipografía, sombras — en los ocho módulos, en vez de cada pantalla con su propio estilo.</p>
+      </div>
+      <div class="problem-card quality-card">
+        <div class="icon">♿</div>
+        <h3>Accesibilidad real</h3>
+        <p>Navegación por teclado, lectores de pantalla y contraste verificado contra WCAG 2.1 AA — no una casilla marcada, un estándar aplicado.</p>
+      </div>
+      <div class="problem-card quality-card">
+        <div class="icon">⚡</div>
+        <h3>Feedback inmediato</h3>
+        <p>Estados de carga, confirmaciones y transiciones en cada acción — el sistema siempre le muestra al usuario qué está pasando.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Debajo del capó</span>
+      <h2 class="section-title">Arquitectura simple, a propósito</h2>
+      <p>Un monolito Flask sin capas de abstracción innecesarias — fácil de razonar, fácil de mantener, fácil de auditar.</p>
+    </div>
+    <div class="stack-row">
+      <ul class="stack-list">
+        <li>Flask (Python) + MySQL / TiDB Cloud, sin ORM de por medio</li>
+        <li>Jinja2 + Bootstrap 5 para una interfaz consistente en toda la app</li>
+        <li>Roles diferenciados: Administración, Gerencia, Operaciones, Ventas</li>
+        <li>Catálogos administrables en vez de datos hardcodeados en el código</li>
+      </ul>
+      <div class="deploy-card">
+        <span class="pill">En producción</span>
+        <h3 style="font-size:1.05rem; margin-bottom:.6rem;">Desplegado en Render.com</h3>
+        <p style="font-size:.92rem;">Con soporte Docker como alternativa portable — mismo código, cualquier proveedor con contenedores. Sin dependencia de una nube específica.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <span class="eyebrow">Listo para mostrar</span>
+    <h2>Esto no es una maqueta — es la operación real de una corredora, corriendo hoy.</h2>
+    <p>Cada pantalla de esta presentación existe en el producto. La demo en vivo sigue el mismo camino: asegurado, póliza, cobro, comisión, reporte.</p>
+    <div class="foot">BrokerCore — Sistema de gestión para corredoras de seguros</div>
+  </div>
+</section>
