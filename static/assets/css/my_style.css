@@ -41,6 +41,22 @@
   --navbar-height:    60px;
   --sidebar-collapsed: 5rem;
   --sidebar-expanded:  17.25rem;
+  /* decomposed RGB of --primary (#1a56db), for building translucent tints via rgba(var(--primary-rgb), X) */
+  --primary-rgb:      26, 86, 219;
+
+  /* --------------------------------------------------------
+     Analytics/BI accent palette — secondary, page-scoped
+     palette used by BI/analytics dashboards. Not primary
+     brand colors; kept visually separate from the core tokens
+     above.
+     -------------------------------------------------------- */
+  --analytics-purple:       #3a0ca3;
+  --analytics-cyan:         #4cc9f0;
+  --analytics-pink:         #f72585;
+  --analytics-success:      #2dc653;
+  --analytics-warning:      #f4a261;
+  --analytics-danger:       #e63946;
+  --analytics-glass-border: rgba(255,255,255,0.18);
 }
 
 

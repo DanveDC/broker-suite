@@ -8,15 +8,6 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-:root {
-    --pri2:  #7c3aed;
-    --ok:    #10b981;
-    --warn:  #f59e0b;
-    --err:   #ef4444;
-    --glass: rgba(255,255,255,0.85);
-    --gb:    rgba(255,255,255,0.45);
-}
-
 *, *::before, *::after { box-sizing: border-box; }
 body { font-family: 'Outfit','Segoe UI',sans-serif; }
 
@@ -29,17 +20,17 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 
 /* ── GLASS CARD ── */
 .g-card {
-    background: var(--glass);
+    background: var(--glass-bg);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border: 1px solid var(--gb);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
     transition: box-shadow .3s, transform .3s;
 }
-.g-card:hover { box-shadow: 0 16px 48px rgba(79,70,229,.14); transform: translateY(-3px); }
+.g-card:hover { box-shadow: 0 16px 48px rgba(var(--primary-rgb),.14); transform: translateY(-3px); }
 .g-card::before {
     content:'';position:absolute;inset:0;border-radius:var(--radius-lg);
     padding:1px;
@@ -62,7 +53,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .filter-bar {
     background:rgba(255,255,255,.65);
     backdrop-filter:blur(12px);
-    border:1px solid var(--gb);
+    border:1px solid var(--glass-border);
     border-radius:var(--radius-lg);
     padding:1.1rem 1.4rem;
     display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;
@@ -77,24 +68,24 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     font-size:.88rem;font-weight:500;cursor:pointer;
     transition:all .25s;font-family:'Outfit',sans-serif;
 }
-.f-select:focus { border-color:var(--primary);box-shadow:0 0 0 4px rgba(79,70,229,.12);outline:none; }
+.f-select:focus { border-color:var(--primary);box-shadow:0 0 0 4px rgba(var(--primary-rgb),.12);outline:none; }
 .btn-consult {
     display:flex;align-items:center;gap:8px;
-    background:linear-gradient(135deg,var(--primary),var(--pri2));
+    background:linear-gradient(135deg,var(--primary),var(--accent-secondary));
     color:#fff;border:none;border-radius:var(--radius-md);
     padding:.62rem 1.6rem;font-weight:700;font-size:.92rem;
     cursor:pointer;white-space:nowrap;
-    box-shadow:0 6px 20px rgba(79,70,229,.35);
+    box-shadow:0 6px 20px rgba(var(--primary-rgb),.35);
     transition:all .3s cubic-bezier(.175,.885,.32,1.275);
     font-family:'Outfit',sans-serif;
 }
-.btn-consult:hover { transform:translateY(-2px);box-shadow:0 12px 28px rgba(79,70,229,.45); }
+.btn-consult:hover { transform:translateY(-2px);box-shadow:0 12px 28px rgba(var(--primary-rgb),.45); }
 
 /* ── ACTION BUTTONS ── */
 .btn-preview {
     display:inline-flex;align-items:center;gap:7px;
-    background:rgba(79,70,229,.08);color:var(--primary);
-    border:1.5px solid rgba(79,70,229,.2);border-radius:var(--radius-md);
+    background:rgba(var(--primary-rgb),.08);color:var(--primary);
+    border:1.5px solid rgba(var(--primary-rgb),.2);border-radius:var(--radius-md);
     padding:.5rem 1.2rem;font-weight:700;font-size:.86rem;
     cursor:pointer;transition:all .25s;font-family:'Outfit',sans-serif;
 }
@@ -110,10 +101,10 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .btn-download:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.4);color:#fff; }
 
 /* ── VIEW TABS ── */
-.view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:var(--radius-md);padding:.3rem;margin-bottom:1.4rem; }
+.view-tabs { display:flex;gap:.4rem;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:.3rem;margin-bottom:1.4rem; }
 .view-tab { flex:1;text-align:center;padding:.5rem 1rem;border-radius:var(--radius-md);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;border:none;background:transparent;color:var(--text-muted); }
-.view-tab.active { background:linear-gradient(135deg,var(--primary),var(--pri2));color:#fff;box-shadow:0 4px 16px rgba(79,70,229,.3); }
-.view-tab:not(.active):hover { background:rgba(79,70,229,.07);color:var(--primary); }
+.view-tab.active { background:linear-gradient(135deg,var(--primary),var(--accent-secondary));color:#fff;box-shadow:0 4px 16px rgba(var(--primary-rgb),.3); }
+.view-tab:not(.active):hover { background:rgba(var(--primary-rgb),.07);color:var(--primary); }
 .view-pane { display:none; }
 .view-pane.active { display:block; }
 
@@ -133,31 +124,31 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
 .kpi-sub { font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:.4rem; }
 
 /* ── MAIN TABLE ── */
-.table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--gb);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm); }
+.table-wrap { background:rgba(255,255,255,.55);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm); }
 .tbl-header { padding:1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.05); }
 .tbl-title  { font-size:.95rem;font-weight:800;color:var(--text-main); }
 .tbl-badge  { background:#f1f5f9;color:#475569;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:.04em; }
 
 .tbl-sudaseg { width:100%;border-collapse:collapse; }
 .tbl-sudaseg thead th {
-    background:rgba(79,70,229,.06);
+    background:rgba(var(--primary-rgb),.06);
     font-size:.68rem;font-weight:800;text-transform:uppercase;
     letter-spacing:.06em;color:var(--text-muted);
-    padding:.75rem 1rem;border-bottom:1px solid rgba(79,70,229,.1);
+    padding:.75rem 1rem;border-bottom:1px solid rgba(var(--primary-rgb),.1);
     white-space:nowrap;
 }
 .tbl-sudaseg tbody tr {
     border-bottom:1px solid rgba(0,0,0,.04);
     transition:background .18s;
 }
-.tbl-sudaseg tbody tr:hover { background:rgba(79,70,229,.03); }
+.tbl-sudaseg tbody tr:hover { background:rgba(var(--primary-rgb),.03); }
 .tbl-sudaseg tbody td { padding:.7rem 1rem;font-size:.86rem;font-weight:500;vertical-align:middle; }
 .tbl-sudaseg tbody tr:last-child { border-bottom:none; }
 
 /* Cell styles */
 .aseg-chip {
     display:inline-flex;align-items:center;gap:6px;
-    background:rgba(79,70,229,.07);color:var(--primary);
+    background:rgba(var(--primary-rgb),.07);color:var(--primary);
     border-radius:var(--radius-sm);padding:3px 10px;font-size:.78rem;font-weight:700;
     max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
@@ -357,7 +348,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
     background: var(--primary)!important; color:#fff!important; border:none!important; border-radius:var(--radius-sm)!important;
 }
 #tblSudaseg_wrapper .dataTables_paginate .paginate_button:hover {
-    background: rgba(79,70,229,.1)!important; color:var(--primary)!important; border:none!important; border-radius:var(--radius-sm)!important;
+    background: rgba(var(--primary-rgb),.1)!important; color:var(--primary)!important; border:none!important; border-radius:var(--radius-sm)!important;
 }
 #tblSudaseg_wrapper .dataTables_info { font-size:.8rem; color:var(--text-muted); }
 #tblSudaseg_wrapper { padding:.5rem 1rem 1rem; }
@@ -515,7 +506,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                             </td>
                             <td class="text-center">
                                 {% if d.porcentaje_commission %}
-                                <span style="background:rgba(79,70,229,.08);color:var(--primary);border-radius:var(--radius-sm);padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
+                                <span style="background:rgba(var(--primary-rgb),.08);color:var(--primary);border-radius:var(--radius-sm);padding:2px 8px;font-weight:700;font-size:.76rem;">{{ d.porcentaje_commission }}%</span>
                                 {% else %}—{% endif %}
                             </td>
                             <td>
@@ -529,7 +520,7 @@ body { font-family: 'Outfit','Segoe UI',sans-serif; }
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <tr style="background:rgba(79,70,229,.04);border-top:2px solid rgba(79,70,229,.15);">
+                        <tr style="background:rgba(var(--primary-rgb),.04);border-top:2px solid rgba(var(--primary-rgb),.15);">
                             <td colspan="5" style="padding:.8rem 1.2rem;font-size:.8rem;font-weight:800;color:var(--primary);">TOTAL</td>
                             <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#334155;">${{ "{:,.2f}".format(total_prima) }}</td>
                             <td class="text-end" style="padding:.8rem 1rem;font-size:.85rem;font-weight:800;color:#059669;">${{ "{:,.2f}".format(total_com) }}</td>
