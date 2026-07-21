@@ -30,7 +30,7 @@
 
         <div class="card-body">
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
               <label for="Cod_compania" class="form-label">
                 Compañía
               </label>
@@ -41,16 +41,9 @@
                   %}selected{% endif %}>{{ company.Nombre }}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="col-md-6">
-              <label for="base" class="form-label">
-                Base
-              </label>
-              <select id="base" class="form-select" name="base" required>
-                <option value="">Seleccione una opción</option>
-                <option value="nacional" {% if producto.base=='nacional' %}selected{% endif %}>Nacional</option>
-                <option value="internacional" {% if producto.base=='internacional' %}selected{% endif %}>Internacional</option>
-              </select>
+              <!-- base se preserva tal cual venía (hay ~40 filas internacionales del seed original);
+                   no se hardcodea a "nacional" para no pisar esas filas al editarlas. -->
+              <input type="hidden" name="base" value="{{ producto.base }}">
             </div>
           </div>
 

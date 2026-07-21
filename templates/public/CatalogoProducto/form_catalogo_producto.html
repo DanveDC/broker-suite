@@ -22,7 +22,7 @@
         autocomplete="off">
         <div class="card-body">
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
               <label for="Cod_compania" class="form-label">
                 Compañía
               </label>
@@ -32,16 +32,7 @@
                 <option value="{{ company.Cod_compania }}">{{ company.Nombre }}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="col-md-6">
-              <label for="base" class="form-label">
-                Base
-              </label>
-              <select id="base" class="form-select" name="base" required>
-                <option value="">Seleccione una opción</option>
-                <option value="nacional">Nacional</option>
-                <option value="internacional">Internacional</option>
-              </select>
+              <input type="hidden" name="base" value="nacional">
             </div>
           </div>
 

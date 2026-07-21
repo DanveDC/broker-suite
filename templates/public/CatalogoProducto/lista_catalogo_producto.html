@@ -51,7 +51,6 @@
         <thead>
           <tr>
             <th>Compañía</th>
-            <th>Base</th>
             <th>Ramo</th>
             <th>Subramo</th>
             <th>Producto</th>
@@ -63,7 +62,6 @@
           {% for item in catalogo %}
           <tr id="catalogo_{{ item.id }}" class="{{ 'catalogo-inactivo' if not item.activo else '' }}">
             <td>{{ item.Nombre }}</td>
-            <td>{{ 'Nacional' if item.base == 'nacional' else 'Internacional' }}</td>
             <td>{{ item.Ramo }}</td>
             <td>{{ item.Subramo }}</td>
             <td>{{ item.Producto }}</td>
