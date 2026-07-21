@@ -55,28 +55,28 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Patrimonial', 'RESPONSABILIDAD PATRONAL', 'RESPONSABILIDAD PATRONAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Patrimonial', 'RIESGOS DIVERSOS', 'RIESGOS DIVERSOS'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Patrimonial', 'TRANSPORTE TERRESTRE', 'TRANSPORTE TERRESTRE OCASIONAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA REGIONAL'), 'internacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: CONTINENTAL (internacional) -- 8 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'ANUALES MULTIVIAJES', 'CORPORATIVO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'POR DÍAS', 'CONSUL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'POR DÍAS', 'GLOBAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'POR DÍAS', 'MAXIMUS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'POR DÍAS', 'SUPREME'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'POR DÍAS', 'TOTAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'LARGAS ESTADÍAS', 'LARGAS ESTADÍAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viajes', 'ESTUDIANTES', 'ESTUDIANTES');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'ANUALES MULTIVIAJES', 'CORPORATIVO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'POR DÍAS', 'CONSUL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'POR DÍAS', 'GLOBAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'POR DÍAS', 'MAXIMUS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'POR DÍAS', 'SUPREME'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'POR DÍAS', 'TOTAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'LARGAS ESTADÍAS', 'LARGAS ESTADÍAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CONTINENTAL'), 'internacional', 'Viaje', 'ESTUDIANTES', 'ESTUDIANTES');
 
 -- Company: AFIANAUCO (internacional) -- 4 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'AFIANAUCO'), 'internacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: AMERICAN FIDELITY (internacional) -- 1 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -141,9 +141,9 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Patrimonial', 'RESPONSABILIDAD PATRONAL', 'RESPONSABILIDAD PATRONAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Patrimonial', 'RIESGOS DIVERSOS', 'RIESGOS DIVERSOS'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Patrimonial', 'TRANSPORTE TERRESTRE', 'TRANSPORTE TERRESTRE OCASIONAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO LABORAL', 'FIEL CUMPLIMIENTO LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO LABORAL', 'FIEL CUMPLIMIENTO LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'ESTAR SEGUROS'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: LA INTERNACIONAL (nacional) -- 21 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -164,10 +164,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Patrimonial', 'RESPONSABILIDAD PATRONAL', 'RESPONSABILIDAD PATRONAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Patrimonial', 'RIESGOS DIVERSOS', 'RIESGOS DIVERSOS'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Patrimonial', 'TRANSPORTE TERRESTRE', 'TRANSPORTE TERRESTRE OCASIONAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'LA INTERNACIONAL'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: CARACAS (nacional) -- 23 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -190,10 +190,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Patrimonial', 'RESPONSABILIDAD PATRONAL', 'RESPONSABILIDAD PATRONAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Patrimonial', 'RIESGOS DIVERSOS', 'RIESGOS DIVERSOS'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Patrimonial', 'TRANSPORTE TERRESTRE', 'TRANSPORTE TERRESTRE OCASIONAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'CARACAS'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: banesco (nacional) -- 8 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -225,10 +225,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Persona', 'FUNERARIO', 'PLAN INDIVIDUAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Persona', 'FUNERARIO', 'PLAN FAMILIAR'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Persona', 'FUNERARIO', 'FUNERARIO COLECTIVO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'QUALITAS'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: UNISEGUROS (nacional) -- 12 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -240,10 +240,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Auto', 'RCV', 'RCV'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Auto', 'RCV', 'RCV + GRÚA'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Auto', 'FLOTA DE VEHÍCULOS', 'FLOTA DE VEHÍCULOS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'UNISEGUROS'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: OCEANICA (nacional) -- 24 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -267,10 +267,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Patrimonial', 'RESPONSABILIDAD PATRONAL', 'RESPONSABILIDAD PATRONAL'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Patrimonial', 'RIESGOS DIVERSOS', 'RIESGOS DIVERSOS'),
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Patrimonial', 'TRANSPORTE TERRESTRE', 'TRANSPORTE TERRESTRE OCASIONAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'OCEANICA'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: PIRAMIDE (nacional) -- 9 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
@@ -297,10 +297,10 @@ INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Pro
 -- Company: MAPFRE (nacional) -- 5 leaf entries
 INSERT INTO `catalogo_producto` (`Cod_compania`, `base`, `Ramo`, `Subramo`, `Producto`) VALUES
 ((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Persona', 'SALUD', 'PROTECCIÓN SALUD'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianzas', 'FIANZAS', 'FIANZAS'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianzas', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianzas', 'LABORAL', 'LABORAL'),
-((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianzas', 'LICITACION', 'LICITACION');
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianza', 'FIANZAS', 'FIANZAS'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianza', 'FIEL CUMPLIMIENTO', 'FIEL CUMPLIMIENTO'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianza', 'LABORAL', 'LABORAL'),
+((SELECT `Cod_compania` FROM `compania` WHERE `Nombre` = 'MAPFRE'), 'nacional', 'Fianza', 'LICITACION', 'LICITACION');
 
 -- Company: SEGUROS VENEZUELA (nacional) -- 18 leaf entries
 -- TODO: no matching compania row for 'SEGUROS VENEZUELA' -- insert it first or fix the name

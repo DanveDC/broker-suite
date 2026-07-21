@@ -5243,14 +5243,14 @@ def viewFormPoliza():
     if 'conectado' in session:
         if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
             base=session.get("base")
-            return render_template('public/Poliza/form_poliza.html',company=sql_lista_company(),asegurado=sql_lista_aseguradosBD(),base=base)
+            return render_template('public/Poliza/form_poliza.html',company=sql_lista_company(),asegurado=sql_lista_aseguradosBD(),base=base,catalogo_productos=sql_catalogo_producto_activo_por_base(base))
         else:
             flash('Tu usuario no tiene los permisos para esta funciÃƒÂ²n', 'error')
             return redirect(url_for('inicio1'))
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
         return redirect(url_for('inicio'))
-    
+
 @app.route('/registrar-asegurado', methods=['GET'])
 def viewFormAsegurado():
     if 'conectado' in session:
@@ -5299,10 +5299,11 @@ def formPoliza():
         else:
             flash(resultado.get('message', 'La poliza NO fue registrada.'), 'error')
             base = session.get("base")
-            return render_template('public/Poliza/form_poliza.html', 
+            return render_template('public/Poliza/form_poliza.html',
                                  company=sql_lista_company(),
                                  asegurado=sql_lista_aseguradosBD(),
-                                 base=base)
+                                 base=base,
+                                 catalogo_productos=sql_catalogo_producto_activo_por_base(base))
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
         return redirect(url_for('inicio'))
@@ -5507,7 +5508,7 @@ def traspasar_poliza(cod_poliza):
         if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
             traspasar_poliza_db(cod_poliza)
             base=session.get("base")
-            return render_template('public/Poliza/form_poliza.html',company=sql_lista_company(),asegurado=sql_lista_aseguradosBD(),base=base)
+            return render_template('public/Poliza/form_poliza.html',company=sql_lista_company(),asegurado=sql_lista_aseguradosBD(),base=base,catalogo_productos=sql_catalogo_producto_activo_por_base(base))
         else:
             flash('Tu usuario no tiene los permisos para esta funciÃƒÂ²n', 'error')
 

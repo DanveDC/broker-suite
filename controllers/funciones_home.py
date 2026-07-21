@@ -8995,3 +8995,27 @@ def sql_toggle_activo_catalogo_producto(id):
     except Exception as e:
         print(f"Error en sql_toggle_activo_catalogo_producto: {e}")
         return {'success': False, 'message': f'Error inesperado en sql_toggle_activo_catalogo_producto: {str(e)}'}
+
+def sql_catalogo_producto_activo_por_base(base):
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = ("""
+                    SELECT
+                         c.Nombre,
+                         cp.Ramo,
+                         cp.Subramo,
+                         cp.Producto
+                    FROM catalogo_producto AS cp
+                    INNER JOIN compania AS c ON c.Cod_compania = cp.Cod_compania
+                    WHERE cp.activo = 1 AND cp.base = %s
+                    ORDER BY c.Nombre, cp.Ramo, cp.Subramo, cp.Producto
+                    """)
+                cursor.execute(querySQL, (base,))
+                catalogobd = cursor.fetchall()
+
+        return catalogobd
+    except Exception as e:
+        print(
+            f"Error en la función sql_catalogo_producto_activo_por_base: {e}")
+        return None

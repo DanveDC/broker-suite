@@ -90,8 +90,9 @@
                 <option value="Persona">Persona</option>
                 <option value="Auto">Auto</option>
                 <option value="Patrimonial">Patrimonial</option>
-                <option value="Fianza">Fianzas </option>
+                <option value="Fianza">Fianza</option>
                 <option value="Viaje">Viaje</option>
+                <option value="Mascotas">Mascotas</option>
               </select>
             </div>
             <div class="col-md-6" id="camposPersona2">
@@ -393,351 +394,43 @@
 
     console.log(base)
 
-    const productosI = {
-      'MERCANTIL PANAMÁ': {
-        'Persona': {
-          'SALUD': ['INTEGRAL', 'VITAL'],
-          'VIDA': ['VIDA A TERMINO']
-        }
-      },
+    // catalogoFlat: flat rows { Nombre, Ramo, Subramo, Producto } for the
+    // active products of the current `base`, loaded from the DB-backed
+    // catalogo_producto table (see sql_catalogo_producto_activo_por_base
+    // in controllers/funciones_home.py). Replaces the old hardcoded
+    // productosI/productosN JS objects.
+    const catalogoFlat = {{ catalogo_productos | tojson }} || [];
 
-      'VUMI': {
-        'Persona': {
-          'SALUD': ['ACCESS VIP', 'ACCESS VIP LIGHT', 'ABSOLUTE VIP', 'UNIVERSAL VIP', 'SPECIAL VIP', 'SENIOR VIP', 'OPTIMUM VIP']
-        }
-      },
+    // Build the same nested shape the cascading logic below expects:
+    // { CompanyName: { Ramo: { Subramo: [Producto, ...] } } }
+    const productos = catalogoFlat.reduce(function (acc, row) {
+      const compania = row.Nombre;
+      const ramo = row.Ramo;
+      const subRamo = row.Subramo;
+      const producto = row.Producto;
 
+      if (!acc[compania]) acc[compania] = {};
+      if (!acc[compania][ramo]) acc[compania][ramo] = {};
+      if (!acc[compania][ramo][subRamo]) acc[compania][ramo][subRamo] = [];
+      acc[compania][ramo][subRamo].push(producto);
 
-      'LA REGIONAL': {
-        'Persona': {
-          'SALUD': ['MEDICARE CLASSIC'],
-          'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'EMBARCACIONES': ['EMBARCACIONES'],
-          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
-          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
+      return acc;
+    }, {});
 
-      'CONTINENTAL': {
-        'Viajes': {
-          'ANUALES MULTIVIAJES': ['CORPORATIVO'],
-          'POR DÍAS': ['CONSUL', 'GLOBAL', 'MAXIMUS', 'SUPREME', 'TOTAL'],
-          'LARGAS ESTADÍAS': ['LARGAS ESTADÍAS'],
-          'ESTUDIANTES': ['ESTUDIANTES']
-        }
-      },
-      'AFIANAUCO': {
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-
-      'AMERICAN FIDELITY': {
-        'Persona': {
-          'VIDA': ['VIDA']
-        }
-      },
-      'PAN-AMERICAN': {
-        'Persona': {
-          'VIDA': ['VIDA']
-        }
-      }
-    };
-
-    const productosN = {
-      'MERCANTIL': {
-        'Persona': {
-          'SALUD': ['5K - 50K', '100K - 200K', 'EMERGENCIAS MÉDICAS', 'SALUD COLECTIVO'],
-          'VIDA': ['DEL MAS ALLA', 'VIDA A TERMINO'],
-          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
-          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
-        },
-        'Auto': {
-          'CA/PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRUA'],
-          'FLOTA DE VEHICULOS': ['FLOTA DE VEHICULOS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
-        },
-        'Viaje': {
-          'POR DIAS': ['POR DIAS']
-        }
-      },
-      'ESTAR SEGUROS': {
-        'Persona': {
-          'SALUD': ['MEDICARE PLUS', 'AFFINITY', 'ENFERMEDADES GRAVES'],
-          'AP': ['AP COLECTIVO', 'AP ESCOLAR', 'AP INDIVIDUAL'],
-          'FUNERARIO': ['FUNERARIO COLECTIVO', 'PLAN FAMILIAR', 'PLAN INDIVIDUAL'],
-          'VIDA': ['VIDA TEMPORAL']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'EMBARCACIONES': ['EMBARCACIONES'],
-          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
-          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO LABORAL': ['FIEL CUMPLIMIENTO LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'LA INTERNACIONAL': {
-        'Persona': {
-          'SALUD': ['CLASICO', 'AÑOS PLATEADOS', 'DIAMANTE Y ZAFIRO']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'EMBARCACIONES': ['EMBARCACIONES'],
-          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
-          'RCG': ['RCG', 'RCG VAYAS PUBLICITARIAS'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
-          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'CARACAS': {
-        'Persona': {
-          'SALUD': ['SALUD EN EL EXTERIOR', 'SALUD LOCAL'],
-          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR', 'EMPLEADO SEGURO']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'EMBARCACIONES': ['EMBARCACIONES'],
-          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
-          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'banesco': {
-        'Persona': {
-          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        }
-      },
-      'UNIVERSITAS': {
-        'Persona': {
-          'SALUD': ['SALUD INDIVIDUAL'],
-          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Mascotas': {
-          'MASCOTAS': ['MASCOTAS PLUS']
-        }
-      },
-
-      'QUALITAS': {
-        'Persona': {
-          'SALUD': ['TU APOYO PREMIUM'],
-          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'UNISEGUROS': {
-        'Persona': {
-          'FUNERARIO': ['PLAN INDIVIDUAL', 'PLAN FAMILIAR', 'FUNERARIO COLECTIVO']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'OCEANICA': {
-        'Persona': {
-          'SALUD': ['HCM INDIVIDUAL', 'APOYO EN EMERGENCIAS'],
-          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR'],
-          'VIDA': ['Temporal', 'A termino']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['EMPRESAS'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'EMBARCACIONES': ['EMBARCACIONES'],
-          'INDUSTRIA Y COMERCIO': ['INDUSTRIA Y COMERCIO'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS'],
-          'TRANSPORTE TERRESTRE': ['TRANSPORTE TERRESTRE OCASIONAL']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'PIRAMIDE': {
-        'Persona': {
-          'SALUD': ['HCM INDIVIDUAL'],
-          'AP': ['AP INDIVIDUAL', 'AP COLECTIVO', 'AP ESCOLAR']
-        },
-        'Auto': {
-          'CA / PT': ['CA', 'PT'],
-          'RCV': ['RCV', 'RCV + GRÚA'],
-          'FLOTA DE VEHÍCULOS': ['FLOTA DE VEHÍCULOS']
-        }
-      },
-      'REAL SEGUROS': {
-        'Persona': {
-          'SALUD': ['SALUD TRADICIONAL', 'EMERGENCIAS MÉDICAS']
-        },
-        'Patrimonial': {
-          'COMBINADO EMPRESARIAL': ['COMBINADO EMPRESARIAL'],
-          'COMBINADO RESIDENCIAL': ['HOGAR'],
-          'RCG': ['RCG'],
-          'RESPONSABILIDAD PATRONAL': ['RESPONSABILIDAD PATRONAL'],
-          'RIESGOS DIVERSOS': ['RIESGOS DIVERSOS']
-        }
-      },
-      'MAPFRE': {
-        'Persona': {
-          'SALUD': ['PROTECCIÓN SALUD']
-        },
-        'Fianzas': {
-          'FIANZAS': ['FIANZAS'],
-          'FIEL CUMPLIMIENTO': ['FIEL CUMPLIMIENTO'],
-          'LABORAL': ['LABORAL'],
-          'LICITACION': ['LICITACION']
-        }
-      },
-      'SEGUROS VENEZUELA': {
-        'Persona': {
-          'SALUD': ['ORO', 'PLATA', 'BRONCE'],
-          'VIDA': ['IMPULSO FAMILIAR', 'PROTECCIÓN FAMILIAR', 'AYUDA FAMILIAR'],
-          'FUNERARIO': ['DIAMANTE', 'PLATINIUM', 'PLATA'],
-          'PREVENCIÓN FEMENINA': ['ORQUIDEA', 'ROSA', 'MARGARITA'],
-          'PREVENCIÓN MASCULINA': ['TIERRA', 'AGUA', 'AIRE']
-        },
-        'Auto': {
-          'COBERTURA AMPLIA': ['COBERTURA AMPLIA'],
-          'PERDIDA TOTAL': ['PERDIDA TOTAL'],
-          'RCV': ['RCV']
-        }
-      }
-    };
-
-    let productos;
-    if (base == "nacional") {
-      productos = productosN;
-    }
-    else { productos = productosI; }
-
-
-
-
-
-
-
-
-    function normalizeText(text) {
-      if (!text) return '';
-      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-    }
-
-    function findCompany(selectedCompania, productosObj) {
-      const normalizedSelected = normalizeText(selectedCompania);
-      if (!normalizedSelected) return null;
-
-      // Intento match exacto primero
-      if (productosObj[normalizedSelected]) return normalizedSelected;
-
-      // Intento match por subcadena (si la compañía seleccionada contiene la clave o viceversa)
-      const keys = Object.keys(productosObj);
-      for (const key of keys) {
-        const normalizedKey = normalizeText(key);
-        if (normalizedSelected.includes(normalizedKey) || normalizedKey.includes(normalizedSelected)) {
-          return key;
-        }
-      }
-      return null;
+    // Exact match only: catalogoFlat rows' Nombre comes from a
+    // `compania.Nombre` subquery (see sql_catalogo_producto_activo_por_base),
+    // so it is byte-identical to the <select name="company"> option value.
+    // No fuzzy/accent-stripped/substring matching is needed anymore.
+    function findCompany(selectedCompania) {
+      if (!selectedCompania) return null;
+      return productos[selectedCompania] ? selectedCompania : null;
     }
 
     function updateSubRamoOptions() {
       const companiaSeleccionada = (companiaSelect.value || '');
-      const companiaKey = findCompany(companiaSeleccionada, productos);
+      const companiaKey = findCompany(companiaSeleccionada);
 
-      let ramo = ramoSelect.value;
-      if (ramo === 'Fianza') ramo = 'Fianzas'; // Coincidir con la clave en los objetos
+      const ramo = ramoSelect.value;
 
       // Actualizar campo oculto MycompanyT
       const selectedOption = companiaSelect.options[companiaSelect.selectedIndex];
@@ -763,10 +456,9 @@
 
     function updateProductoOptions() {
       const companiaSeleccionada = (companiaSelect.value || '');
-      const companiaKey = findCompany(companiaSeleccionada, productos);
+      const companiaKey = findCompany(companiaSeleccionada);
 
-      let ramo = ramoSelect.value;
-      if (ramo === 'Fianza') ramo = 'Fianzas';
+      const ramo = ramoSelect.value;
       const subRamo = subRamoSelect.value;
 
       productoSelect.innerHTML = '<option value="">Selecciona un producto</option>';
