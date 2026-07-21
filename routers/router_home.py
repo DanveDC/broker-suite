@@ -1097,7 +1097,7 @@ def viewBuscarPolizaBD():
     filtro = data.get('filtro', None)
     resultadoBusqueda = buscarPolizaBD(busqueda, filtro)
     if resultadoBusqueda:
-        return render_template('public/poliza/resultado_busqueda_poliza.html', dataBusqueda=resultadoBusqueda,today=datetime.date.today())
+        return render_template('public/Poliza/resultado_busqueda_poliza.html', dataBusqueda=resultadoBusqueda,today=datetime.date.today())
     else:
         return jsonify({'fin': 0})
     
@@ -1235,13 +1235,13 @@ def view_form_pagos(id):
         if not prima['comision']:
           comision = asignar_comision(id)
           if comision: 
-              return render_template('public/poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=False, siguiente_cuota=siguiente_cuota)
+              return render_template('public/Poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=False, siguiente_cuota=siguiente_cuota)
           else:  
             flash('ComisiÃ³n no asignada, Ã‚Â¿desea agregarla manual ahora?', 'warning')
             # Renderiza el formulario de pago de todas formas, pero con una advertencia
-            return render_template('public/poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=True, cod_poliza=prima['Cod_poliza'], siguiente_cuota=siguiente_cuota)
+            return render_template('public/Poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=True, cod_poliza=prima['Cod_poliza'], siguiente_cuota=siguiente_cuota)
         else: 
-            return render_template('public/poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=False, siguiente_cuota=siguiente_cuota)
+            return render_template('public/Poliza/form_pagos.html', cod_renovacion=id, monto=monto, dolar=last_update, advertencia_comision=False, siguiente_cuota=siguiente_cuota)
        
     else:
         flash('Primero debes iniciar sesiÃ³n.', 'error')
@@ -1254,7 +1254,7 @@ def view_form_renovar(id):
         contrato=contratos[0]
         fecha_vencimiento=contrato["Fecha_vencimiento"]
 
-        return render_template('public/poliza/form_renovar.html',cod_poliza=id,fecha_vencimiento=fecha_vencimiento, contrato=contrato)
+        return render_template('public/Poliza/form_renovar.html',cod_poliza=id,fecha_vencimiento=fecha_vencimiento, contrato=contrato)
        
     else:
         flash('Primero debes iniciar sesiÃ³n.', 'error')
@@ -1302,7 +1302,7 @@ def registrar_form_pagos():
             except Exception as e:
                 print(f"Error al obtener el valor del dÃ³lar en el registro: {e}")
                 last_update = ''
-            return render_template('public/poliza/form_pagos.html', cod_renovacion=Cod_renovacion, monto=monto, dolar=last_update)
+            return render_template('public/Poliza/form_pagos.html', cod_renovacion=Cod_renovacion, monto=monto, dolar=last_update)
        
     else:
         flash('Primero debes iniciar sesiÃ³n.', 'error')
@@ -1471,7 +1471,7 @@ def registrar_comision(id):
 def ejecutivos():
     if 'conectado' in session:
         ejecutivos = lista_ejecutivosBD()
-        return render_template('public/ejecutivo/lista_ejecutivo.html', ejecutivos=ejecutivos)
+        return render_template('public/Ejecutivo/lista_ejecutivo.html', ejecutivos=ejecutivos)
     else:
         return redirect(url_for('inicioCpanel'))
 
@@ -5626,7 +5626,7 @@ def toggleActivoCatalogoProducto():
 def viewFormEjecutivo():
     if 'conectado' in session:
         if session.get("permisos")!="Ventas" and session.get("permisos")!="Gerencia":
-            return render_template('public/ejecutivo/form_ejecutivo.html')
+            return render_template('public/Ejecutivo/form_ejecutivo.html')
         else:
             flash('No tienes permiso para esta acciÃƒÂ²n', 'error')
             return redirect(url_for('inicio1'))
@@ -6469,8 +6469,8 @@ def EditarEjecutivo(id):
 
     except Exception as e:
         print(f"OcurriÃ³ un error al cargar datos del ejecutivo o productos seleccionados: {e}")
-        # AsegÃºrate de que 'error_page.html' exista o usa una plantilla genÃ©rica.
-        return render_template('error_page.html', error_message="Error al cargar los datos. Por favor, intÃ©ntelo de nuevo mÃ¡s tarde.")
+        flash('Error al cargar los datos del ejecutivo. Por favor, intÃ©ntelo de nuevo mÃ¡s tarde.', 'error')
+        return redirect(url_for('ejecutivos'))
 
     # Convertir los datos de la DB a tipos amigables para JSON antes de pasarlos al template
     if ejecutivo_data:
