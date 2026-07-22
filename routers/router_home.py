@@ -1226,7 +1226,7 @@ def view_form_pagos(id):
         try:
             with connectionBD() as conexion_MySQLdb:
                 with conexion_MySQLdb.cursor() as cursor:
-                    cursor.execute("SELECT nro_cuota FROM pago WHERE Cod_renovacion = %s ORDER BY CAST(nro_cuota AS INTEGER) ASC", (id,))
+                    cursor.execute("SELECT nro_cuota FROM pago WHERE Cod_renovacion = %s ORDER BY CAST(nro_cuota AS SIGNED) ASC", (id,))
                     existentes = [int(p['nro_cuota']) for p in cursor.fetchall() if p['nro_cuota'] is not None]
                     while siguiente_cuota in existentes:
                         siguiente_cuota += 1

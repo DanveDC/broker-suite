@@ -4961,7 +4961,7 @@ def lista_Pagos(cod):
                     INNER JOIN poliza po ON r.cod_poliza = po.cod_poliza
                     INNER JOIN compania co ON po.Cod_compania = co.Cod_compania
                     WHERE r.Cod_renovacion=%s 
-                    ORDER BY CAST(p.nro_cuota AS INTEGER) ASC
+                    ORDER BY CAST(p.nro_cuota AS SIGNED) ASC
                 """
                 cursor.execute(querySQL, (cod,))
                 PagosBD = cursor.fetchall()
@@ -5013,7 +5013,7 @@ def cobranza():
                     INNER JOIN poliza po ON r.cod_poliza = po.cod_poliza
                     INNER JOIN compania co ON po.Cod_compania = co.Cod_compania
                     INNER JOIN asegurado a ON po.CI_asegurado = a.CI
-                    ORDER BY CAST(p.nro_cuota AS INTEGER) ASC;
+                    ORDER BY CAST(p.nro_cuota AS SIGNED) ASC;
                 """
                 cursor.execute(querySQL,)
                 PagosBD = cursor.fetchall()
@@ -5568,7 +5568,7 @@ def obtener_pagos_filtrados(pago, comision, mes=None, asegurado_id=None, ano=Non
                 if conditions:
                     base_query += " WHERE " + " AND ".join(conditions)
                 
-                base_query += " ORDER BY CAST(p.nro_cuota AS INTEGER) ASC"
+                base_query += " ORDER BY CAST(p.nro_cuota AS SIGNED) ASC"
                 
                 mycursor.execute(base_query, tuple(params))
                 resultado_busqueda = mycursor.fetchall()
