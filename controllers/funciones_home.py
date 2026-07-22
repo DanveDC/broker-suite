@@ -750,8 +750,8 @@ def asignar_comision(cod_renovacion):
                             LEFT JOIN
                                 Patrimonio pa ON p.cod_poliza = pa.Cod_poliza
                             LEFT JOIN
-                                Viaje v ON p.cod_poliza = v.Cod_poliza
-                            LEFT JOIN 
+                                viaje v ON p.cod_poliza = v.Cod_poliza
+                            LEFT JOIN
                                 Fianza f ON p.cod_poliza = f.Cod_poliza
                             WHERE
                                 cr.Cod_renovacion = %s"""
@@ -1119,7 +1119,7 @@ def procesar_form_poliza(dataForm):
                     valores = (dataForm['numero_poliza'], dataForm.get('producto'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 elif Ramo == 'Viaje':
-                    sql = 'INSERT INTO Viaje (Cod_poliza, cod_pasaporte, Producto, Subramo) VALUES (%s, %s, %s, %s)'
+                    sql = 'INSERT INTO viaje (Cod_poliza, cod_pasaporte, Producto, Subramo) VALUES (%s, %s, %s, %s)'
                     valores = (dataForm['numero_poliza'], dataForm.get('cod_pasaporte'), dataForm.get('producto'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 
@@ -3284,7 +3284,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                                 asegurado a ON p.CI_asegurado = a.CI
                             JOIN
                                 ejecutivo e ON a.Ejecutivo = e.cod_ejecutivo
-                            INNER JOIN Viaje v ON p.cod_poliza = v.cod_poliza
+                            INNER JOIN viaje v ON p.cod_poliza = v.cod_poliza
                             INNER JOIN renovacion r on p.cod_poliza = r.cod_poliza
                             INNER JOIN compania c on p.Cod_compania = c.Cod_compania
                             WHERE p.cod_poliza = %s 
@@ -4801,7 +4801,7 @@ def procesar_actualizacion_poliza_viaje(dataForm, cod_poliza):
                 # 5. Actualizar poliza y tablas relacionadas
                 if nuevo_cod_poliza and nuevo_cod_poliza != cod_poliza:
                     cursor.execute("UPDATE renovacion SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE Viaje SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE viaje SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     
                     sql_poliza_update = "UPDATE poliza SET cod_poliza = %s, Tomador = %s, Fecha_emision = %s WHERE cod_poliza = %s"
                     valores_poliza = (nuevo_cod_poliza, tomador_form, fecha_emision_form, cod_poliza)
@@ -4814,7 +4814,7 @@ def procesar_actualizacion_poliza_viaje(dataForm, cod_poliza):
                 # 6. Actualizar Viaje
                 target_cod = nuevo_cod_poliza if (nuevo_cod_poliza and nuevo_cod_poliza != cod_poliza) else cod_poliza
                 if subramo_form and producto_form:
-                    sql_viaje_update = "UPDATE Viaje SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
+                    sql_viaje_update = "UPDATE viaje SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
                     cursor.execute(sql_viaje_update, (subramo_form, producto_form, target_cod))
 
                 conexion_MySQLdb.commit()
@@ -5250,7 +5250,7 @@ def eliminarPoliza(id):
                 elif Ramo == "Fianza":
                     sql = "DELETE FROM Fianza WHERE cod_poliza=%s"
                 else:
-                    sql = "DELETE FROM Viaje WHERE cod_poliza=%s"
+                    sql = "DELETE FROM viaje WHERE cod_poliza=%s"
 
                 cursor2.execute(sql,(id,))
                 cursor.execute(querySQL, (id,))
@@ -5742,7 +5742,7 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
                     LEFT JOIN Auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
                     LEFT JOIN Patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
                     LEFT JOIN Fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
-                    LEFT JOIN Viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
+                    LEFT JOIN viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
                 """
 
                 conditions = []
@@ -8367,7 +8367,7 @@ def procesar_registro_desde_pendiente(dataForm):
                 elif ramo == 'Fianza':
                     cursor.execute("INSERT INTO Fianza (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)", (cod_poliza, dataForm.get('producto'), dataForm.get('SubRamo')))
                 elif ramo == 'Viaje':
-                    cursor.execute("INSERT INTO Viaje (Cod_poliza, cod_pasaporte, Producto, Subramo) VALUES (%s, %s, %s, %s)", (cod_poliza, dataForm.get('pasaporte'), dataForm.get('producto'), dataForm.get('SubRamo')))
+                    cursor.execute("INSERT INTO viaje (Cod_poliza, cod_pasaporte, Producto, Subramo) VALUES (%s, %s, %s, %s)", (cod_poliza, dataForm.get('pasaporte'), dataForm.get('producto'), dataForm.get('SubRamo')))
 
                 # 5. Registrar Pagos Pendientes basados en Frecuencia
                 try:
