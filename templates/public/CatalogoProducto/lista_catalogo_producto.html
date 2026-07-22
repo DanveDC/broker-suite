@@ -66,7 +66,7 @@
             <td>{{ item.Subramo }}</td>
             <td>{{ item.Producto }}</td>
             <td>
-              <span class="badge {{ 'bg-success' if item.activo else 'bg-secondary' }} estado-badge">
+              <span class="status-pill {{ 'status-pill--activo' if item.activo else 'status-pill--inactivo' }} estado-badge">
                 {{ 'Activo' if item.activo else 'Inactivo' }}
               </span>
             </td>
@@ -139,7 +139,7 @@
 
             const $badge = $fila.find('.estado-badge');
             $badge.text(nuevoActivo ? 'Activo' : 'Inactivo');
-            $badge.toggleClass('bg-success', nuevoActivo).toggleClass('bg-secondary', !nuevoActivo);
+            $badge.toggleClass('status-pill--activo', nuevoActivo).toggleClass('status-pill--inactivo', !nuevoActivo);
 
             $btn.toggleClass('btn-outline-success', !nuevoActivo).toggleClass('btn-outline-secondary', nuevoActivo);
             $btn.attr('aria-label', (nuevoActivo ? 'Desactivar' : 'Activar') + ' ' + $btn.data('label-suffix'));
