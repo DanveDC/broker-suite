@@ -1182,6 +1182,12 @@ label {
   color: var(--text-muted);
 }
 .status-pill--inactivo::before { background: var(--text-muted); }
+/* Variante neutra para etiquetas informativas (rol, tipo), sin punto de estado */
+.status-pill--neutral {
+  background: var(--body-bg);
+  color: var(--text-main);
+}
+.status-pill--neutral::before { display: none; }
 
 /* --------------------------------------------------------
    21. Responsive

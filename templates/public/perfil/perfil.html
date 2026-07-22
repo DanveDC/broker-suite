@@ -3,73 +3,122 @@
 {% block title %}Crud con Python 🐍 | Perfil {% endblock %}
 <!--Inicio del block-->
 {% block body %}
-<div class="card">
-  <div class="card-header border-bottom">
-    <h3 class="card-title text-center fw-bold mb-0">MI PERFIL</h3>
-  </div>
+{% set partes_nombre = (info_perfil_session.name_surname or '?').split(' ') %}
+{% set iniciales = (partes_nombre[0][0] ~ (partes_nombre[1][0] if partes_nombre|length > 1 else '')) | upper %}
 
-  <div class="row justify-content-center mb-2">
-    <div class="col-md-6">
-      <form class="form-horizontal mx-auto" method="POST" action="/actualizar-datos-perfil">
-        <div class="card-body">
-          <div class="mb-3">
-            <label for="name_surname" class="form-label">Usuario</label>
-            <input type="text" id="name_surname" name="name_surname" value="{{ info_perfil_session.name_surname }}" class="form-control"
-              required />
-          </div>
-          <div class="mb-3">
-            <label for="email_user" class="form-label">Email</label>
-            <input class="form-control" type="email" id="email_user" name="email_user" value="{{ info_perfil_session.email_user }}"
-              readonly />
-          </div>
-          <div class="mb-3">
-            <label for="permisos" class="form-label">Tipo usuario</label>
-            <input class="form-control" type="text" id="permisos" name="permisos" value="{{ info_perfil_session.permisos }}"
-              readonly />
-          </div>
-          <div class="mb-3 form-password-toggle">
-            <label class="form-label" for="pass_actual">Clave Actual</label>
-            <div class="input-group input-group-merge">
-              <input type="password" class="form-control" name="pass_actual" id="pass_actual"
-                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                aria-describedby="password" />
-              <span class="input-group-text cursor-pointer">
-                <i class="bx bx-hide"></i>
-              </span>
-            </div>
-          </div>
-          <div class="mb-3 form-password-toggle">
-            <label class="form-label" for="new_pass_user">Nueva Clave</label>
-            <div class="input-group input-group-merge">
-              <input type="password" class="form-control" name="new_pass_user" id="new_pass_user"
-                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                aria-describedby="password" />
-              <span class="input-group-text cursor-pointer">
-                <i class="bx bx-hide"></i>
-              </span>
-            </div>
-          </div>
-          <div class="mb-3 form-password-toggle">
-            <label class="form-label" for="repetir_pass_user">
-              Repetir Nueva Clave
-            </label>
-            <div class="input-group input-group-merge">
-              <input type="password" class="form-control" name="repetir_pass_user" id="repetir_pass_user"
-                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                aria-describedby="password" />
-              <span class="input-group-text cursor-pointer">
-                <i class="bx bx-hide"></i>
-              </span>
-            </div>
-          </div>
+<div class="mx-auto" style="max-width: 900px;">
+  <h3 class="fw-bold mb-1">Mi Perfil</h3>
+  <p class="text-muted mb-4">Gestioná tu información de cuenta y las credenciales de acceso.</p>
+
+  <!-- Resumen -->
+  <div class="card mb-3">
+    <div class="card-body d-flex flex-column flex-sm-row align-items-center gap-3 py-4">
+      <span class="person-avatar" style="width:64px;height:64px;font-size:1.4rem;">{{ iniciales }}</span>
+      <div class="flex-grow-1 text-center text-sm-start">
+        <div class="d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+          <h5 class="mb-0 fw-bold">{{ info_perfil_session.name_surname }}</h5>
+          <span class="status-pill status-pill--neutral">
+            <i class="bi bi-shield-check"></i>
+            {{ info_perfil_session.permisos }}
+          </span>
         </div>
-        <div class="mb-3 text-center">
-          <button type="submit" class="btn rounded-pill btn-primary">
-            Actualizar mis datos
-          </button>
-        </div>
-      </form>
+        <p class="text-muted mb-0 mt-1">
+          <i class="bi bi-envelope me-1"></i>{{ info_perfil_session.email_user }}
+        </p>
+      </div>
     </div>
   </div>
+
+  <form class="mx-auto" method="POST" action="/actualizar-datos-perfil">
+    <div class="row g-3">
+      <!-- Informacion de la cuenta -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-person-gear text-muted"></i>
+              <h6 class="mb-0 fw-bold">Información de la cuenta</h6>
+            </div>
+            <small class="text-muted">Datos generales asociados a tu usuario.</small>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="name_surname" class="form-label">Usuario</label>
+              <input type="text" id="name_surname" name="name_surname" value="{{ info_perfil_session.name_surname }}" class="form-control"
+                required />
+            </div>
+            <div class="mb-3">
+              <label for="email_user" class="form-label">Email</label>
+              <input class="form-control" type="email" id="email_user" name="email_user" value="{{ info_perfil_session.email_user }}"
+                readonly />
+            </div>
+            <div class="mb-0">
+              <label for="permisos" class="form-label">Tipo usuario</label>
+              <input class="form-control" type="text" id="permisos" name="permisos" value="{{ info_perfil_session.permisos }}"
+                readonly />
+              <small class="text-muted">Este valor lo define un administrador del sistema.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seguridad -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-shield-lock text-muted"></i>
+              <h6 class="mb-0 fw-bold">Seguridad</h6>
+            </div>
+            <small class="text-muted">Actualizá tu contraseña de acceso.</small>
+          </div>
+          <div class="card-body">
+            <div class="mb-3 form-password-toggle">
+              <label class="form-label" for="pass_actual">Clave Actual</label>
+              <div class="input-group input-group-merge">
+                <input type="password" class="form-control" name="pass_actual" id="pass_actual"
+                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                  aria-describedby="password" />
+                <span class="input-group-text cursor-pointer">
+                  <i class="bx bx-hide"></i>
+                </span>
+              </div>
+            </div>
+            <div class="mb-3 form-password-toggle">
+              <label class="form-label" for="new_pass_user">Nueva Clave</label>
+              <div class="input-group input-group-merge">
+                <input type="password" class="form-control" name="new_pass_user" id="new_pass_user"
+                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                  aria-describedby="password" />
+                <span class="input-group-text cursor-pointer">
+                  <i class="bx bx-hide"></i>
+                </span>
+              </div>
+              <small class="text-muted">Usá al menos 8 caracteres, con mayúsculas y números.</small>
+            </div>
+            <div class="mb-0 form-password-toggle">
+              <label class="form-label" for="repetir_pass_user">
+                Repetir Nueva Clave
+              </label>
+              <div class="input-group input-group-merge">
+                <input type="password" class="form-control" name="repetir_pass_user" id="repetir_pass_user"
+                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                  aria-describedby="password" />
+                <span class="input-group-text cursor-pointer">
+                  <i class="bx bx-hide"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4 mb-3">
+      <button type="submit" class="btn btn-primary">
+        Actualizar mis datos
+      </button>
+    </div>
+  </form>
 </div>
 {% endblock %}
