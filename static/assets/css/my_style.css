@@ -1188,6 +1188,18 @@ label {
   color: var(--text-main);
 }
 .status-pill--neutral::before { display: none; }
+.status-pill--pendiente {
+  background: rgba(245, 158, 11, .12);
+  color: var(--accent-warning);
+}
+.status-pill--vencida {
+  background: rgba(239, 68, 68, .12);
+  color: var(--accent-danger);
+}
+/* Si el badge ya trae su propio icono (ver JS de lista_polizas.html), el
+   punto de ::before queda redundante -- se suprime automaticamente. */
+.status-pill:has(i)::before { display: none; }
+.status-pill i { font-size: .85rem; }
 
 /* --------------------------------------------------------
    21. Responsive

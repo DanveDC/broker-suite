@@ -49,7 +49,8 @@
     <h3 class="card-title text-center fw-bold mb-0">LISTA DE POLIZAS</h3>
   </div>
 
-  <div class="row px-4">
+  <div class="m-3 p-3" style="background: var(--body-bg); border-radius: var(--radius-md);">
+  <div class="row px-1">
     <div class="col-md-3 py-2">
       <label class="form-label fw-bold mb-1" style="font-size: 0.95rem;">
         Filtro de Fecha
@@ -134,7 +135,7 @@
     </div>
   </div>
 
-  <div class="row px-4 mb-3">
+  <div class="row px-1 mb-0">
     <div class="col-md-12 text-center">
       <button type="button" id="filtrar" class="btn btn-primary px-5">
         <i class="fas fa-filter me-2"></i>Aplicar Filtros
@@ -144,10 +145,9 @@
       </button>
     </div>
   </div>
+  </div>
 
-
-
-    <div class="row justify-content-center mb-2">
+    <div class="row justify-content-center mb-2 mt-3">
       <div class="table-responsive text-nowrap table-hover">
         <table table-hover id="poliza" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
@@ -208,25 +208,37 @@
       columns: [
         { data: 'cod_poliza' },
         { data: null, render: d => `${d.Tipo_CI} - ${d.CI_asegurado}` },
-        { data: null, render: d => `${d.Nombre} ${d.Apellido}` },
+        {
+          data: null,
+          render: function (d) {
+            const nombre = `${d.Nombre || ''} ${d.Apellido || ''}`.trim();
+            const iniciales = ((d.Nombre || '?')[0] + (d.Apellido ? d.Apellido[0] : '')).toUpperCase();
+            return `
+              <div class="person-row">
+                <span class="person-avatar">${iniciales}</span>
+                <span class="person-name">${nombre}</span>
+              </div>
+            `;
+          }
+        },
         { data: null, render: d => `${d.ejecutivo_nombre || ''} ${d.ejecutivo_apellido || ''}` },
         { data: 'compania_nombre' },
         { data: 'producto_nombre' },
         { data: 'Ramo' },
         { data: 'fecha' },
-        { 
+        {
           data: 'estado_calculado',
-          render: function(data, type, row) {
-            let icon = "";
-            let title = data;
-            if (data === "Anulada") icon = "bi-slash-circle text-secondary";
-            else if (data === "Traspasada") icon = "bi-arrow-right-circle text-primary";
-            else if (data === "Finalizada") icon = "bi-flag-fill text-dark";
-            else if (data === "Vigente") icon = "bi-check-circle text-success";
-            else if (data === "Pendiente") icon = "bi-exclamation-triangle text-warning";
-            else icon = "bi-x-circle text-danger";
-            
-            return `<span style="display:none">${data}</span><i class="bi ${icon}" data-bs-toggle="tooltip" title="${title}"></i>`;
+          render: function (data, type, row) {
+            if (type !== 'display') return data;
+            let variant = 'status-pill--inactivo';
+            let icon = 'bi-question-circle';
+            if (data === 'Vigente') { variant = 'status-pill--activo'; icon = 'bi-check-circle'; }
+            else if (data === 'Pendiente') { variant = 'status-pill--pendiente'; icon = 'bi-exclamation-triangle'; }
+            else if (data === 'Vencida') { variant = 'status-pill--vencida'; icon = 'bi-x-circle'; }
+            else if (data === 'Anulada') { variant = 'status-pill--inactivo'; icon = 'bi-slash-circle'; }
+            else if (data === 'Traspasada') { variant = 'status-pill--neutral'; icon = 'bi-arrow-right-circle'; }
+            else if (data === 'Finalizada') { variant = 'status-pill--neutral'; icon = 'bi-flag-fill'; }
+            return `<span class="status-pill ${variant}"><i class="bi ${icon}"></i>${data}</span>`;
           }
         },
         { 
