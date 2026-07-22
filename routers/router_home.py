@@ -1192,13 +1192,15 @@ def view_form_pagos(id):
         if prima['Frecuencia'] == 1:
                 monto=prima['Prima']
         elif prima['Frecuencia'] == 2:
-                monto= prima['Prima'] / 12 
-        elif prima['Frecuencia'] == 3: 
+                monto= prima['Prima'] / 12
+        elif prima['Frecuencia'] == 3:
                 monto=prima['Prima'] / 4
-        elif prima['Frecuencia'] == 5: 
-                monto=prima['Prima'] / 3 
-        elif prima['Frecuencia'] == 6: 
-                monto=prima['Prima'] / 6        
+        elif prima['Frecuencia'] == 4:
+                monto=prima['Prima'] / 2
+        elif prima['Frecuencia'] == 5:
+                monto=prima['Prima'] / 3
+        elif prima['Frecuencia'] == 6:
+                monto=prima['Prima'] / 6
         # Mercantil Especial (10 pagos)
         elif prima['Frecuencia'] == 10:
                 monto = prima['Prima'] / 10
