@@ -100,14 +100,21 @@
                 </thead>
                 <tbody>
                     {% for siniestro in siniestros %}
+                    {% set nombre_completo = (siniestro.nombre_asegurado or '') ~ ' ' ~ (siniestro.apellido_asegurado or '') %}
+                    {% set iniciales = ((siniestro.nombre_asegurado or '?')[0] ~ (siniestro.apellido_asegurado or '')[0]) | upper %}
                     <tr id="siniestro_{{ siniestro.cod_poliza }}">
                         <td>{{ siniestro.Cod_poliza }}</td>
                         <td>{{ siniestro.tipo_siniestro }}</td>
                         <td>{{ siniestro.fecha_inicio }}</td>
-                        <td>{{ siniestro.nombre_asegurado }} {{ siniestro.apellido_asegurado }}</td>
+                        <td>
+                            <div class="person-row">
+                                <span class="person-avatar">{{ iniciales }}</span>
+                                <span class="person-name">{{ nombre_completo }}</span>
+                            </div>
+                        </td>
                         <td>{{ siniestro.nombre_compania }}</td>
                         <td>{{ siniestro.codigo_siniestro }}</td>
-                        <td>{{ siniestro.estado_siniestro }}</td>
+                        <td><span class="estado-siniestro-pill" data-estado="{{ siniestro.estado_siniestro }}"></span></td>
                         <td>{{ siniestro.monto }}</td>
                         <td width="10px">
                             <a href="#" title="Ver Detalles" type="button" class="btn btn-info btn-sm"
@@ -160,6 +167,36 @@
 <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
 
 <script>
+    // Fuente unica de verdad para el badge de estado -- se usa tanto para
+    // las filas que renderiza el servidor (Jinja) como para las que arma
+    // el JS al filtrar via AJAX, asi ambas se ven exactamente igual.
+    function estadoPillHtml(estado) {
+        const e = (estado || '').toLowerCase().trim();
+        let variant = 'status-pill--neutral';
+        let icon = 'bi-question-circle';
+        if (e === 'pagado' || e === 'aprobado') { variant = 'status-pill--activo'; icon = 'bi-check-circle'; }
+        else if (e === 'en proceso' || e === 'reportado') { variant = 'status-pill--pendiente'; icon = 'bi-hourglass-split'; }
+        else if (e === 'declinado') { variant = 'status-pill--vencida'; icon = 'bi-x-circle'; }
+        else if (e === 'deducible') { variant = 'status-pill--neutral'; icon = 'bi-cash-coin'; }
+        return `<span class="status-pill ${variant}"><i class="bi ${icon}"></i>${estado || ''}</span>`;
+    }
+
+    function renderPersonCell(nombre, apellido) {
+        const nombreCompleto = `${nombre || ''} ${apellido || ''}`.trim();
+        const iniciales = ((nombre || '?')[0] + (apellido ? apellido[0] : '')).toUpperCase();
+        return `
+            <div class="person-row">
+                <span class="person-avatar">${iniciales}</span>
+                <span class="person-name">${nombreCompleto}</span>
+            </div>
+        `;
+    }
+
+    // Aplica el badge de estado a las filas ya renderizadas por el servidor
+    document.querySelectorAll('.estado-siniestro-pill').forEach(function (el) {
+        el.outerHTML = estadoPillHtml(el.dataset.estado);
+    });
+
     function GenerarUrl() {
         let enlaces = document.querySelectorAll('a[data-codigo]');
         enlaces.forEach(enlace => {
@@ -241,10 +278,10 @@
                             $("<td>").text(registro.Cod_poliza).appendTo(nuevaFila);
                             $("<td>").text(registro.tipo_siniestro).appendTo(nuevaFila);
                             $("<td>").text(registro.fecha_inicio).appendTo(nuevaFila);
-                            $("<td>").text(registro.nombre_asegurado + ' ' + registro.apellido_asegurado).appendTo(nuevaFila);
+                            $("<td>").html(renderPersonCell(registro.nombre_asegurado, registro.apellido_asegurado)).appendTo(nuevaFila);
                             $("<td>").text(registro.nombre_compania).appendTo(nuevaFila);
                             $("<td>").text(registro.codigo_siniestro).appendTo(nuevaFila);
-                            $("<td>").text(registro.estado_siniestro).appendTo(nuevaFila);
+                            $("<td>").html(estadoPillHtml(registro.estado_siniestro)).appendTo(nuevaFila);
                             $("<td>").text(registro.monto).appendTo(nuevaFila);
 
                             let accionesCell = $("<td>");
