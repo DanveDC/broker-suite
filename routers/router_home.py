@@ -5981,8 +5981,7 @@ def polizas_datatable():
         "draw": draw,
         "recordsTotal": result["recordsTotal"],
         "recordsFiltered": result["recordsFiltered"],
-        "data": sanitized_data,
-        "error": result.get("error")
+        "data": sanitized_data
     })
 
 @app.route('/api/comisiones_datatable', methods=['GET'])
