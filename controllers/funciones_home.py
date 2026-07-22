@@ -5841,7 +5841,10 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
                 }
     except Exception as e:
         print(f"Error en obtener_polizas_datatable: {e}")
-        return {"recordsTotal": 0, "recordsFiltered": 0, "data": []}
+        # Temporal: devolver el error en la respuesta para diagnosticar sin
+        # depender de los logs de Render (print() no aparece de forma
+        # confiable ahi). Quitar el campo "error" una vez resuelto.
+        return {"recordsTotal": 0, "recordsFiltered": 0, "data": [], "error": str(e)}
 
 def obtener_comisiones_datatable(start, length, minDateStr=None, maxDateStr=None, ejecutivo_id=None):
     try:
