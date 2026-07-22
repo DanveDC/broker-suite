@@ -4,28 +4,42 @@
 <!---->
 {% block body %}
 
-{% if (companys) %}
-
 <div class="card content_consignaciones" style="border-radius: 0px !important">
-  <section id="respuestaFiltroMes">
-    <h2 class="text-center mt-5 mb-5">
-      Lista de compañias
-    </h2>
-    <div class="row justify-content-center mb-2">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">LISTA DE COMPAÑIAS</h3>
+  </div>
+
+  <div class="list-toolbar">
+    <div></div>
+    <a href="{{ url_for('viewFormCompany') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i>
+      Agregar compañía
+    </a>
+  </div>
+
+  {% if companys %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-11">
       <div class="table-responsive text-nowrap table-hover">
         <table table-hover id="companys" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
             <tr>
               <th>Cod</th>
-              <th>Nombre</th>
+              <th>Compañía</th>
               <th>Rif</th>
+              <th>Accion</th>
             </tr>
           </thead>
           <tbody>
             {% for company in companys %}
             <tr id="company{{ company.Cod_compania }}">
-              <td>{{ company.Cod_compania }}</td>
-              <td>{{ company.Nombre }}</td>
+              <td class="text-muted small font-monospace">{{ company.Cod_compania }}</td>
+              <td>
+                <div class="person-row">
+                  <span class="person-avatar"><i class="bi bi-building"></i></span>
+                  <span class="person-name">{{ company.Nombre }}</span>
+                </div>
+              </td>
               <td>{{ company.rif }}</td>
               <td width="10px">
                 <a href="{{ url_for('EditarCompany', id = company.Cod_compania) }}" class="btn btn-success btn-sm"
@@ -45,23 +59,19 @@
           </tbody>
         </table>
       </div>
-  </section>
-</div>
-{% else %}
-<div class="container mt-3">
-  <div class="card">
-    <div class="card-header border-bottom">
-      <h3 class="card-title text-center fw-bold mb-0">LISTA DE COMPAÑIAS</h3>
-    </div>
-    <div class="card-body">
-      {% set empty_icon = 'bi-building' %}
-      {% set empty_title = 'No hay compañías registradas todavía' %}
-      {% set empty_message = 'Cuando agregues la primera compañía, va a aparecer en esta lista.' %}
-      {% include 'public/includes/empty_state.html' %}
     </div>
   </div>
+  {% else %}
+  <div class="card-body">
+    {% set empty_icon = 'bi-building' %}
+    {% set empty_title = 'No hay compañías registradas todavía' %}
+    {% set empty_message = 'Cuando agregues la primera compañía, va a aparecer en esta lista.' %}
+    {% set empty_cta_url = url_for('viewFormCompany') %}
+    {% set empty_cta_label = 'Agregar compañía' %}
+    {% include 'public/includes/empty_state.html' %}
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 
 <!--Fin del Block-->
 {% endblock %}

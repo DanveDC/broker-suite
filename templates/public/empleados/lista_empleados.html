@@ -9,13 +9,19 @@
     <h3 class="card-title text-center fw-bold mb-0">LISTA DE EMPLEADOS</h3>
   </div>
 
-  <div class="row justify-content-end">
-    <div class="col-md-6 mt-4 py-2">
-      <input type="search" id="search" class="form-control border-0 shadow-none" placeholder="Buscar empleado..."
+  <div class="list-toolbar">
+    <div class="input-group" style="max-width: 320px;">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="search" id="search" class="form-control" placeholder="Buscar empleado..."
         onkeyup="buscadorTable('tbl_empleados')" />
     </div>
+    <a href="{{ url_for('viewFormEmpleado') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i>
+      Agregar empleado
+    </a>
   </div>
 
+  {% if empleados %}
   <div class="row justify-content-center mb-2">
     <div class="table-responsive text-nowrap table-hover">
       <table table-hover id="tbl_empleados" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -65,7 +71,14 @@
       </table>
     </div>
   </div>
-</div>
+  {% else %}
+  {% set empty_icon = 'bi-people' %}
+  {% set empty_title = 'No hay empleados registrados todavía' %}
+  {% set empty_message = 'Cuando agregues el primer empleado, va a aparecer en esta lista.' %}
+  {% set empty_cta_url = url_for('viewFormEmpleado') %}
+  {% set empty_cta_label = 'Agregar empleado' %}
+  {% include 'public/includes/empty_state.html' %}
+  {% endif %}
 </div>
 
 {% endblock %}

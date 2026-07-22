@@ -39,20 +39,25 @@
           width="100%">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Telefono</th>
-              <th>Correo</th>
+              <th>Ejecutivo</th>
+              <th>Contacto</th>
               <th>Accion</th>
             </tr>
           </thead>
           <tbody>
             {% for ejecutivo in ejecutivos %}
+            {% set iniciales = ((ejecutivo.Nombre or '?')[0] ~ (ejecutivo.Apellido or '')[0]) | upper %}
             <tr id="ejecutivo{{ ejecutivo.cod_ejecutivo }}">
-              <td>{{ ejecutivo.Nombre }}</td>
-              <td>{{ ejecutivo.Apellido }}</td>
-              <td>{{ ejecutivo.Telefono }}</td>
-              <td>{{ ejecutivo.Correo }}</td>
+              <td>
+                <div class="person-row">
+                  <span class="person-avatar">{{ iniciales }}</span>
+                  <span class="person-name">{{ ejecutivo.Nombre }} {{ ejecutivo.Apellido }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="person-name" style="font-weight:500;">{{ ejecutivo.Correo }}</div>
+                <div class="person-subtext">{{ ejecutivo.Telefono }}</div>
+              </td>
               <td width="10px">
                 <a href="{{ url_for('EditarEjecutivo', id = ejecutivo.cod_ejecutivo) }}" class="btn btn-success btn-sm"
                   tooltip="Actualizar Registro">
