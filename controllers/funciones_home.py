@@ -8997,6 +8997,12 @@ def sql_toggle_activo_catalogo_producto(id):
         return {'success': False, 'message': f'Error inesperado en sql_toggle_activo_catalogo_producto: {str(e)}'}
 
 def sql_catalogo_producto_activo_por_base(base):
+    # session['base'] nunca se asigna en broker-suite (a diferencia de otros
+    # forks de este proyecto que sí lo usan para elegir entre dos bases de
+    # datos) -- siempre llega None. Sin este default, el WHERE cp.base = %s
+    # no matchea ninguna fila nunca, dejando Subramo/Producto vacíos para
+    # cualquier combinación de compañía/ramo.
+    base = base or 'nacional'
     try:
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
