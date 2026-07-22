@@ -2870,7 +2870,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                         SELECT
                             p.Cod_poliza,
                             'Carta Aval' AS tipo_siniestro,
-                            DATE_FORMAT(ca.Fecha_noti, '%d-%m-%Y') AS fecha_inicio,
+                            DATE_FORMAT(ca.Fecha_noti, '%%d-%%m-%%Y') AS fecha_inicio,
                             ca.Estado AS estado_siniestro,
                             ca.Cod_CartaAval as codigo
                         FROM
@@ -2882,7 +2882,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                         SELECT
                             p.Cod_poliza,
                             'Reembolso' AS tipo_siniestro,
-                            DATE_FORMAT(r.Fecha_ocurrencia, '%d-%m-%Y') AS fecha_inicio,
+                            DATE_FORMAT(r.Fecha_ocurrencia, '%%d-%%m-%%Y') AS fecha_inicio,
                             r.estado AS estado_siniestro,
                             r.cod_reembolso as codigo
                         FROM
@@ -2894,7 +2894,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                         SELECT
                             p.Cod_poliza,
                             'Siniestro Auto' AS tipo_siniestro,
-                            DATE_FORMAT(a.Fecha_ocurrencia, '%d-%m-%Y') AS fecha_inicio,  
+                            DATE_FORMAT(a.Fecha_ocurrencia, '%%d-%%m-%%Y') AS fecha_inicio,  
                             a.estado AS estado_siniestro,
                             a.Cod_siniestroA as codigo
                         FROM
@@ -2930,7 +2930,7 @@ def sql_detalles_empleadosBD(idEmpleado):
                         e.email_empleado,
                         e.profesion_empleado,
                         e.foto_empleado,
-                        DATE_FORMAT(e.fecha_registro, '%Y-%m-%d %h:%i %p') AS fecha_registro
+                        DATE_FORMAT(e.fecha_registro, '%%Y-%%m-%%d %%h:%%i %%p') AS fecha_registro
                     FROM tbl_empleados AS e
                     WHERE id_empleado =%s
                     ORDER BY e.id_empleado DESC
@@ -2979,7 +2979,7 @@ def sql_lista_polizas_asegurado(CI):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
-                    SELECT p.cod_poliza as Cod_poliza, p.Ramo, DATE_FORMAT(p.Fecha_emision, '%d-%m-%Y') as Fecha_emision, c.Nombre as nombre_compania
+                    SELECT p.cod_poliza as Cod_poliza, p.Ramo, DATE_FORMAT(p.Fecha_emision, '%%d-%%m-%%Y') as Fecha_emision, c.Nombre as nombre_compania
                     FROM poliza p
                     LEFT JOIN compania c ON p.Cod_compania = c.Cod_compania
                     WHERE p.CI_asegurado = %s
@@ -3109,7 +3109,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                         SELECT 
                                 p.cod_poliza,
                                 p.CI_asegurado,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha_registro,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha_registro,
                                 p.Cod_compania,
                                 p.Tomador, 
                                 p.Ramo,
@@ -3149,7 +3149,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                         SELECT 
                                 p.cod_poliza,
                                 p.CI_asegurado,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha_registro,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha_registro,
                                 p.Cod_compania,
                                 p.Tomador,
                                 p.Ramo,
@@ -3191,7 +3191,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                         SELECT 
                                 p.cod_poliza,
                                 p.CI_asegurado,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha_registro,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha_registro,
                                 p.Cod_compania,
                                 p.Tomador,
                                 p.Ramo,
@@ -3225,7 +3225,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                         SELECT 
                                 p.cod_poliza,
                                 p.CI_asegurado,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha_registro,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha_registro,
                                 p.Cod_compania,
                                 p.Tomador,
                                 p.Ramo,
@@ -3260,7 +3260,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                         SELECT 
                                 p.cod_poliza,
                                 p.CI_asegurado,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha_registro,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha_registro,
                                 p.Cod_compania,
                                 p.Tomador,
                                 p.Ramo,
@@ -3317,7 +3317,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                     'carta_aval': """
                         SELECT
                             p.Cod_poliza, 'Carta Aval' AS tipo_siniestro,
-                            DATE_FORMAT(ca.Fecha_noti, '%d-%m-%Y') AS fecha_inicio,
+                            DATE_FORMAT(ca.Fecha_noti, '%%d-%%m-%%Y') AS fecha_inicio,
                             ca.Estado AS estado_siniestro, ca.Cod_CartaAval AS codigo,
                             a.Nombre AS nombre_asegurado, a.Apellido AS apellido_asegurado,
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
@@ -3331,7 +3331,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                     'reembolso': """
                         SELECT
                             p.Cod_poliza, 'Reembolso' AS tipo_siniestro,
-                            DATE_FORMAT(r.Fecha_ocurrencia, '%d-%m-%Y') AS fecha_inicio,
+                            DATE_FORMAT(r.Fecha_ocurrencia, '%%d-%%m-%%Y') AS fecha_inicio,
                             r.estado AS estado_siniestro, r.cod_reembolso AS codigo,
                             a.Nombre AS nombre_asegurado, a.Apellido AS apellido_asegurado,
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
@@ -3345,7 +3345,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                     'auto': """
                         SELECT
                             p.Cod_poliza, 'Siniestro Auto' AS tipo_siniestro,
-                            DATE_FORMAT(sa.Fecha_ocurrencia, '%d-%m-%Y') AS fecha_inicio,
+                            DATE_FORMAT(sa.Fecha_ocurrencia, '%%d-%%m-%%Y') AS fecha_inicio,
                             sa.estado AS estado_siniestro, sa.Cod_siniestroA AS codigo,
                             a.Nombre AS nombre_asegurado, a.Apellido AS apellido_asegurado,
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
@@ -3442,7 +3442,7 @@ def obtener_polizas_filtradas(ano=None, mes=None, rango_inicio=None, rango_fin=N
                         a.Apellido2,
                         r.riesgo,
                         r.estado,
-                        DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') as fecha, 
+                        DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') as fecha, 
                         p.Ramo,
                         r.Fecha_vencimiento,
                         c.nombre as compania_nombre,
@@ -3762,7 +3762,7 @@ def sql_lista_antiguos_contratos(cod_poliza):
                     SELECT
                         p.cod_poliza,
                         p.CI_asegurado,
-                        DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') as fecha, 
+                        DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') as fecha, 
                         p.Ramo,
                         r.Fecha_vencimiento,
                         r.Cod_renovacion,
@@ -3883,7 +3883,7 @@ def buscarPolizaBD(search,filtro):
                                 a.Nombre2,
                                 a.Apellido,
                                 a.Apellido2,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') as fecha,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') as fecha,
                                 p.Ramo,
                                 r.Fecha_vencimiento,
                                 r.riesgo,
@@ -3920,7 +3920,7 @@ def buscarPolizaBD(search,filtro):
                                 a.Nombre2,
                                 a.Apellido,
                                 a.Apellido2,
-                                DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') as fecha,
+                                DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') as fecha,
                                 p.Ramo,
                                 r.Fecha_vencimiento,
                                 r.riesgo,
@@ -5809,7 +5809,7 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
                 data_query = f"""
                     SELECT
                         p.cod_poliza, p.CI_asegurado, a.Tipo_CI, a.Nombre, a.Apellido,
-                        DATE_FORMAT(r.Fecha_contrato, '%Y-%m-%d') AS fecha,
+                        DATE_FORMAT(r.Fecha_contrato, '%%Y-%%m-%%d') AS fecha,
                         p.Ramo, r.riesgo, r.Fecha_vencimiento, r.estado, r.Cod_renovacion,
                         c.nombre as compania_nombre,
                         e.Nombre as ejecutivo_nombre, e.Apellido as ejecutivo_apellido,
