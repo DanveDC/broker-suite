@@ -179,28 +179,38 @@
               {% if detalle_poliza.riesgo is not none %}
               {% set riesgo_val = detalle_poliza.riesgo|float %}
 
-              {% if riesgo_val >= 1.00 and riesgo_val <= 1.60 %} <i class="bi bi-circle-fill text-success fs-4"
-                data-bs-toggle="tooltip" data-bs-placement="top"
-                title="Riesgo Bajo (Debida Diligencia Simplificada): {{ riesgo_val }}"></i>
-                <span class="ms-2">Debida Diligencia Simplificada ({{ riesgo_val }})</span>
-                {% elif riesgo_val >= 1.61 and riesgo_val <= 2.20 %} <i class="bi bi-circle-fill text-warning fs-4"
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Riesgo Medio (Debida Diligencia Mejorada): {{ riesgo_val }}"></i>
-                  <span class="ms-2">Debida Diligencia Mejorada ({{ riesgo_val }})</span>
-                  {% elif riesgo_val >= 2.21 and riesgo_val <= 3.00 %} <i class="bi bi-circle-fill text-danger fs-4"
-                    data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="Riesgo Alto (Debida Diligencia Intensificada): {{ riesgo_val }}"></i>
-                    <span class="ms-2">Debida Diligencia Intensificada ({{ riesgo_val }})</span>
-                    {% else %}
-                    <i class="bi bi-question-circle text-info fs-4" data-bs-toggle="tooltip" data-bs-placement="top"
-                      title="Riesgo fuera de rango o desconocido: {{ riesgo_val }}"></i>
-                    <span class="ms-2">Riesgo fuera de rango o desconocido ({{ riesgo_val }})</span>
-                    {% endif %}
-                    {% else %}
-                    <i class="bi bi-question-circle text-secondary fs-4" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Riesgo no definido"></i>
-                    <span class="ms-2">Riesgo no definido</span>
-                    {% endif %}
+              {% if riesgo_val >= 1.00 and riesgo_val <= 1.60 %}
+              <span class="status-pill status-pill--activo" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo Bajo (Debida Diligencia Simplificada): {{ riesgo_val }}">
+                <i class="bi bi-circle-fill"></i>
+                Debida Diligencia Simplificada ({{ riesgo_val }})
+              </span>
+              {% elif riesgo_val >= 1.61 and riesgo_val <= 2.20 %}
+              <span class="status-pill status-pill--pendiente" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo Medio (Debida Diligencia Mejorada): {{ riesgo_val }}">
+                <i class="bi bi-circle-fill"></i>
+                Debida Diligencia Mejorada ({{ riesgo_val }})
+              </span>
+              {% elif riesgo_val >= 2.21 and riesgo_val <= 3.00 %}
+              <span class="status-pill status-pill--vencida" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo Alto (Debida Diligencia Intensificada): {{ riesgo_val }}">
+                <i class="bi bi-circle-fill"></i>
+                Debida Diligencia Intensificada ({{ riesgo_val }})
+              </span>
+              {% else %}
+              <span class="status-pill status-pill--neutral" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo fuera de rango o desconocido: {{ riesgo_val }}">
+                <i class="bi bi-question-circle"></i>
+                Riesgo fuera de rango o desconocido ({{ riesgo_val }})
+              </span>
+              {% endif %}
+              {% else %}
+              <span class="status-pill status-pill--neutral" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Riesgo no definido">
+                <i class="bi bi-question-circle"></i>
+                Riesgo no definido
+              </span>
+              {% endif %}
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip"
                       data-bs-placement="top" title="Recalcular Riesgo" aria-label="Recalcular Riesgo"
                       onclick="recalcularRiesgoPoliza('{{ detalle_poliza.Cod_renovacion }}')">
@@ -311,7 +321,7 @@
                 <td>{{ siniestro.Cod_poliza }}</td>
                 <td>{{ siniestro.tipo_siniestro }}</td>
                 <td>{{ siniestro.fecha_inicio }}</td>
-                <td>{{ siniestro.estado_siniestro }}</td>
+                <td><span class="status-pill status-pill--neutral">{{ siniestro.estado_siniestro }}</span></td>
                 <td width="10px">
                   <a href="#" title="Ver Detalles" type="button" class="btn btn-info btn-sm" data-bs-toggle="tooltip"
                     data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="<span>Ver detalles</span>"
