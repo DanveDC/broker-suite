@@ -14,20 +14,17 @@
 
 {% if (resp_usuariosBD) %}
 
-<div class="card content_consignaciones" style="border-radius: 0px !important">
-  <section id="respuestaFiltroMes">
-    <div class="col-md-10 mx-auto">
-      <h2 class="text-center mt-5 mb-5">
-        Lista de Usuarios Creados
-        <hr />
-      </h2>
-    </div>
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">LISTA DE USUARIOS</h3>
+  </div>
 
+  <div class="section" id="respuestaFiltroMes">
     <div class="row justify-content-center mb-2">
       <div class="table-responsive text-nowrap">
-        <table class="table table-hover" style="width: 100%;">
+        <table class="table table-hover table-striped table-bordered" style="width: 100%;">
           <thead>
-            <tr style="background-color: #ddd">
+            <tr>
               <th>Usuario</th>
               <th>Email</th>
               <th>Fecha de creaci&oacute;n</th>
@@ -37,11 +34,18 @@
           </thead>
           <tbody>
             {% for usuario in resp_usuariosBD %}
+            {% set iniciales = (usuario.name_surname or '?').split(' ') %}
+            {% set iniciales = (iniciales[0][0] ~ (iniciales[1][0] if iniciales|length > 1 else '')) | upper %}
             <tr>
-              <td>{{ usuario.name_surname}}</td>
+              <td>
+                <div class="person-row">
+                  <span class="person-avatar">{{ iniciales }}</span>
+                  <span class="person-name">{{ usuario.name_surname }}</span>
+                </div>
+              </td>
               <td>{{ usuario.email_user}}</td>
               <td>{{ usuario.created_user}}</td>
-              <td>{{ usuario.permisos}}</td>
+              <td><span class="status-pill status-pill--neutral">{{ usuario.permisos }}</span></td>
               <td>
                 {% set can_delete = false %}
                 {% if session['id'] != usuario.id %}
@@ -69,7 +73,7 @@
         </table>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 {% else %}
 <div class="card">
