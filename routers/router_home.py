@@ -144,7 +144,10 @@ def lista_empleados():
 @app.route('/lista-de-asegurado', methods=['GET'])
 def lista_asegurado():
     if 'conectado' in session:
-        return render_template('public/Asegurados/lista_asegurados.html', asegurados=sql_lista_aseguradosBD())
+        asegurados = sql_lista_aseguradosBD() or []
+        return render_template('public/Asegurados/lista_asegurados.html',
+                                asegurados=asegurados,
+                                total_polizas_activas=sql_total_polizas_activas())
     else:
         flash('primero debes iniciar sesiÃ³n.', 'error')
         return redirect(url_for('inicio'))

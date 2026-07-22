@@ -2660,10 +2660,10 @@ def sql_lista_aseguradosBD():
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = (f"""
-                    SELECT 
+                    SELECT
                         a.CI,
                         a.Nombre,
-                        a.Nombre2, 
+                        a.Nombre2,
                         a.Apellido,
                         a.Apellido2,
                         a.Correo,
@@ -2671,7 +2671,14 @@ def sql_lista_aseguradosBD():
                         a.Fecha_nacimiento,
                         a.Tipo_CI,
                         e.Nombre as Nombre_ejecutivo,
-                        e.Apellido as Apellido_ejecutivo
+                        e.Apellido as Apellido_ejecutivo,
+                        EXISTS (
+                            SELECT 1 FROM renovacion r
+                            JOIN poliza p ON r.cod_poliza = p.cod_poliza
+                            WHERE p.CI_asegurado = a.CI
+                              AND r.Fecha_vencimiento > CURDATE()
+                              AND r.estado NOT IN ('anulada', 'traspasada')
+                        ) AS tiene_poliza_activa
                     FROM asegurado AS a
                     LEFT JOIN ejecutivo e ON a.Ejecutivo = e.cod_ejecutivo
                     """)
@@ -2682,6 +2689,28 @@ def sql_lista_aseguradosBD():
         print(
             f"Errro en la función sql_lista_aseguradosBD: {e}")
         return None
+
+
+def sql_total_polizas_activas():
+    # Cuenta de polizas vigentes (misma definicion que tiene_poliza_activa
+    # en sql_lista_aseguradosBD), para la tarjeta de stats de la lista de
+    # asegurados -- solo se muestran metricas que se pueden calcular real,
+    # nada inventado.
+    try:
+        with connectionBD() as conexion_MySQLdb:
+            with conexion_MySQLdb.cursor() as cursor:
+                querySQL = """
+                    SELECT COUNT(*) AS total
+                    FROM renovacion r
+                    WHERE r.Fecha_vencimiento > CURDATE()
+                      AND r.estado NOT IN ('anulada', 'traspasada')
+                """
+                cursor.execute(querySQL,)
+                row = cursor.fetchone()
+        return row['total'] if row else 0
+    except Exception as e:
+        print(f"Error en la función sql_total_polizas_activas: {e}")
+        return 0
     
 
     

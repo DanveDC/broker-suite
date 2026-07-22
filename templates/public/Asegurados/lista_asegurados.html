@@ -8,67 +8,118 @@
 
 <!--Inicio del block-->
 {% block body %}
-<div class="card">
-    <div class="card-header border-bottom">
-        <h3 class="card-title text-center fw-bold mb-0">LISTA DE ASEGURADOS</h3>
-    </div>
 
-    <div class="row justify-content-center mb-2">
-        <div class="col-md-11">
-            <div class="table-responsive text-nowrap">
-                <table id="tabla-asegurados" class="table table-striped table-bordered" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Cédula</th>
-                            <th>Nombre Completo</th>
-                            <th>Correo</th>
-                            <th>Teléfono</th>
-                            <th>Fecha Nacimiento</th>
-                            <th>Ejecutivo</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for asegurado in asegurados %}
-                        <tr>
-                            <td>{{ asegurado.Tipo_CI }}-{{ asegurado.CI }}</td>
-                            <td>{{ (asegurado.Nombre or '') ~ ' ' ~ (asegurado.Nombre2 or '') ~ ' ' ~
-                                (asegurado.Apellido or '') ~ ' ' ~ (asegurado.Apellido2 or '') }}</td>
-                            <td>{{ asegurado.Correo }}</td>
-                            <td>{{ asegurado.Telefono }}</td>
-                            <td>{{ asegurado.Fecha_nacimiento.strftime('%d-%m-%Y') if asegurado.Fecha_nacimiento else ''
-                                }}</td>
-                            <td>{{ asegurado.Nombre_ejecutivo or '' }} {{ asegurado.Apellido_ejecutivo or '' }}</td>
-                            <td class="text-center">
-                                <a href="{{ url_for('detalleAsegurado', CI=asegurado.CI) }}" class="btn btn-info btn-sm"
-                                    data-bs-toggle="tooltip" title="Ver Detalles">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ url_for('EditarAsegurado', id=asegurado.CI) }}"
-                                    class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar Asegurado">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <a href="#" onclick="borrarAsegurado('{{ asegurado.CI }}')"
-                                    class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Eliminar Asegurado">
-                                    <i class="bi bi-trash3"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7">
-                                {% set empty_icon = 'bi-person-vcard' %}
-                                {% set empty_title = 'No hay asegurados registrados todavía' %}
-                                {% set empty_message = 'Cuando agregues el primer asegurado, va a aparecer en esta lista.' %}
-                                {% include 'public/includes/empty_state.html' %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<!-- Resumen -->
+<div class="row g-3 mb-3">
+  <div class="col-md-6 col-lg-4">
+    <div class="stat-card">
+      <div class="stat-card-head">
+        <span class="stat-card-label">Total asegurados</span>
+        <span class="stat-card-icon"><i class="bi bi-people"></i></span>
+      </div>
+      <div class="stat-card-value">{{ asegurados | length }}</div>
+      <p class="stat-card-caption">Personas registradas</p>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="stat-card">
+      <div class="stat-card-head">
+        <span class="stat-card-label">Pólizas activas</span>
+        <span class="stat-card-icon"><i class="bi bi-shield-check"></i></span>
+      </div>
+      <div class="stat-card-value">{{ total_polizas_activas }}</div>
+      <p class="stat-card-caption">Cobertura vigente hoy</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header border-bottom">
+    <h3 class="card-title text-center fw-bold mb-0">LISTA DE ASEGURADOS</h3>
+  </div>
+
+  <div class="list-toolbar">
+    <div></div>
+    <a href="{{ url_for('viewFormAsegurado') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i>
+      Nuevo asegurado
+    </a>
+  </div>
+
+  {% if asegurados %}
+  <div class="row justify-content-center mb-2">
+    <div class="col-md-11">
+      <div class="table-responsive text-nowrap">
+        <table id="tabla-asegurados" class="table table-striped table-bordered" style="width:100%">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Nombre Completo</th>
+              <th>Contacto</th>
+              <th>Fecha Nacimiento</th>
+              <th>Ejecutivo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for asegurado in asegurados %}
+            {% set nombre_completo = (asegurado.Nombre or '') ~ ' ' ~ (asegurado.Nombre2 or '') ~ ' ' ~
+                (asegurado.Apellido or '') ~ ' ' ~ (asegurado.Apellido2 or '') %}
+            {% set iniciales = ((asegurado.Nombre or '?')[0] ~ (asegurado.Apellido or '')[0]) | upper %}
+            <tr>
+              <td class="font-monospace text-muted small">{{ asegurado.Tipo_CI }}-{{ asegurado.CI }}</td>
+              <td>
+                <div class="person-row">
+                  <span class="person-avatar">{{ iniciales }}</span>
+                  <div>
+                    <div class="person-name">{{ nombre_completo }}</div>
+                    <div class="person-subtext d-lg-none">{{ asegurado.Correo }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="person-name" style="font-weight:500;">{{ asegurado.Correo }}</div>
+                <div class="person-subtext">{{ asegurado.Telefono }}</div>
+              </td>
+              <td>{{ asegurado.Fecha_nacimiento.strftime('%d-%m-%Y') if asegurado.Fecha_nacimiento else '' }}</td>
+              <td>{{ asegurado.Nombre_ejecutivo or '' }} {{ asegurado.Apellido_ejecutivo or '' }}</td>
+              <td>
+                {% if asegurado.tiene_poliza_activa %}
+                <span class="status-pill status-pill--activo">Activo</span>
+                {% else %}
+                <span class="status-pill status-pill--inactivo">Inactivo</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{{ url_for('detalleAsegurado', CI=asegurado.CI) }}" class="btn btn-info btn-sm"
+                  data-bs-toggle="tooltip" title="Ver Detalles">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{{ url_for('EditarAsegurado', id=asegurado.CI) }}"
+                  class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar Asegurado">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="#" onclick="borrarAsegurado('{{ asegurado.CI }}')"
+                  class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Eliminar Asegurado">
+                  <i class="bi bi-trash3"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  {% set empty_icon = 'bi-person-vcard' %}
+  {% set empty_title = 'No hay asegurados registrados todavía' %}
+  {% set empty_message = 'Cuando agregues el primer asegurado, va a aparecer en esta lista.' %}
+  {% set empty_cta_url = url_for('viewFormAsegurado') %}
+  {% set empty_cta_label = 'Nuevo asegurado' %}
+  {% include 'public/includes/empty_state.html' %}
+  {% endif %}
 </div>
 {% endblock %}
 
