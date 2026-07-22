@@ -335,7 +335,19 @@
             },
             columns: [
                 { data: 'nro_cuota', render: d => d || '-' },
-                { data: null, render: function (data, type, row) { return row.Nombre_asegurado + ' ' + row.Apellido_asegurado; } },
+                {
+                  data: null,
+                  render: function (data, type, row) {
+                    const nombre = `${row.Nombre_asegurado || ''} ${row.Apellido_asegurado || ''}`.trim();
+                    const iniciales = ((row.Nombre_asegurado || '?')[0] + (row.Apellido_asegurado ? row.Apellido_asegurado[0] : '')).toUpperCase();
+                    return `
+                      <div class="person-row">
+                        <span class="person-avatar" style="width:26px;height:26px;font-size:.65rem;">${iniciales}</span>
+                        <span>${nombre}</span>
+                      </div>
+                    `;
+                  }
+                },
                 { data: 'cod_poliza' },
                 { data: 'CI' },
                 { data: 'moneda' },

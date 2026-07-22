@@ -314,7 +314,19 @@
         { data: 'Ramo', render: d => `<span class="badge bg-light text-dark border">${d}</span>` },
         { data: 'subramo', render: d => `<span style="font-size: 0.85rem;">${d || '-'}</span>` },
         { data: 'producto', render: d => `<span style="font-size: 0.85rem;">${d || '-'}</span>` },
-        { data: null, render: function (data, type, row) { return `<span style="font-size: 0.85rem;">${row.Nombre || ''} ${row.Apellido || ''}</span>`; } },
+        {
+          data: null,
+          render: function (data, type, row) {
+            const nombre = `${row.Nombre || ''} ${row.Apellido || ''}`.trim();
+            const iniciales = ((row.Nombre || '?')[0] + (row.Apellido ? row.Apellido[0] : '')).toUpperCase();
+            return `
+              <div class="person-row">
+                <span class="person-avatar" style="width:26px;height:26px;font-size:.65rem;">${iniciales}</span>
+                <span style="font-size: 0.85rem;">${nombre}</span>
+              </div>
+            `;
+          }
+        },
         { data: 'Tipo', render: d => `<span class="badge bg-secondary">${d}</span>` },
         { data: 'Prima', render: d => parseFloat(d || 0).toFixed(2) },
         { data: 'monto', render: d => parseFloat(d || 0).toFixed(2) },
