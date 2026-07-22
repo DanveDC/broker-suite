@@ -465,17 +465,17 @@ def eliminar_siniestro_db(id_siniestro, tipo_siniestro):
         if "reembolso" in tipo_clean or "patrimonial" in tipo_clean or "viaje" in tipo_clean:
             table = "reembolso"
             id_column = "cod_reembolso"
-            note_table = "nota_Reembolso"
+            note_table = "nota_reembolso"
             note_id_column = "Cod_Reembolso"
         elif "carta aval" in tipo_clean or "carta_aval" in tipo_clean:
             table = "carta_aval"
             id_column = "Cod_CartaAval"
-            note_table = "nota_cartaAval"
+            note_table = "nota_cartaaval"
             note_id_column = "Cod_CartaAval"
         elif "auto" in tipo_clean:
             table = "automovilsiniestro"
             id_column = "Cod_siniestroA"
-            note_table = "nota_Auto"
+            note_table = "nota_auto"
             note_id_column = "Cod_Auto"
             
         if not table or not id_column:
@@ -515,7 +515,7 @@ def procesar_form_reembolso(dataForm):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 sql = """
-                    INSERT INTO Reembolso (
+                    INSERT INTO reembolso (
                         Cod_poliza, Diagnostico, Estado, Fecha_ocurrencia, Fecha_noti,
                         Fecha_max, Moneda, Monto_solicitado, Monto_pagado, Fecha_pago,
                         Correo, codigo_siniestro, monto_dolares, Tipo_Atencion
@@ -560,8 +560,8 @@ def procesar_form_SiniestroAuto(dataForm):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:           
                 sql = """
-                    INSERT INTO AutomovilSiniestro 
-                    (Cod_poliza, Fecha_ocurrencia, Fecha_noti, Fecha_inspec, Estado, Monto_orden, Correo, Descripcion) 
+                    INSERT INTO automovilsiniestro
+                    (Cod_poliza, Fecha_ocurrencia, Fecha_noti, Fecha_inspec, Estado, Monto_orden, Correo, Descripcion)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 valores = (
@@ -744,15 +744,15 @@ def asignar_comision(cod_renovacion):
                             JOIN
                                 ejecutivo e ON ase.Ejecutivo = e.cod_ejecutivo
                             LEFT JOIN
-                                Persona per ON p.cod_poliza = per.Cod_poliza
+                                persona per ON p.cod_poliza = per.Cod_poliza
                             LEFT JOIN
-                                Auto a ON p.cod_poliza = a.Cod_poliza
+                                auto a ON p.cod_poliza = a.Cod_poliza
                             LEFT JOIN
-                                Patrimonio pa ON p.cod_poliza = pa.Cod_poliza
+                                patrimonio pa ON p.cod_poliza = pa.Cod_poliza
                             LEFT JOIN
                                 viaje v ON p.cod_poliza = v.Cod_poliza
                             LEFT JOIN
-                                Fianza f ON p.cod_poliza = f.Cod_poliza
+                                fianza f ON p.cod_poliza = f.Cod_poliza
                             WHERE
                                 cr.Cod_renovacion = %s"""
                     #Creando una tupla con los valores del INSERT
@@ -1103,19 +1103,19 @@ def procesar_form_poliza(dataForm):
 
                 # Inserciones específicas por Ramo
                 if Ramo == 'Persona':
-                    sql = 'INSERT INTO Persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)'
+                    sql = 'INSERT INTO persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)'
                     valores = (dataForm['numero_poliza'], dataForm.get('producto'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 elif Ramo == 'Auto':
-                    sql = 'INSERT INTO Auto (Cod_poliza, modelo, Producto, placa, año, marca, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s)'
+                    sql = 'INSERT INTO auto (Cod_poliza, modelo, Producto, placa, año, marca, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s)'
                     valores = (dataForm['numero_poliza'], dataForm.get('Modelo'), dataForm.get('producto'), dataForm.get('placa'), dataForm.get('Ano'), dataForm.get('Marca'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 elif Ramo == 'Patrimonial':
-                    sql = 'INSERT INTO Patrimonio (Cod_poliza, direccion, Producto, Subramo) VALUES (%s, %s, %s, %s)'
+                    sql = 'INSERT INTO patrimonio (Cod_poliza, direccion, Producto, Subramo) VALUES (%s, %s, %s, %s)'
                     valores = (dataForm['numero_poliza'], dataForm.get('direccion'), dataForm.get('producto'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 elif Ramo == 'Fianza':
-                    sql = 'INSERT INTO Fianza (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)'
+                    sql = 'INSERT INTO fianza (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)'
                     valores = (dataForm['numero_poliza'], dataForm.get('producto'), dataForm.get('SubRamo'))
                     cursor.execute(sql, valores)
                 elif Ramo == 'Viaje':
@@ -1611,7 +1611,7 @@ def insertar_registros_excel(data_to_insert):
                             sql_ins_poliza = "INSERT INTO poliza (cod_poliza, CI_asegurado, Fecha_emision, Cod_compania, Tomador, Ramo, Tipo_venta) VALUES (%s, %s, %s, %s, %s, %s, %s)"
                             cursor.execute(sql_ins_poliza, (cod_poliza, cedula, fecha_emision_raw, 4, raw.get('TOMADOR'), "Auto", tipo_venta))
                             # Auto record 
-                            cursor.execute("INSERT INTO Auto (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (cod_poliza, "RCV", "RCV"))
+                            cursor.execute("INSERT INTO auto (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (cod_poliza, "RCV", "RCV"))
 
                         # 3. Renovación (Lógica Multi-Contrato)
                         renovacion_id = None
@@ -1799,9 +1799,9 @@ def insertar_unico_registro_generico(item):
                     # Subramo
                     try:
                         if ramo_norm == 'Auto':
-                            cursor.execute("INSERT INTO Auto (Cod_poliza, Producto, Subramo) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING", (cod_poliza, 'RCV', 'RCV'))
+                            cursor.execute("INSERT INTO auto (Cod_poliza, Producto, Subramo) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING", (cod_poliza, 'RCV', 'RCV'))
                         elif ramo_norm == 'Persona':
-                            cursor.execute("INSERT INTO Persona (Cod_poliza, Producto, Subramo) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING", (cod_poliza, 'SALUD', 'SALUD'))
+                            cursor.execute("INSERT INTO persona (Cod_poliza, Producto, Subramo) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING", (cod_poliza, 'SALUD', 'SALUD'))
                         elif ramo_norm == 'Patrimonial':
                             cursor.execute("INSERT INTO patrimonio (Cod_poliza, Direccion) VALUES (%s,%s) ON CONFLICT DO NOTHING", (cod_poliza, tomador))
                         elif ramo_norm == 'Fianza':
@@ -2317,13 +2317,13 @@ def insertar_mercantil_data(data_to_insert):
                         # 2.1 Ramo Específico (Insertar si no existe)
                         if pol['ramo'] == 'Auto':
                             cursor.execute("""
-                                INSERT INTO Auto (Cod_poliza, Placa, Marca, Modelo, año, Producto, Subramo)
+                                INSERT INTO auto (Cod_poliza, Placa, Marca, Modelo, año, Producto, Subramo)
                                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                                 ON CONFLICT DO NOTHING
                             """, (item['poliza'], ramo_esp['placa'], ramo_esp['marca'], ramo_esp['modelo'], ramo_esp['año'], pol.get('producto') or "RCV", pol['sub_ramo']))
                         elif pol['ramo'] == 'Persona':
                             cursor.execute("""
-                                INSERT INTO Persona (Cod_poliza, Producto, Subramo)
+                                INSERT INTO persona (Cod_poliza, Producto, Subramo)
                                 VALUES (%s, %s, %s)
                                 ON CONFLICT DO NOTHING
                             """, (item['poliza'], pol.get('producto') or "SALUD", pol['sub_ramo']))
@@ -2484,10 +2484,10 @@ def insertar_unico_registro_mercantil(item):
 
                 # Ramo Específico (Siempre intentar asegurar que exista)
                 if pol['ramo'] == 'Auto':
-                    cursor.execute("INSERT INTO Auto (Cod_poliza, Placa, Marca, Modelo, año, Producto, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
+                    cursor.execute("INSERT INTO auto (Cod_poliza, Placa, Marca, Modelo, año, Producto, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
                                    (item['poliza'], ramo_esp['placa'], ramo_esp['marca'], ramo_esp['modelo'], ramo_esp['año'], pol.get('producto') or "RCV", pol['sub_ramo']))
                 elif pol['ramo'] == 'Persona':
-                    cursor.execute("INSERT INTO Persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (item['poliza'], pol.get('producto') or "SALUD", pol['sub_ramo']))
+                    cursor.execute("INSERT INTO persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (item['poliza'], pol.get('producto') or "SALUD", pol['sub_ramo']))
                 elif pol['ramo'] == 'Patrimonial':
                     cursor.execute("INSERT INTO patrimonio (Cod_poliza, Direccion) VALUES (%s, %s) ON CONFLICT DO NOTHING", (item['poliza'], pol['tomador']))
                 elif pol['ramo'] == 'Fianza':
@@ -2741,15 +2741,15 @@ def sql_lista_polizas():
                     LEFT JOIN
                         compania c ON p.Cod_compania = c.Cod_compania
                     LEFT JOIN
-                        Persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
+                        persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
                     LEFT JOIN
-                        Auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
+                        auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
                     LEFT JOIN
-                        Patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
+                        patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
                     LEFT JOIN
-                        Fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
+                        fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
                     LEFT JOIN
-                        Viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
+                        viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
                     LEFT JOIN
                         pago pay ON r.Cod_renovacion = pay.Cod_renovacion
                     GROUP BY
@@ -2797,7 +2797,7 @@ def sql_lista_siniestros():
                             ca.codigo_siniestro,
                             ca.Monto_solicitado AS monto  
                         FROM
-                            Carta_aval ca
+                            carta_aval ca
                         INNER JOIN
                             poliza p ON ca.Cod_poliza = p.Cod_poliza
                         INNER JOIN
@@ -2822,7 +2822,7 @@ def sql_lista_siniestros():
                             r.codigo_siniestro,
                             r.Monto_solicitado AS monto   
                         FROM
-                            Reembolso r
+                            reembolso r
                         INNER JOIN
                             poliza p ON r.Cod_poliza = p.Cod_poliza
                         INNER JOIN
@@ -2847,7 +2847,7 @@ def sql_lista_siniestros():
                             sa.codigo_siniestro,
                             sa.Monto_orden AS monto 
                         FROM
-                            AutomovilSiniestro sa
+                            automovilsiniestro sa
                         INNER JOIN
                             poliza p ON sa.Cod_poliza = p.Cod_poliza
                         INNER JOIN
@@ -2874,7 +2874,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                             ca.Estado AS estado_siniestro,
                             ca.Cod_CartaAval as codigo
                         FROM
-                            Carta_aval ca
+                            carta_aval ca
                         INNER JOIN
                             poliza p ON ca.Cod_poliza = p.Cod_poliza
                         WHERE ca.Cod_poliza=%s
@@ -2886,7 +2886,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                             r.estado AS estado_siniestro,
                             r.cod_reembolso as codigo
                         FROM
-                            Reembolso r
+                            reembolso r
                         INNER JOIN
                             poliza p ON r.Cod_poliza = p.Cod_poliza
                         WHERE r.Cod_poliza=%s
@@ -2898,7 +2898,7 @@ def sql_lista_siniestros_unico(cod_poliza):
                             a.estado AS estado_siniestro,
                             a.Cod_siniestroA as codigo
                         FROM
-                            AutomovilSiniestro a
+                            automovilsiniestro a
                         INNER JOIN
                             poliza p ON a.Cod_poliza = p.Cod_poliza
                        WHERE a.Cod_poliza=%s
@@ -2996,7 +2996,7 @@ def sql_detalles_reembolsoBD(cod_reembolso):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM Reembolso
+                    FROM reembolso
                     WHERE cod_reembolso = %s
                     """)
                 cursor.execute(querySQL, (cod_reembolso,))
@@ -3013,7 +3013,7 @@ def sql_detalles_CartaAvalBD(cod_carta):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM Carta_aval
+                    FROM carta_aval
                     WHERE Cod_CartaAval = %s
                     """)
                 cursor.execute(querySQL, (cod_carta,))
@@ -3030,7 +3030,7 @@ def sql_Notas_cartaAval(cod_carta):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM nota_cartaAval
+                    FROM nota_cartaaval
                     WHERE Cod_CartaAval = %s
                     """)
                 cursor.execute(querySQL, (cod_carta,))
@@ -3047,7 +3047,7 @@ def sql_Notas_reembolso(cod_reembolso):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM nota_Reembolso
+                    FROM nota_reembolso
                     WHERE Cod_Reembolso = %s
                     """)
                 cursor.execute(querySQL, (cod_reembolso,))
@@ -3064,7 +3064,7 @@ def sql_Notas_auto(cod_auto):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM nota_Auto
+                    FROM nota_auto
                     WHERE Cod_Auto = %s
                     """)
                 cursor.execute(querySQL, (cod_auto,))
@@ -3081,7 +3081,7 @@ def sql_detalles_SiniestroA(cod_auto):
             with conexion_MySQLdb.cursor() as cursor:
                 querySQL = ("""
                     SELECT *
-                    FROM AutomovilSiniestro
+                    FROM automovilsiniestro
                     WHERE Cod_siniestroA = %s
                     """)
                 cursor.execute(querySQL, (cod_auto,))
@@ -3139,7 +3139,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                                 asegurado as ase ON p.CI_asegurado = ase.CI
                             JOIN
                                 ejecutivo e ON ase.Ejecutivo = e.cod_ejecutivo
-                            INNER JOIN Auto a ON p.cod_poliza = a.cod_poliza
+                            INNER JOIN auto a ON p.cod_poliza = a.cod_poliza
                             INNER JOIN renovacion r on p.cod_poliza = r.cod_poliza
                             INNER JOIN compania c on p.Cod_compania = c.Cod_compania
                             WHERE p.cod_poliza = %s
@@ -3180,7 +3180,7 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                                 asegurado a ON p.CI_asegurado = a.CI
                             JOIN
                                 ejecutivo e ON a.Ejecutivo = e.cod_ejecutivo
-                            INNER JOIN Persona pe ON p.cod_poliza = pe.cod_poliza
+                            INNER JOIN persona pe ON p.cod_poliza = pe.cod_poliza
                             INNER JOIN renovacion r on p.cod_poliza = r.cod_poliza
                             INNER JOIN compania c on p.Cod_compania = c.Cod_compania
                             LEFT JOIN beneficiario b on p.cod_poliza = b.cod_poliza
@@ -3250,10 +3250,10 @@ def sql_detalles_polizaBD(cod_poliza, cod_renovacion=None):
                                 asegurado a ON p.CI_asegurado = a.CI
                             JOIN
                                 ejecutivo e ON a.Ejecutivo = e.cod_ejecutivo
-                            INNER JOIN Fianza f ON p.cod_poliza = f.cod_poliza
+                            INNER JOIN fianza f ON p.cod_poliza = f.cod_poliza
                             INNER JOIN renovacion r on p.cod_poliza = r.cod_poliza
                             INNER JOIN compania c on p.Cod_compania = c.Cod_compania
-                            WHERE p.cod_poliza = %s 
+                            WHERE p.cod_poliza = %s
                         """)
                 elif Ramo == "Viaje" or Ramo=="VIAJES":
                     querySQL = ("""
@@ -3323,7 +3323,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
                             a.Apellido2 AS segundo_apellido, c.Nombre AS nombre_compania,
                             ca.codigo_siniestro, ca.Monto_solicitado AS monto
-                        FROM Carta_aval ca
+                        FROM carta_aval ca
                         INNER JOIN poliza p ON ca.Cod_poliza = p.Cod_poliza
                         INNER JOIN asegurado AS a ON p.CI_asegurado = a.CI
                         INNER JOIN compania AS c ON p.Cod_compania = c.Cod_compania
@@ -3337,7 +3337,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
                             a.Apellido2 AS segundo_apellido, c.Nombre AS nombre_compania,
                             r.codigo_siniestro, r.Monto_solicitado AS monto
-                        FROM Reembolso r
+                        FROM reembolso r
                         INNER JOIN poliza p ON r.Cod_poliza = p.Cod_poliza
                         INNER JOIN asegurado AS a ON p.CI_asegurado = a.CI
                         INNER JOIN compania AS c ON p.Cod_compania = c.Cod_compania
@@ -3351,7 +3351,7 @@ def obtener_siniestros_filtrados(tipo_cedula, cedula, estado_siniestro, meses, a
                             a.CI AS CI_asegurado, a.Nombre2 AS segundo_nombre,
                             a.Apellido2 AS segundo_apellido, c.Nombre AS nombre_compania,
                             sa.codigo_siniestro, sa.Monto_orden AS monto
-                        FROM AutomovilSiniestro sa
+                        FROM automovilsiniestro sa
                         INNER JOIN poliza p ON sa.Cod_poliza = p.Cod_poliza
                         INNER JOIN asegurado AS a ON p.CI_asegurado = a.CI
                         INNER JOIN compania AS c ON p.Cod_compania = c.Cod_compania
@@ -3485,15 +3485,15 @@ def obtener_polizas_filtradas(ano=None, mes=None, rango_inicio=None, rango_fin=N
                     LEFT JOIN
                         compania c ON p.Cod_compania = c.Cod_compania
                     LEFT JOIN
-                        Persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
+                        persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
                     LEFT JOIN
-                        Auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
+                        auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
                     LEFT JOIN
-                        Patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
+                        patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
                     LEFT JOIN
-                        Fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
+                        fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
                     LEFT JOIN
-                        Viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
+                        viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
                     LEFT JOIN
                         pago pay ON r.Cod_renovacion = pay.Cod_renovacion
                     WHERE 1=1
@@ -4545,10 +4545,10 @@ def procesar_actualizacion_poliza_persona(dataForm, cod_poliza):
                     # Actualizar primero las tablas hijas para asegurar consistencia
                     # Usamos el nombre de columna cod_poliza o Cod_poliza según se use en cada tabla
                     cursor.execute("UPDATE renovacion SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE Persona SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE persona SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     cursor.execute("UPDATE beneficiario SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     cursor.execute("UPDATE carta_aval SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE Reembolso SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE reembolso SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     
                     sql_poliza_update = "UPDATE poliza SET cod_poliza = %s, Tomador = %s, Fecha_emision = %s WHERE cod_poliza = %s"
                     valores_poliza = (nuevo_cod_poliza, tomador_form, fecha_emision_form, cod_poliza)
@@ -4563,7 +4563,7 @@ def procesar_actualizacion_poliza_persona(dataForm, cod_poliza):
                 
                 if subramo_form or producto_form:
                      # Ahora target_cod es el nuevo código si hubo cambio
-                     sql_persona_update = "UPDATE Persona SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
+                     sql_persona_update = "UPDATE persona SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
                      cursor.execute(sql_persona_update, (subramo_form, producto_form, target_cod))
 
                 conexion_MySQLdb.commit()
@@ -4635,8 +4635,8 @@ def procesar_actualizacion_poliza_auto(form_data, cod_poliza):
                 # 5. Actualizar poliza y tablas relacionadas
                 if nuevo_cod_poliza and nuevo_cod_poliza != cod_poliza:
                     cursor.execute("UPDATE renovacion SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE Auto SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE AutomovilSiniestro SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE auto SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE automovilsiniestro SET Cod_poliza = %s WHERE Cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     
                     sql_poliza_update = "UPDATE poliza SET cod_poliza = %s, Tomador = %s, Fecha_emision = %s WHERE cod_poliza = %s"
                     valores_poliza = (nuevo_cod_poliza, tomador_form, fecha_emision_form, cod_poliza)
@@ -4652,7 +4652,7 @@ def procesar_actualizacion_poliza_auto(form_data, cod_poliza):
                 producto_form = form_data.get('producto')
 
                 if subramo_form and producto_form:
-                    sql_auto_update = "UPDATE Auto SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
+                    sql_auto_update = "UPDATE auto SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
                     cursor.execute(sql_auto_update, (subramo_form, producto_form, target_cod))
 
                 conexion_MySQLdb.commit()
@@ -4884,7 +4884,7 @@ def procesar_actualizacion_poliza_fianza(dataForm, cod_poliza):
                 # 5. Actualizar poliza y tablas relacionadas
                 if nuevo_cod_poliza and nuevo_cod_poliza != cod_poliza:
                     cursor.execute("UPDATE renovacion SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
-                    cursor.execute("UPDATE Fianza SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
+                    cursor.execute("UPDATE fianza SET cod_poliza = %s WHERE cod_poliza = %s", (nuevo_cod_poliza, cod_poliza))
                     
                     sql_poliza_update = "UPDATE poliza SET cod_poliza = %s, Tomador = %s, Fecha_emision = %s WHERE cod_poliza = %s"
                     valores_poliza = (nuevo_cod_poliza, tomador_form, fecha_emision_form, cod_poliza)
@@ -4897,7 +4897,7 @@ def procesar_actualizacion_poliza_fianza(dataForm, cod_poliza):
                 # 6. Actualizar Fianza
                 target_cod = nuevo_cod_poliza if (nuevo_cod_poliza and nuevo_cod_poliza != cod_poliza) else cod_poliza
                 if subramo_form and producto_form:
-                    sql_fianza_update = "UPDATE Fianza SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
+                    sql_fianza_update = "UPDATE fianza SET Subramo = %s, Producto = %s WHERE cod_poliza = %s"
                     cursor.execute(sql_fianza_update, (subramo_form, producto_form, target_cod))
 
                 conexion_MySQLdb.commit()
@@ -5242,13 +5242,13 @@ def eliminarPoliza(id):
                 result=cursor2.fetchone()
                 Ramo = result['Ramo']
                 if Ramo == "Persona":
-                    sql = "DELETE FROM Persona WHERE cod_poliza=%s"
+                    sql = "DELETE FROM persona WHERE cod_poliza=%s"
                 elif Ramo == "Auto":
-                    sql = "DELETE FROM Auto WHERE cod_poliza=%s"
+                    sql = "DELETE FROM auto WHERE cod_poliza=%s"
                 elif Ramo == "Patrimonial":
-                    sql = "DELETE FROM Patrimonio WHERE cod_poliza=%s"
+                    sql = "DELETE FROM patrimonio WHERE cod_poliza=%s"
                 elif Ramo == "Fianza":
-                    sql = "DELETE FROM Fianza WHERE cod_poliza=%s"
+                    sql = "DELETE FROM fianza WHERE cod_poliza=%s"
                 else:
                     sql = "DELETE FROM viaje WHERE cod_poliza=%s"
 
@@ -5447,9 +5447,9 @@ def sql_lista_comisiones():
                         compania c ON p.Cod_compania = c.Cod_compania
                     LEFT JOIN 
                         auto au ON p.cod_poliza = au.Cod_poliza
-                    LEFT JOIN 
-                        Persona per ON p.cod_poliza = per.Cod_poliza
-                    LEFT JOIN 
+                    LEFT JOIN
+                        persona per ON p.cod_poliza = per.Cod_poliza
+                    LEFT JOIN
                         comisiones_ejecutivos coe ON e.cod_ejecutivo = coe.cod_ejecutivo AND p.Ramo = 'Auto'
                     WHERE
                         pag.estado = 'PAGADO'
@@ -5738,10 +5738,10 @@ def obtener_polizas_datatable(start, length, tipo_filtro_fecha=None, fecha=None,
 
                 # Joins adicionales solo para la data (no para el conteo a menos que se filtre por producto)
                 data_joins = """
-                    LEFT JOIN Persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
-                    LEFT JOIN Auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
-                    LEFT JOIN Patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
-                    LEFT JOIN Fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
+                    LEFT JOIN persona pe ON p.cod_poliza = pe.Cod_poliza AND p.Ramo IN ('Persona', 'PERSONA', 'PERSONAS')
+                    LEFT JOIN auto au ON p.cod_poliza = au.Cod_poliza AND p.Ramo IN ('Auto', 'AUTO')
+                    LEFT JOIN patrimonio pa ON p.cod_poliza = pa.Cod_poliza AND p.Ramo IN ('Patrimonial', 'PATRIMONIAL')
+                    LEFT JOIN fianza f ON p.cod_poliza = f.Cod_poliza AND p.Ramo IN ('Fianza', 'FIANZA', 'FIANZAS')
                     LEFT JOIN viaje v ON p.cod_poliza = v.Cod_poliza AND p.Ramo IN ('Viaje', 'VIAJE', 'VIAJES')
                 """
 
@@ -5855,7 +5855,7 @@ def obtener_comisiones_datatable(start, length, minDateStr=None, maxDateStr=None
                     JOIN ejecutivo e ON a.Ejecutivo = e.cod_ejecutivo
                     LEFT JOIN compania c ON p.Cod_compania = c.Cod_compania
                     LEFT JOIN auto au ON p.cod_poliza = au.Cod_poliza
-                    LEFT JOIN Persona per ON p.cod_poliza = per.Cod_poliza
+                    LEFT JOIN persona per ON p.cod_poliza = per.Cod_poliza
                     LEFT JOIN comisiones_ejecutivos coe ON e.cod_ejecutivo = coe.cod_ejecutivo AND p.Ramo = 'Auto'
                 """
                 
@@ -6048,11 +6048,11 @@ def NotaCartaAval(titulo, observaciones, id,cod,tipo,fecha):
         with connectionBD() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor() as cursor:
                 if tipo == 1:
-                    querySQL = "insert into nota_cartaAval (Cod_CartaAval,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
+                    querySQL = "insert into nota_cartaaval (Cod_CartaAval,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 elif tipo == 2:
-                    querySQL = "insert into nota_Reembolso (Cod_Reembolso,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
+                    querySQL = "insert into nota_reembolso (Cod_Reembolso,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 else:
-                    querySQL = "insert into nota_Auto (Cod_Auto,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
+                    querySQL = "insert into nota_auto (Cod_Auto,Observaciones,titulo,fecha) values (%s,%s,%s,%s)"
                 print("probando")
                 cursor.execute(querySQL, (cod,observaciones,titulo,fecha))
                 print("probando 2")
@@ -7184,15 +7184,15 @@ def obtener_datos_dashboard(filtros):
                 try:
                     claims_query = """
                         SELECT 'Carta Aval' AS tipo, COUNT(DISTINCT ca.Cod_CartaAval) AS total
-                        FROM Carta_aval ca
+                        FROM carta_aval ca
                         WHERE EXTRACT(YEAR FROM ca.Fecha_noti) = %s
                         UNION ALL
                         SELECT 'Reembolso' AS tipo, COUNT(DISTINCT re.cod_reembolso) AS total
-                        FROM Reembolso re
+                        FROM reembolso re
                         WHERE EXTRACT(YEAR FROM re.Fecha_ocurrencia) = %s
                         UNION ALL
                         SELECT 'Siniestro Auto' AS tipo, COUNT(DISTINCT sa.Cod_siniestroA) AS total
-                        FROM AutomovilSiniestro sa
+                        FROM automovilsiniestro sa
                         WHERE EXTRACT(YEAR FROM sa.Fecha_ocurrencia) = %s
                     """
                     cursor.execute(claims_query, (ano_actual_f, ano_actual_f, ano_actual_f))
@@ -8358,14 +8358,14 @@ def procesar_registro_desde_pendiente(dataForm):
                 # 4. Ramo Específico
                 ramo = dataForm.get('Ramo')
                 if ramo == 'Persona':
-                    cursor.execute("INSERT INTO Persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (cod_poliza, dataForm.get('producto'), dataForm.get('SubRamo')))
+                    cursor.execute("INSERT INTO persona (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", (cod_poliza, dataForm.get('producto'), dataForm.get('SubRamo')))
                 elif ramo == 'Auto':
-                    cursor.execute("INSERT INTO Auto (Cod_poliza, modelo, Producto, placa, año, marca, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+                    cursor.execute("INSERT INTO auto (Cod_poliza, modelo, Producto, placa, año, marca, Subramo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                                    (cod_poliza, dataForm.get('Modelo'), dataForm.get('producto'), dataForm.get('placa'), dataForm.get('Ano') or 0, dataForm.get('Marca'), dataForm.get('SubRamo')))
                 elif ramo == 'Patrimonial':
-                    cursor.execute("INSERT INTO Patrimonio (Cod_poliza, direccion, Producto, Subramo) VALUES (%s, %s, %s, %s)", (cod_poliza, dataForm.get('direccion'), dataForm.get('producto'), dataForm.get('SubRamo')))
+                    cursor.execute("INSERT INTO patrimonio (Cod_poliza, direccion, Producto, Subramo) VALUES (%s, %s, %s, %s)", (cod_poliza, dataForm.get('direccion'), dataForm.get('producto'), dataForm.get('SubRamo')))
                 elif ramo == 'Fianza':
-                    cursor.execute("INSERT INTO Fianza (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)", (cod_poliza, dataForm.get('producto'), dataForm.get('SubRamo')))
+                    cursor.execute("INSERT INTO fianza (Cod_poliza, Producto, Subramo) VALUES (%s, %s, %s)", (cod_poliza, dataForm.get('producto'), dataForm.get('SubRamo')))
                 elif ramo == 'Viaje':
                     cursor.execute("INSERT INTO viaje (Cod_poliza, cod_pasaporte, Producto, Subramo) VALUES (%s, %s, %s, %s)", (cod_poliza, dataForm.get('pasaporte'), dataForm.get('producto'), dataForm.get('SubRamo')))
 
